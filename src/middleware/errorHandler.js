@@ -75,6 +75,16 @@ function globalErrorHandler(err, req, res, next) {
     });
   }
 
+  // Check if response was already sent
+  if (res.headersSent) {
+    logger.error('Response already sent, cannot send error response', {
+      url: req.originalUrl,
+      method: req.method,
+      error: error.message
+    });
+    return;
+  }
+
   // Send response
   const response = {
     error: error.message,
