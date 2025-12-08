@@ -83,10 +83,13 @@ class OrderRepository {
       logger.db('SELECT', 'orders', { userId, limit, offset });
       const orders = await db.prepare(query).all(userId, limit, offset);
       
-      // Parse JSON items for each order (PostgreSQL JSONB returns as object, but handle both)
+      // Parse JSON items for each order and convert DECIMAL to numbers
       return orders.map(order => ({
         ...order,
-        items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items
+        items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items,
+        subtotal: parseFloat(order.subtotal || 0),
+        discount: parseFloat(order.discount || 0),
+        total: parseFloat(order.total || 0)
       }));
     } catch (error) {
       logger.error('Error finding orders by user ID', error);
@@ -135,7 +138,10 @@ class OrderRepository {
       
       return {
         ...order,
-        items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items
+        items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items,
+        subtotal: parseFloat(order.subtotal || 0),
+        discount: parseFloat(order.discount || 0),
+        total: parseFloat(order.total || 0)
       };
     } catch (error) {
       logger.error('Error finding order by ID', error);
@@ -184,7 +190,10 @@ class OrderRepository {
       
       return {
         ...order,
-        items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items
+        items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items,
+        subtotal: parseFloat(order.subtotal || 0),
+        discount: parseFloat(order.discount || 0),
+        total: parseFloat(order.total || 0)
       };
     } catch (error) {
       logger.error('Error finding order by order number', error);

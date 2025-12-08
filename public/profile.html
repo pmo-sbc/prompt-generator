@@ -831,9 +831,9 @@
                         <div class="transaction-item-row">
                             <div>
                                 <div class="transaction-item-name">${item.name}</div>
-                                <div class="transaction-item-details">Quantity: ${item.quantity || 1} × $${(item.price || 0).toFixed(2)}</div>
+                                <div class="transaction-item-details">Quantity: ${item.quantity || 1} × $${parseFloat(item.price || 0).toFixed(2)}</div>
                             </div>
-                            <div class="transaction-item-price">$${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</div>
+                            <div class="transaction-item-price">$${(parseFloat(item.price || 0) * parseFloat(item.quantity || 1)).toFixed(2)}</div>
                         </div>
                     `).join('');
 
@@ -852,17 +852,17 @@
                             <div class="transaction-totals">
                                 <div class="transaction-total-row">
                                     <span>Subtotal:</span>
-                                    <span>$${order.subtotal.toFixed(2)}</span>
+                                    <span>$${parseFloat(order.subtotal || 0).toFixed(2)}</span>
                                 </div>
-                                ${order.discount > 0 ? `
+                                ${parseFloat(order.discount || 0) > 0 ? `
                                 <div class="transaction-total-row discount">
                                     <span>Discount:</span>
-                                    <span>-$${order.discount.toFixed(2)}</span>
+                                    <span>-$${parseFloat(order.discount || 0).toFixed(2)}</span>
                                 </div>
                                 ` : ''}
                                 <div class="transaction-total-row final">
                                     <span>Total:</span>
-                                    <span>$${order.total.toFixed(2)}</span>
+                                    <span>$${parseFloat(order.total || 0).toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>
