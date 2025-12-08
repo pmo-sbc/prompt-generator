@@ -348,8 +348,11 @@ router.post(
     const user = await userRepository.findByVerificationToken(token);
 
     if (!user) {
-      logger.warn('Invalid or expired verification token', { token });
+      logger.warn('Invalid or expired verification token', { 
+        token: token ? token.substring(0, 8) + '...' : 'missing'
+      });
       return res.status(400).json({
+        success: false,
         error: 'Invalid or expired verification token',
         message: 'This verification link is invalid or has expired. Please request a new one.'
       });

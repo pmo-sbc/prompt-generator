@@ -173,15 +173,66 @@ class UserRepository {
    */
   async findByVerificationToken(token) {
     const db = getDatabaseWrapper();
+    // First check if token exists (without expiration check) for better error logging
+    const checkQuery = `
+      SELECT id, verification_token, verification_token_expires, email_verified
+      FROM users
+      WHERE verification_token = $1
+    `;
+    
+    // Then check with expiration
     const query = `
       SELECT * FROM users
       WHERE verification_token = $1
+      AND verification_token_expires IS NOT NULL
       AND verification_token_expires > NOW()
     `;
 
     try {
       logger.db('SELECT', 'users', { action: 'find_by_verification_token' });
-      return await db.prepare(query).get(token);
+      
+      // First check if token exists at all
+      const tokenCheck = await db.prepare(checkQuery).get(token);
+      
+      if (!tokenCheck) {
+        logger.warn('Verification token not found in database', { token: token.substring(0, 8) + '...' });
+        return null;
+      }
+      
+      // Check if already verified
+      if (tokenCheck.email_verified) {
+        logger.warn('Verification token for already verified user', { 
+          userId: tokenCheck.id,
+          token: token.substring(0, 8) + '...'
+        });
+        return null;
+      }
+      
+      // Check expiration
+      if (!tokenCheck.verification_token_expires) {
+        logger.warn('Verification token has no expiration date', { 
+          userId: tokenCheck.id,
+          token: token.substring(0, 8) + '...'
+        });
+        return null;
+      }
+      
+      const expiresAt = new Date(tokenCheck.verification_token_expires);
+      const now = new Date();
+      
+      if (expiresAt <= now) {
+        logger.warn('Verification token has expired', { 
+          userId: tokenCheck.id,
+          expiresAt: expiresAt.toISOString(),
+          now: now.toISOString(),
+          token: token.substring(0, 8) + '...'
+        });
+        return null;
+      }
+      
+      // Token is valid - return full user object
+      const user = await db.prepare(query).get(token);
+      return user;
     } catch (error) {
       logger.error('Error finding user by verification token', error);
       throw error;
