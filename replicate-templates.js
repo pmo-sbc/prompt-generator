@@ -17,20 +17,22 @@ try {
 function getLocalConfig() {
   try {
     const config = require('./src/config');
+    const password = config.db.password || process.env.DB_PASSWORD;
     return {
       host: config.db.host || process.env.DB_HOST || 'localhost',
       port: parseInt(config.db.port || process.env.DB_PORT || '5432', 10),
       database: config.db.database || process.env.DB_NAME || 'prompt_generator',
       user: config.db.user || process.env.DB_USER || 'postgres',
-      password: config.db.password || process.env.DB_PASSWORD || ''
+      password: (password !== null && password !== undefined) ? String(password) : ''
     };
   } catch (e) {
+    const password = process.env.DB_PASSWORD;
     return {
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '5432', 10),
       database: process.env.DB_NAME || 'prompt_generator',
       user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || ''
+      password: (password !== null && password !== undefined) ? String(password) : ''
     };
   }
 }
@@ -51,15 +53,22 @@ function getProductionConfig() {
     if (fs.existsSync('.env.production')) {
       const envProd = fs.readFileSync('.env.production', 'utf8');
       envProd.split('\n').forEach(line => {
-        const match = line.match(/^([^=]+)=(.*)$/);
-        if (match) {
-          const key = match[1].trim();
-          const value = match[2].trim().replace(/^["']|["']$/g, '');
-          if (key === 'DB_HOST') prodHost = prodHost || value;
-          if (key === 'DB_PORT') prodPort = prodPort || value;
-          if (key === 'DB_NAME') prodDatabase = prodDatabase || value;
-          if (key === 'DB_USER') prodUser = prodUser || value;
-          if (key === 'DB_PASSWORD') prodPassword = prodPassword || value;
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+          const match = trimmed.match(/^([^=]+)=(.*)$/);
+          if (match) {
+            const key = match[1].trim();
+            let value = match[2].trim().replace(/^["']|["']$/g, '');
+            // Handle empty values
+            if (value === '' || value.toLowerCase() === 'null' || value.toLowerCase() === 'undefined') {
+              value = undefined;
+            }
+            if (key === 'DB_HOST' || key === 'PROD_DB_HOST') prodHost = prodHost || value;
+            if (key === 'DB_PORT' || key === 'PROD_DB_PORT') prodPort = prodPort || value;
+            if (key === 'DB_NAME' || key === 'PROD_DB_NAME') prodDatabase = prodDatabase || value;
+            if (key === 'DB_USER' || key === 'PROD_DB_USER') prodUser = prodUser || value;
+            if (key === 'DB_PASSWORD' || key === 'PROD_DB_PASSWORD') prodPassword = prodPassword || value;
+          }
         }
       });
     }
@@ -76,12 +85,17 @@ function getProductionConfig() {
     if (arg.startsWith('--production-password=')) prodPassword = arg.split('=')[1];
   });
 
+  // Ensure password is a string (even if empty) - PostgreSQL requires string type
+  const finalPassword = (prodPassword !== null && prodPassword !== undefined) 
+    ? String(prodPassword) 
+    : '';
+
   return {
     host: prodHost || process.env.PROD_DB_HOST || 'localhost',
     port: parseInt(prodPort || process.env.PROD_DB_PORT || '5432', 10),
     database: prodDatabase || process.env.PROD_DB_NAME || 'prompt_generator',
     user: prodUser || process.env.PROD_DB_USER || 'postgres',
-    password: prodPassword || process.env.PROD_DB_PASSWORD || ''
+    password: finalPassword
   };
 }
 
@@ -101,7 +115,17 @@ async function replicateTemplates() {
   console.log('Production Database:');
   console.log(`  Host: ${prodConfig.host}`);
   console.log(`  Database: ${prodConfig.database}`);
-  console.log(`  User: ${prodConfig.user}\n`);
+  console.log(`  User: ${prodConfig.user}`);
+  console.log(`  Password: ${prodConfig.password ? '***' + prodConfig.password.slice(-2) : '(empty)'}\n`);
+  
+  // If production config is same as local and no password set, use local password
+  if (prodConfig.host === localConfig.host && 
+      prodConfig.database === localConfig.database && 
+      prodConfig.user === localConfig.user &&
+      !prodConfig.password && localConfig.password) {
+    console.log('⚠️  Production config matches local config, using local password\n');
+    prodConfig.password = localConfig.password;
+  }
 
   if (isDryRun) {
     console.log('⚠️  DRY RUN MODE - No changes will be made\n');
