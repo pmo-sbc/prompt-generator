@@ -338,6 +338,11 @@ router.post(
   asyncHandler(async (req, res) => {
     const { token } = req.body;
 
+    logger.info('Verification attempt', { 
+      tokenLength: token ? token.length : 0,
+      tokenPreview: token ? token.substring(0, 8) + '...' : 'missing'
+    });
+
     if (!token) {
       return res.status(400).json({
         error: 'Verification token is required'
@@ -345,6 +350,7 @@ router.post(
     }
 
     // Find user by verification token
+    logger.info('Looking up user by verification token...');
     const user = await userRepository.findByVerificationToken(token);
 
     if (!user) {
