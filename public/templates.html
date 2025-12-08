@@ -1769,20 +1769,30 @@
                 return;
             }
 
-            // Validate that all input fields are filled
+            // Validate that all input fields are filled (or have default values)
             const inputs = dynamicInputsDiv.querySelectorAll('input, textarea');
             let hasEmptyFields = false;
             let emptyFieldLabels = [];
 
             inputs.forEach(input => {
-                const value = input.value.trim();
+                const name = input.getAttribute('data-name');
+                let value = input.value.trim();
+                
+                // If value is empty, check if there's a default value in the template
                 if (!value) {
-                    hasEmptyFields = true;
-                    // Try to get label from the previous sibling or use placeholder
-                    const fieldDiv = input.parentElement;
-                    const labelElement = fieldDiv.querySelector('.field-label');
-                    const fieldName = labelElement ? labelElement.textContent : (input.placeholder || input.getAttribute('data-name') || 'Unknown field');
-                    emptyFieldLabels.push(fieldName);
+                    const templateInput = template.inputs.find(inp => inp.name === name);
+                    if (templateInput && (templateInput.value || templateInput.default)) {
+                        // Has a default value, so it's considered "filled"
+                        value = templateInput.value || templateInput.default;
+                    } else {
+                        // No default value and field is empty - validation error
+                        hasEmptyFields = true;
+                        // Try to get label from the previous sibling or use placeholder
+                        const fieldDiv = input.parentElement;
+                        const labelElement = fieldDiv.querySelector('.field-label');
+                        const fieldName = labelElement ? labelElement.textContent : (input.placeholder || name || 'Unknown field');
+                        emptyFieldLabels.push(fieldName);
+                    }
                 }
             });
 
@@ -1907,16 +1917,29 @@
             let hasReplacedAny = false;
             const replacedPlaceholders = new Set(); // Track which placeholders were successfully replaced
             
+            // First, collect all input values (using defaults if empty)
+            const inputValues = {};
             allInputs.forEach(input => {
                 const name = input.getAttribute('data-name');
-                const value = input.value.trim();
+                if (!name) return;
                 
-                if (!name || !value) {
-                    console.warn('Skipping placeholder replacement: name or value is empty', { name, value, input });
-                    return;
+                let value = input.value.trim();
+                
+                // If value is empty, try to use default value from the template
+                if (!value) {
+                    const templateInput = template.inputs.find(inp => inp.name === name);
+                    if (templateInput && (templateInput.value || templateInput.default)) {
+                        value = templateInput.value || templateInput.default;
+                        console.log('Using default value for', name, ':', value);
+                    }
                 }
                 
-                let replaced = false;
+                inputValues[name] = value;
+            });
+            
+            // Now replace all placeholders with collected values
+            Object.keys(inputValues).forEach(name => {
+                const value = inputValues[name] || '';
                 
                 // Escape special regex characters in the name
                 const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1927,41 +1950,32 @@
                 
                 // Check if this placeholder exists in the prompt
                 if (placeholderRegex.test(finalPrompt)) {
-                    // Replace all occurrences of this placeholder
+                    // Replace all occurrences of this placeholder (even if value is empty)
                     finalPrompt = finalPrompt.replace(placeholderRegex, (match) => {
-                        replaced = true;
                         hasReplacedAny = true;
                         replacedPlaceholders.add(match.toLowerCase());
-                        console.log('Replaced placeholder:', match, 'with value:', value);
-                        return value;
+                        console.log('Replaced placeholder:', match, 'with value:', value || '(empty/default)');
+                        return value || ''; // Always replace, even with empty string
                     });
-                }
-                
-                // Also handle templates that use "" as placeholders (legacy format)
-                // Only do this if we haven't replaced via the standard placeholder format
-                if (!replaced && finalPrompt.includes('""')) {
-                    // For multiple inputs, we need to be smarter about which "" to replace
-                    // This is a fallback for templates with "" placeholders
-                    console.log('Attempting to replace "" placeholder for:', name);
                 }
             });
             
             // Handle templates that have "" instead of placeholders (legacy format)
             // This is a fallback for templates created without proper placeholder format
             // Handle multiple "" placeholders by replacing them in order with input values
-            if (!hasReplacedAny && allInputs.length > 0 && finalPrompt.includes('""')) {
+            if (!hasReplacedAny && Object.keys(inputValues).length > 0 && finalPrompt.includes('""')) {
                 console.log('Found "" placeholders, attempting to replace with input values');
                 let promptCopy = finalPrompt;
                 let replacementCount = 0;
                 
                 // Replace each "" with the corresponding input value in order
-                allInputs.forEach((input, index) => {
-                    const value = input.value.trim();
+                Object.keys(inputValues).forEach((name, index) => {
+                    const value = inputValues[name] || '';
                     if (value && promptCopy.includes('""')) {
                         // Replace the first occurrence of "" with the value
                         promptCopy = promptCopy.replace('""', `"${value}"`);
                         replacementCount++;
-                        console.log(`Replaced "" placeholder ${index + 1} with value:`, value);
+                        console.log(`Replaced "" placeholder ${index + 1} (${name}) with value:`, value);
                     }
                 });
                 

@@ -2117,6 +2117,7 @@
                 }
                 attachCommunityFormListeners(companyId, company);
                 attachCommunityActionListeners(companyId);
+                attachAddCommunityToggleListeners();
                 setupTechnologyCheckboxes(`communities-${companyId}`);
             } catch (error) {
                 console.error('Error loading communities:', error);
@@ -2129,16 +2130,34 @@
             const formEl = document.getElementById(`add-community-form-${companyId}`);
             const toggleBtn = document.querySelector(`.add-community-toggle-btn[data-company-id="${companyId}"]`);
             
-            if (!formEl || !toggleBtn) return;
+            if (!formEl) {
+                console.error('Form element not found for companyId:', companyId);
+                return;
+            }
+            
+            if (!toggleBtn) {
+                console.error('Toggle button not found for companyId:', companyId);
+                return;
+            }
 
-            if (formEl.style.display === 'none') {
+            // Check if form is currently hidden (either inline style or computed style)
+            const isHidden = formEl.style.display === 'none' || 
+                           window.getComputedStyle(formEl).display === 'none';
+
+            if (isHidden) {
+                // Show the form
                 formEl.style.display = 'block';
                 toggleBtn.textContent = 'Cancel';
                 toggleBtn.classList.remove('btn-primary-profile');
                 toggleBtn.classList.add('btn-secondary');
             } else {
+                // Hide the form
                 formEl.style.display = 'none';
-                toggleBtn.textContent = '+ Add Community';
+                // Check if this is the first community (no communities exist)
+                const communitiesEl = document.getElementById(`communities-${companyId}`);
+                const hasCommunities = communitiesEl && 
+                    communitiesEl.querySelectorAll('.community-item').length > 0;
+                toggleBtn.textContent = hasCommunities ? '+ Add Community' : '+ Add Your First Community';
                 toggleBtn.classList.remove('btn-secondary');
                 toggleBtn.classList.add('btn-primary-profile');
                 // Reset form if needed
@@ -2684,6 +2703,13 @@
 
         // Attach event listeners to toggle add community form buttons
         function attachAddCommunityToggleListeners() {
+            // Remove existing listeners by cloning and replacing buttons
+            document.querySelectorAll('.add-community-toggle-btn').forEach(btn => {
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+            });
+            
+            // Attach fresh listeners to all buttons
             document.querySelectorAll('.add-community-toggle-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const companyId = parseInt(this.getAttribute('data-company-id'));

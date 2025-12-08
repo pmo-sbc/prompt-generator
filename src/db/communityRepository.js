@@ -22,8 +22,28 @@ class CommunityRepository {
 
     try {
       logger.db('SELECT', 'communities', { companyId, userId });
-      const communities = await db.prepare(query).all(companyId, userId);
-      // Parse JSON fields
+      const result = await db.prepare(query).all(companyId, userId);
+      
+      // Ensure we always have an array - PostgreSQL should return result.rows as array
+      // But defensively check in case of unexpected return values
+      let communities;
+      if (Array.isArray(result)) {
+        communities = result;
+      } else if (result && Array.isArray(result.rows)) {
+        communities = result.rows;
+      } else {
+        logger.warn('findByCompanyId returned unexpected result type', { 
+          companyId, 
+          userId, 
+          resultType: typeof result,
+          isArray: Array.isArray(result),
+          hasRows: result && typeof result.rows !== 'undefined',
+          result: result
+        });
+        return [];
+      }
+      
+      // Parse JSON fields - communities is guaranteed to be an array at this point
       return communities.map(community => {
         if (community.technologies) {
           try {
@@ -31,6 +51,10 @@ class CommunityRepository {
               ? JSON.parse(community.technologies) 
               : community.technologies;
           } catch (e) {
+            logger.warn('Failed to parse technologies JSON for community', {
+              communityId: community.id,
+              error: e.message
+            });
             community.technologies = [];
           }
         } else {
@@ -39,7 +63,12 @@ class CommunityRepository {
         return community;
       });
     } catch (error) {
-      logger.error('Error finding communities by company ID', error);
+      logger.error('Error finding communities by company ID', {
+        error: error.message,
+        stack: error.stack,
+        companyId,
+        userId
+      });
       throw error;
     }
   }

@@ -349,7 +349,16 @@ class PreparedStatement {
   async all(...params) {
     try {
       const result = await this.pool.query(this.query, params);
-      return result.rows;
+      // Ensure we always return an array
+      if (!result || !result.rows) {
+        logger.warn('Database query result missing rows property', {
+          query: this.query,
+          result: result
+        });
+        return [];
+      }
+      // PostgreSQL result.rows should always be an array, but be defensive
+      return Array.isArray(result.rows) ? result.rows : [];
     } catch (error) {
       logger.error('Database query error (all)', { query: this.query, error });
       throw error;

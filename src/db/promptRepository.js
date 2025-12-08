@@ -39,6 +39,49 @@ class PromptRepository {
         projectId
       };
     } catch (error) {
+      // Check if it's a duplicate key error (sequence out of sync)
+      if (error.code === '23505' && error.constraint === 'saved_prompts_pkey') {
+        logger.warn('Sequence out of sync for saved_prompts, attempting to fix...', {
+          userId,
+          error: error.message
+        });
+        
+        try {
+          // Fix the sequence by setting it to max(id) + 1
+          const fixQuery = `
+            SELECT setval('saved_prompts_id_seq', 
+              COALESCE((SELECT MAX(id) FROM saved_prompts), 0) + 1, 
+              true)
+          `;
+          await db.prepare(fixQuery).get();
+          
+          logger.info('Sequence fixed, retrying insert...');
+          
+          // Retry the insert
+          const retryResult = await db.prepare(query).get(
+            userId,
+            templateName,
+            category,
+            promptText,
+            JSON.stringify(inputs),
+            projectId
+          );
+          
+          return {
+            id: retryResult.id,
+            userId,
+            templateName,
+            category,
+            promptText,
+            inputs,
+            projectId
+          };
+        } catch (retryError) {
+          logger.error('Error after sequence fix attempt', retryError);
+          throw retryError;
+        }
+      }
+      
       logger.error('Error saving prompt', error);
       throw error;
     }

@@ -10,13 +10,19 @@
  * @returns {string} Generated prompt/description
  */
 function generateCompanyPrompt(company, communities) {
-    if (!company || !communities || communities.length === 0) {
-        return 'Insufficient data to generate description.';
-    }
+    try {
+        if (!company || !communities || communities.length === 0) {
+            return 'Insufficient data to generate description.';
+        }
 
-    // Use marketing name if available, otherwise legal name, otherwise name
-    const companyDisplayName = company.marketing_name || company.legal_name || company.name;
-    const isCooperative = company.name.toLowerCase().includes('cooperative') || 
+        // Validate company has required fields
+        if (!company.name && !company.legal_name && !company.marketing_name) {
+            throw new Error('Company must have at least one name field (name, legal_name, or marketing_name)');
+        }
+
+        // Use marketing name if available, otherwise legal name, otherwise name
+        const companyDisplayName = company.marketing_name || company.legal_name || company.name;
+        const isCooperative = (company.name && company.name.toLowerCase().includes('cooperative')) || 
                           (company.marketing_name && company.marketing_name.toLowerCase().includes('cooperative')) ||
                           (company.legal_name && company.legal_name.toLowerCase().includes('cooperative'));
 
@@ -275,6 +281,10 @@ function generateCompanyPrompt(company, communities) {
     }
 
     return prompt;
+    } catch (error) {
+        console.error('Error in generateCompanyPrompt:', error);
+        throw new Error(`Failed to generate company prompt: ${error.message}`);
+    }
 }
 
 /**
