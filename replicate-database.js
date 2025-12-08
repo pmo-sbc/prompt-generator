@@ -12,8 +12,25 @@
  *   Production DB: Uses --production-env file or command-line arguments
  */
 
-require('dotenv').config();
-const { Pool } = require('pg');
+// Try to load dotenv, but don't fail if it's not available
+try {
+  require('dotenv').config();
+} catch (error) {
+  // dotenv not available - that's okay, we can use environment variables directly
+  console.warn('Warning: dotenv module not found. Using environment variables directly.');
+}
+
+// Check for required modules
+let Pool;
+try {
+  Pool = require('pg').Pool;
+} catch (error) {
+  console.error('❌ Error: Required module "pg" (PostgreSQL client) not found.');
+  console.error('Please install dependencies by running: npm install');
+  console.error('Or if running in production: npm install --production');
+  process.exit(1);
+}
+
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
