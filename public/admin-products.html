@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management - AI Prompt Templates</title>
+    <link rel="icon" type="image/jpeg" href="/images/3rd-logo.jpeg">
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/csrf-helper.js"></script>
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .admin-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .admin-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .btn-primary {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            color: var(--secondary-color);
+            border: 1px solid var(--secondary-color);
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-danger {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-danger:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--dark-bg);
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr:hover {
+            background: var(--dark-bg);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .badge-active {
+            background: #27ae60;
+            color: white;
+        }
+
+        .badge-inactive {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            background: #e6ffe6;
+            border: 1px solid #27ae60;
+            color: #27ae60;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .checkbox-cell {
+            text-align: center;
+        }
+
+        .product-checkbox {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .product-checkbox + span {
+            user-select: none;
+        }
+
+        label:has(.product-checkbox):hover {
+            background: var(--dark-bg);
+        }
+
+        .user-purchase-card {
+            background: var(--dark-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-purchase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-purchase-info {
+            flex: 1;
+        }
+
+        .user-purchase-info h3 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.2rem;
+        }
+
+        .user-purchase-info p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .user-purchase-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .purchase-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--card-bg);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            gap: 1rem;
+        }
+
+        .purchase-item-checkbox {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .purchase-item-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        #selectAllPurchases {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .purchase-item-info {
+            flex: 1;
+        }
+
+        .purchase-item-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .purchase-item-details {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .purchase-item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-circle">
+                    <img src="/images/3rd-logo.jpeg" alt="3rd Rock Ads Logo">
+                </div>
+            </a>
+            <ul class="nav-menu">
+                <!-- Navigation will be dynamically updated by auth.js -->
+            </ul>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>🛍️ Product Management</h1>
+            <p>Manage products and discount codes</p>
+        </div>
+
+        <!-- Products Section -->
+        <div class="admin-section">
+            <div class="section-header">
+                <h2>Products</h2>
+                <button class="btn-primary" id="addProductBtn">+ Add Product</button>
+            </div>
+
+            <div id="productsError" class="error-message"></div>
+            <div id="productsSuccess" class="success-message"></div>
+
+            <div id="productsLoading" class="loading">Loading products...</div>
+            <div id="productsTableContainer" class="table-container" style="display: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Description</th>
+                            <th>Tokens</th>
+                            <th>Purchases</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <!-- Products will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Discount Codes Section -->
+        <div class="admin-section">
+            <div class="section-header">
+                <h2>Discount Codes</h2>
+                <button class="btn-primary" id="addDiscountCodeBtn">+ Add Discount Code</button>
+            </div>
+
+            <div id="discountCodesError" class="error-message"></div>
+            <div id="discountCodesSuccess" class="success-message"></div>
+
+            <div id="discountCodesLoading" class="loading">Loading discount codes...</div>
+            <div id="discountCodesTableContainer" class="table-container" style="display: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Code</th>
+                            <th>Discount %</th>
+                            <th>Products</th>
+                            <th>Usage Count</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="discountCodesTableBody">
+                        <!-- Discount codes will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- User Purchases Section -->
+        <div class="admin-section">
+            <div class="section-header">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <h2 style="margin: 0;">User Purchases</h2>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: normal;">
+                        <input type="checkbox" id="selectAllPurchases" style="width: auto; cursor: pointer;">
+                        <span>Select All</span>
+                    </label>
+                    <button class="btn-danger" id="bulkDeletePurchasesBtn" style="display: none;">
+                        Delete Selected (<span id="selectedCount">0</span>)
+                    </button>
+                </div>
+                <button class="btn-primary" id="refreshPurchasesBtn">🔄 Refresh</button>
+            </div>
+
+            <div id="userPurchasesError" class="error-message"></div>
+            <div id="userPurchasesSuccess" class="success-message"></div>
+
+            <div id="userPurchasesLoading" class="loading">Loading user purchases...</div>
+            <div id="userPurchasesContainer" style="display: none;">
+                <div id="userPurchasesList">
+                    <!-- Users with purchases will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Purchase Modal -->
+    <div id="addPurchaseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Product Purchase</h3>
+                <button class="close-modal" id="closeAddPurchaseModalBtn">&times;</button>
+            </div>
+            <form id="addPurchaseForm">
+                <input type="hidden" id="addPurchaseUserId">
+                <div class="form-group">
+                    <label class="form-label" for="addPurchaseProductId">Product *</label>
+                    <select id="addPurchaseProductId" class="form-input" required>
+                        <option value="">Select a product...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="addPurchaseQuantity">Quantity *</label>
+                    <input type="number" id="addPurchaseQuantity" class="form-input" min="1" value="1" required>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">Add Purchase</button>
+                    <button type="button" class="btn-secondary" id="cancelAddPurchaseBtn" style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="productModalTitle">Add Product</h3>
+                <button class="close-modal" id="closeProductModalBtn">&times;</button>
+            </div>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <div class="form-group">
+                    <label class="form-label" for="productName">Product Name *</label>
+                    <input type="text" id="productName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="productPrice">Price ($) *</label>
+                    <input type="number" id="productPrice" class="form-input" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="productDescription">Description</label>
+                    <textarea id="productDescription" class="form-input" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="productIsActive" checked> Active
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="productProvidesTokens"> This product provides tokens
+                    </label>
+                </div>
+                <div class="form-group" id="tokenQuantityGroup" style="display: none;">
+                    <label class="form-label" for="productTokenQuantity">Token Quantity *</label>
+                    <input type="number" id="productTokenQuantity" class="form-input" min="0" step="1" value="0">
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">
+                        Number of tokens to grant when this product is purchased
+                    </small>
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <label class="form-label">
+                        <input type="checkbox" id="productIsCourse"> This product is a course
+                    </label>
+                </div>
+                <div class="form-group" id="courseFieldsGroup" style="display: none;">
+                    <label class="form-label" for="productCourseDate">Course Date & Time *</label>
+                    <input type="datetime-local" id="productCourseDate" class="form-input">
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">
+                        Date and time when the course will be held
+                    </small>
+                </div>
+                <div class="form-group" id="courseZoomLinkGroup" style="display: none;">
+                    <label class="form-label" for="productCourseZoomLink">Zoom Link *</label>
+                    <input type="url" id="productCourseZoomLink" class="form-input" placeholder="https://zoom.us/j/...">
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">
+                        Zoom meeting link for the course
+                    </small>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">Save</button>
+                    <button type="button" class="btn-secondary" id="cancelProductBtn" style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Discount Code Modal -->
+    <div id="discountCodeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="discountCodeModalTitle">Add Discount Code</h3>
+                <button class="close-modal" id="closeDiscountCodeModalBtn">&times;</button>
+            </div>
+            <form id="discountCodeForm">
+                <input type="hidden" id="discountCodeId">
+                <div class="form-group">
+                    <label class="form-label" for="discountCode">Code *</label>
+                    <input type="text" id="discountCode" class="form-input" required style="text-transform: uppercase;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="discountPercentage">Discount Percentage (%) *</label>
+                    <input type="number" id="discountPercentage" class="form-input" step="0.01" min="0" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="discountCodeIsActive" checked> Active
+                    </label>
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <label class="form-label">Apply to Products</label>
+                    <div style="margin-top: 0.5rem; margin-bottom: 0.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: normal;">
+                            <input type="radio" name="productApplication" id="applyToAllProducts" value="all" checked>
+                            <span>Apply to all products</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: normal;">
+                            <input type="radio" name="productApplication" id="applyToSpecificProducts" value="specific">
+                            <span>Apply to specific products</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: normal;">
+                            <input type="radio" name="productApplication" id="applyToNoProducts" value="none">
+                            <span>Apply to no products (disabled)</span>
+                        </label>
+                    </div>
+                    <div id="productSelectionContainer" style="display: none; max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; padding: 1rem; background: var(--darker-bg); margin-top: 0.5rem;">
+                        <div id="productCheckboxesList">
+                            <!-- Product checkboxes will be loaded here -->
+                        </div>
+                    </div>
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
+                        Select which products this discount code applies to. If set to "no products", the code will be invalid and cannot be used.
+                    </small>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">Save</button>
+                    <button type="button" class="btn-secondary" id="cancelDiscountCodeBtn" style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/session-manager.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/cart.js"></script>
+    <script>
+        // Load products
+        async function loadProducts() {
+            const loadingEl = document.getElementById('productsLoading');
+            const tableContainer = document.getElementById('productsTableContainer');
+            const tableBody = document.getElementById('productsTableBody');
+            const errorEl = document.getElementById('productsError');
+
+            try {
+                loadingEl.style.display = 'block';
+                tableContainer.style.display = 'none';
+                errorEl.classList.remove('show');
+
+                const response = await fetch('/api/admin/products?includeInactive=true', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load products');
+                }
+
+                const data = await response.json();
+                loadingEl.style.display = 'none';
+
+                if (!data.success || !data.products || data.products.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No products found</td></tr>';
+                    tableContainer.style.display = 'block';
+                    return;
+                }
+
+                tableBody.innerHTML = data.products.map(product => {
+                    const courseDate = product.course_date ? new Date(product.course_date).toLocaleString() : '';
+                    return `
+                    <tr>
+                        <td>${product.id}</td>
+                        <td>
+                            ${escapeHtml(product.name)}
+                            ${product.is_course ? 
+                                `<span class="badge" style="background: #3498db; color: white; margin-left: 0.5rem;" title="Course: ${courseDate}">📚 Course</span>` : 
+                                ''
+                            }
+                        </td>
+                        <td>$${product.price.toFixed(2)}</td>
+                        <td>${escapeHtml(product.description || '')}</td>
+                        <td>
+                            ${product.provides_tokens ? 
+                                `<span class="badge badge-active" title="Provides ${product.token_quantity || 0} tokens per purchase">🪙 ${product.token_quantity || 0}</span>` : 
+                                '<span style="color: var(--text-secondary);">—</span>'
+                            }
+                        </td>
+                        <td>${product.purchase_count || 0}</td>
+                        <td>
+                            <span class="badge ${product.is_active ? 'badge-active' : 'badge-inactive'}">
+                                ${product.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td class="actions-cell">
+                            <button class="btn-secondary edit-product-btn" data-product-id="${product.id}">Edit</button>
+                            <button class="btn-danger delete-product-btn" data-product-id="${product.id}" data-product-name="${escapeHtml(product.name)}">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                }).join('');
+
+                tableContainer.style.display = 'block';
+            } catch (error) {
+                console.error('Error loading products:', error);
+                loadingEl.style.display = 'none';
+                errorEl.textContent = 'Failed to load products. Please try again.';
+                errorEl.classList.add('show');
+            }
+        }
+
+        // Load discount codes
+        async function loadDiscountCodes() {
+            const loadingEl = document.getElementById('discountCodesLoading');
+            const tableContainer = document.getElementById('discountCodesTableContainer');
+            const tableBody = document.getElementById('discountCodesTableBody');
+            const errorEl = document.getElementById('discountCodesError');
+
+            try {
+                loadingEl.style.display = 'block';
+                tableContainer.style.display = 'none';
+                errorEl.classList.remove('show');
+
+                const response = await fetch('/api/admin/discount-codes?includeInactive=true', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load discount codes');
+                }
+
+                const data = await response.json();
+                loadingEl.style.display = 'none';
+
+                if (!data.success || !data.discountCodes || data.discountCodes.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No discount codes found</td></tr>';
+                    tableContainer.style.display = 'block';
+                    return;
+                }
+
+                // Load products to get names for display
+                const productsResponse = await fetch('/api/admin/products?includeInactive=false', {
+                    credentials: 'include'
+                });
+                let productsMap = new Map();
+                if (productsResponse.ok) {
+                    const productsData = await productsResponse.json();
+                    if (productsData.success && productsData.products) {
+                        productsData.products.forEach(product => {
+                            productsMap.set(product.id, product.name);
+                        });
+                    }
+                }
+
+                tableBody.innerHTML = data.discountCodes.map(dc => {
+                    let productsText = 'All Products';
+                    if (dc.product_ids === null || dc.product_ids === undefined) {
+                        productsText = 'All Products';
+                    } else if (Array.isArray(dc.product_ids) && dc.product_ids.length === 0) {
+                        productsText = '<span style="color: var(--error-color);">No Products (Disabled)</span>';
+                    } else if (Array.isArray(dc.product_ids) && dc.product_ids.length > 0) {
+                        const productNames = dc.product_ids
+                            .map(id => productsMap.get(id))
+                            .filter(name => name)
+                            .join(', ');
+                        productsText = productNames || `${dc.product_ids.length} product(s)`;
+                    }
+
+                    return `
+                    <tr>
+                        <td>${dc.id}</td>
+                        <td><strong>${escapeHtml(dc.code)}</strong></td>
+                        <td>${dc.discount_percentage.toFixed(2)}%</td>
+                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(productsText)}">${escapeHtml(productsText)}</td>
+                        <td>${dc.usage_count || 0}</td>
+                        <td>
+                            <span class="badge ${dc.is_active ? 'badge-active' : 'badge-inactive'}">
+                                ${dc.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td class="actions-cell">
+                            <button class="btn-secondary edit-discount-code-btn" data-discount-code-id="${dc.id}">Edit</button>
+                            <button class="btn-danger delete-discount-code-btn" data-discount-code-id="${dc.id}" data-discount-code="${escapeHtml(dc.code)}">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                }).join('');
+
+                tableContainer.style.display = 'block';
+            } catch (error) {
+                console.error('Error loading discount codes:', error);
+                loadingEl.style.display = 'none';
+                errorEl.textContent = 'Failed to load discount codes. Please try again.';
+                errorEl.classList.add('show');
+            }
+        }
+
+        // Product modal functions
+        function openProductModal(productId = null) {
+            const modal = document.getElementById('productModal');
+            const form = document.getElementById('productForm');
+            const title = document.getElementById('productModalTitle');
+            
+            form.reset();
+            document.getElementById('productId').value = '';
+            document.getElementById('productIsActive').checked = true;
+            document.getElementById('productProvidesTokens').checked = false;
+            document.getElementById('productTokenQuantity').value = '0';
+            document.getElementById('tokenQuantityGroup').style.display = 'none';
+            document.getElementById('productIsCourse').checked = false;
+            document.getElementById('productCourseDate').value = '';
+            document.getElementById('productCourseZoomLink').value = '';
+            document.getElementById('courseFieldsGroup').style.display = 'none';
+            document.getElementById('courseZoomLinkGroup').style.display = 'none';
+
+            if (productId) {
+                title.textContent = 'Edit Product';
+                loadProductForEdit(productId);
+            } else {
+                title.textContent = 'Add Product';
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.remove('active');
+        }
+
+        async function loadProductForEdit(productId) {
+            try {
+                const response = await fetch(`/api/admin/products/${productId}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load product');
+                }
+
+                const data = await response.json();
+                if (data.success && data.product) {
+                    const p = data.product;
+                    document.getElementById('productId').value = p.id;
+                    document.getElementById('productName').value = p.name;
+                    document.getElementById('productPrice').value = p.price;
+                    document.getElementById('productDescription').value = p.description || '';
+                    document.getElementById('productIsActive').checked = p.is_active;
+                    document.getElementById('productProvidesTokens').checked = p.provides_tokens || false;
+                    document.getElementById('productTokenQuantity').value = p.token_quantity || 0;
+                    // Show/hide token quantity field based on checkbox
+                    document.getElementById('tokenQuantityGroup').style.display = 
+                        (p.provides_tokens || false) ? 'block' : 'none';
+                    
+                    // Course fields
+                    document.getElementById('productIsCourse').checked = p.is_course || false;
+                    if (p.course_date) {
+                        // Convert datetime to local datetime-local format (YYYY-MM-DDTHH:mm)
+                        const courseDate = new Date(p.course_date);
+                        const year = courseDate.getFullYear();
+                        const month = String(courseDate.getMonth() + 1).padStart(2, '0');
+                        const day = String(courseDate.getDate()).padStart(2, '0');
+                        const hours = String(courseDate.getHours()).padStart(2, '0');
+                        const minutes = String(courseDate.getMinutes()).padStart(2, '0');
+                        document.getElementById('productCourseDate').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                    } else {
+                        document.getElementById('productCourseDate').value = '';
+                    }
+                    document.getElementById('productCourseZoomLink').value = p.course_zoom_link || '';
+                    // Show/hide course fields based on checkbox
+                    const courseFieldsVisible = (p.is_course || false);
+                    document.getElementById('courseFieldsGroup').style.display = courseFieldsVisible ? 'block' : 'none';
+                    document.getElementById('courseZoomLinkGroup').style.display = courseFieldsVisible ? 'block' : 'none';
+                }
+            } catch (error) {
+                console.error('Error loading product:', error);
+                showError('productsError', 'Failed to load product details');
+            }
+        }
+
+        // Discount code modal functions
+        async function openDiscountCodeModal(discountCodeId = null) {
+            const modal = document.getElementById('discountCodeModal');
+            const form = document.getElementById('discountCodeForm');
+            const title = document.getElementById('discountCodeModalTitle');
+            
+            form.reset();
+            document.getElementById('discountCodeId').value = '';
+            document.getElementById('discountCodeIsActive').checked = true;
+            document.getElementById('applyToAllProducts').checked = true;
+            document.getElementById('applyToSpecificProducts').checked = false;
+            document.getElementById('applyToNoProducts').checked = false;
+            document.getElementById('productSelectionContainer').style.display = 'none';
+
+            // Load products for checkboxes FIRST (must complete before loading discount code data)
+            await loadProductsForDiscountCode();
+
+            if (discountCodeId) {
+                title.textContent = 'Edit Discount Code';
+                // Wait for products to be loaded before setting product selections
+                await loadDiscountCodeForEdit(discountCodeId);
+            } else {
+                title.textContent = 'Add Discount Code';
+            }
+
+            modal.classList.add('active');
+        }
+
+        async function loadProductsForDiscountCode() {
+            const container = document.getElementById('productCheckboxesList');
+            
+            try {
+                const response = await fetch('/api/admin/products?includeInactive=false', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load products');
+                }
+
+                const data = await response.json();
+
+                if (data.success && data.products) {
+                    container.innerHTML = data.products.map(product => `
+                        <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; cursor: pointer; border-radius: 4px; transition: background 0.2s;">
+                            <input type="checkbox" class="product-checkbox" value="${product.id}" data-product-id="${product.id}">
+                            <span>${escapeHtml(product.name)} - ${formatCurrency(product.price)}</span>
+                        </label>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                container.innerHTML = '<p style="color: var(--text-secondary);">Failed to load products</p>';
+            }
+        }
+
+        function getSelectedProductIds() {
+            const checkboxes = document.querySelectorAll('.product-checkbox:checked');
+            return Array.from(checkboxes).map(cb => parseInt(cb.value));
+        }
+
+        function setSelectedProductIds(productIds) {
+            // Clear all checkboxes first
+            document.querySelectorAll('.product-checkbox').forEach(cb => {
+                cb.checked = false;
+            });
+
+            // Handle different data types - could be null, undefined, empty array, or array of IDs
+            // Also handle if it's a JSON string that needs parsing
+            let parsedProductIds = productIds;
+            if (typeof productIds === 'string') {
+                try {
+                    parsedProductIds = JSON.parse(productIds);
+                } catch (e) {
+                    parsedProductIds = null;
+                }
+            }
+
+            // Determine which radio button to select based on productIds value:
+            // null = apply to all products
+            // [] (empty array) = apply to no products
+            // [1, 2, 3] (non-empty array) = apply to specific products
+
+            if (parsedProductIds === null || parsedProductIds === undefined) {
+                // Apply to all products
+                document.getElementById('applyToAllProducts').checked = true;
+                document.getElementById('applyToSpecificProducts').checked = false;
+                document.getElementById('applyToNoProducts').checked = false;
+                document.getElementById('productSelectionContainer').style.display = 'none';
+            } else if (Array.isArray(parsedProductIds) && parsedProductIds.length === 0) {
+                // Apply to no products (empty array)
+                document.getElementById('applyToAllProducts').checked = false;
+                document.getElementById('applyToSpecificProducts').checked = false;
+                document.getElementById('applyToNoProducts').checked = true;
+                document.getElementById('productSelectionContainer').style.display = 'none';
+            } else if (Array.isArray(parsedProductIds) && parsedProductIds.length > 0) {
+                // Specific products selected
+                document.getElementById('applyToAllProducts').checked = false;
+                document.getElementById('applyToSpecificProducts').checked = true;
+                document.getElementById('applyToNoProducts').checked = false;
+                document.getElementById('productSelectionContainer').style.display = 'block';
+                
+                // Wait a moment to ensure checkboxes are in the DOM, then select them
+                setTimeout(() => {
+                    parsedProductIds.forEach(productId => {
+                        // Convert to number for comparison
+                        const productIdNum = typeof productId === 'string' ? parseInt(productId, 10) : Number(productId);
+                        // Try multiple selectors to find the checkbox
+                        let checkbox = document.querySelector(`.product-checkbox[data-product-id="${productIdNum}"]`);
+                        if (!checkbox) {
+                            // Try by value attribute
+                            checkbox = document.querySelector(`.product-checkbox[value="${productIdNum}"]`);
+                        }
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                }, 50);
+            } else {
+                // Fallback to apply to all
+                document.getElementById('applyToAllProducts').checked = true;
+                document.getElementById('applyToSpecificProducts').checked = false;
+                document.getElementById('applyToNoProducts').checked = false;
+                document.getElementById('productSelectionContainer').style.display = 'none';
+            }
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        function closeDiscountCodeModal() {
+            document.getElementById('discountCodeModal').classList.remove('active');
+        }
+
+        async function loadDiscountCodeForEdit(discountCodeId) {
+            try {
+                const response = await fetch(`/api/admin/discount-codes/${discountCodeId}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load discount code');
+                }
+
+                const data = await response.json();
+                if (data.success && data.discountCode) {
+                    const dc = data.discountCode;
+                    document.getElementById('discountCodeId').value = dc.id;
+                    document.getElementById('discountCode').value = dc.code;
+                    document.getElementById('discountPercentage').value = dc.discount_percentage;
+                    document.getElementById('discountCodeIsActive').checked = dc.is_active;
+                    
+                    // Set product selection - ensure products are loaded first
+                    // Wait a bit to ensure DOM is updated with product checkboxes
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    setSelectedProductIds(dc.product_ids);
+                }
+            } catch (error) {
+                console.error('Error loading discount code:', error);
+                showError('discountCodesError', 'Failed to load discount code details');
+            }
+        }
+
+        // Edit functions
+        function editProduct(id) {
+            openProductModal(id);
+        }
+
+        function editDiscountCode(id) {
+            openDiscountCodeModal(id);
+        }
+
+        // Delete functions
+        async function deleteProduct(id, name) {
+            if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetchWithCsrf(`/api/admin/products/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showSuccess('productsSuccess', 'Product deleted successfully');
+                    loadProducts();
+                } else {
+                    throw new Error(data.error || 'Failed to delete product');
+                }
+            } catch (error) {
+                console.error('Error deleting product:', error);
+                showError('productsError', 'Failed to delete product. Please try again.');
+            }
+        }
+
+        async function deleteDiscountCode(id, code) {
+            if (!confirm(`Are you sure you want to delete discount code "${code}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetchWithCsrf(`/api/admin/discount-codes/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showSuccess('discountCodesSuccess', 'Discount code deleted successfully');
+                    loadDiscountCodes();
+                } else {
+                    throw new Error(data.error || 'Failed to delete discount code');
+                }
+            } catch (error) {
+                console.error('Error deleting discount code:', error);
+                showError('discountCodesError', 'Failed to delete discount code. Please try again.');
+            }
+        }
+
+        // Toggle token quantity field visibility
+        document.getElementById('productProvidesTokens').addEventListener('change', function() {
+            const tokenQuantityGroup = document.getElementById('tokenQuantityGroup');
+            const tokenQuantityInput = document.getElementById('productTokenQuantity');
+            if (this.checked) {
+                tokenQuantityGroup.style.display = 'block';
+                tokenQuantityInput.required = true;
+            } else {
+                tokenQuantityGroup.style.display = 'none';
+                tokenQuantityInput.required = false;
+                tokenQuantityInput.value = '0';
+            }
+        });
+
+        // Toggle course fields visibility
+        document.getElementById('productIsCourse').addEventListener('change', function() {
+            const courseFieldsGroup = document.getElementById('courseFieldsGroup');
+            const courseZoomLinkGroup = document.getElementById('courseZoomLinkGroup');
+            const courseDateInput = document.getElementById('productCourseDate');
+            const courseZoomLinkInput = document.getElementById('productCourseZoomLink');
+            if (this.checked) {
+                courseFieldsGroup.style.display = 'block';
+                courseZoomLinkGroup.style.display = 'block';
+                courseDateInput.required = true;
+                courseZoomLinkInput.required = true;
+            } else {
+                courseFieldsGroup.style.display = 'none';
+                courseZoomLinkGroup.style.display = 'none';
+                courseDateInput.required = false;
+                courseZoomLinkInput.required = false;
+                courseDateInput.value = '';
+                courseZoomLinkInput.value = '';
+            }
+        });
+
+        // Form submissions
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const productId = document.getElementById('productId').value;
+            const name = document.getElementById('productName').value.trim();
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const description = document.getElementById('productDescription').value.trim();
+            const is_active = document.getElementById('productIsActive').checked;
+            const provides_tokens = document.getElementById('productProvidesTokens').checked;
+            const token_quantity = provides_tokens ? parseInt(document.getElementById('productTokenQuantity').value) || 0 : 0;
+            const is_course = document.getElementById('productIsCourse').checked;
+            const course_date = is_course ? document.getElementById('productCourseDate').value : null;
+            const course_zoom_link = is_course ? document.getElementById('productCourseZoomLink').value.trim() : null;
+
+            // Validate token quantity if provides_tokens is checked
+            if (provides_tokens && token_quantity <= 0) {
+                showError('productsError', 'Token quantity must be greater than 0 when "Provides Tokens" is enabled');
+                return;
+            }
+
+            // Validate course fields if is_course is checked
+            if (is_course) {
+                if (!course_date) {
+                    showError('productsError', 'Course date is required when "This product is a course" is enabled');
+                    return;
+                }
+                if (!course_zoom_link) {
+                    showError('productsError', 'Zoom link is required when "This product is a course" is enabled');
+                    return;
+                }
+                // Validate URL format
+                try {
+                    new URL(course_zoom_link);
+                } catch (e) {
+                    showError('productsError', 'Please enter a valid Zoom link URL');
+                    return;
+                }
+            }
+
+            try {
+                const url = productId ? `/api/admin/products/${productId}` : '/api/admin/products';
+                const method = productId ? 'PUT' : 'POST';
+
+                const response = await fetchWithCsrf(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        name,
+                        price,
+                        description: description || null,
+                        is_active,
+                        provides_tokens,
+                        token_quantity,
+                        is_course,
+                        course_date: course_date || null,
+                        course_zoom_link: course_zoom_link || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showSuccess('productsSuccess', productId ? 'Product updated successfully' : 'Product created successfully');
+                    closeProductModal();
+                    loadProducts();
+                } else {
+                    throw new Error(data.error || 'Failed to save product');
+                }
+            } catch (error) {
+                console.error('Error saving product:', error);
+                showError('productsError', 'Failed to save product. Please try again.');
+            }
+        });
+
+        document.getElementById('discountCodeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const discountCodeId = document.getElementById('discountCodeId').value;
+            const code = document.getElementById('discountCode').value.trim().toUpperCase();
+            const discount_percentage = parseFloat(document.getElementById('discountPercentage').value);
+            const is_active = document.getElementById('discountCodeIsActive').checked;
+            
+            // Get selected product IDs based on radio button selection
+            let product_ids = null;
+            if (document.getElementById('applyToAllProducts').checked) {
+                product_ids = null; // Apply to all products
+            } else if (document.getElementById('applyToNoProducts').checked) {
+                product_ids = []; // Apply to no products (empty array)
+            } else if (document.getElementById('applyToSpecificProducts').checked) {
+                product_ids = getSelectedProductIds();
+                // If no products selected but "specific" is chosen, treat as empty array (no products)
+                if (!product_ids || product_ids.length === 0) {
+                    product_ids = [];
+                }
+            }
+
+            try {
+                const url = discountCodeId ? `/api/admin/discount-codes/${discountCodeId}` : '/api/admin/discount-codes';
+                const method = discountCodeId ? 'PUT' : 'POST';
+
+                const response = await fetchWithCsrf(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        code,
+                        discount_percentage,
+                        is_active,
+                        product_ids
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showSuccess('discountCodesSuccess', discountCodeId ? 'Discount code updated successfully' : 'Discount code created successfully');
+                    closeDiscountCodeModal();
+                    loadDiscountCodes();
+                } else {
+                    throw new Error(data.error || 'Failed to save discount code');
+                }
+            } catch (error) {
+                console.error('Error saving discount code:', error);
+                showError('discountCodesError', 'Failed to save discount code. Please try again.');
+            }
+        });
+
+        // Utility functions
+        function showError(elementId, message) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 5000);
+        }
+
+        function showSuccess(elementId, message) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 5000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatPurchaseDate(dateValue) {
+            if (!dateValue) {
+                return 'N/A';
+            }
+            
+            try {
+                // Try to parse the date
+                const date = new Date(dateValue);
+                
+                // Check if date is valid
+                if (isNaN(date.getTime())) {
+                    // If invalid, try to parse as SQLite datetime string
+                    // SQLite dates are typically in format: YYYY-MM-DD HH:MM:SS
+                    const sqliteDate = dateValue.toString().trim();
+                    if (sqliteDate.match(/^\d{4}-\d{2}-\d{2}/)) {
+                        // It's a SQLite date string, parse it
+                        const parsed = new Date(sqliteDate.replace(' ', 'T'));
+                        if (!isNaN(parsed.getTime())) {
+                            return parsed.toLocaleDateString();
+                        }
+                    }
+                    return 'Invalid Date';
+                }
+                
+                return date.toLocaleDateString();
+            } catch (error) {
+                console.error('Error formatting date:', dateValue, error);
+                return 'N/A';
+            }
+        }
+
+        // User Purchases Functions
+        async function loadUserPurchases() {
+            const loadingEl = document.getElementById('userPurchasesLoading');
+            const containerEl = document.getElementById('userPurchasesContainer');
+            const listEl = document.getElementById('userPurchasesList');
+
+            try {
+                loadingEl.style.display = 'block';
+                containerEl.style.display = 'none';
+
+                const response = await fetch('/api/admin/users/purchases', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load user purchases');
+                }
+
+                const data = await response.json();
+
+                // Debug: Log the data to see what we're receiving
+                console.log('User purchases data:', data);
+                if (data.success && data.users && data.users.length > 0) {
+                    console.log('First user purchases:', data.users[0].purchases);
+                    if (data.users[0].purchases && data.users[0].purchases.length > 0) {
+                        console.log('First purchase orderDate:', data.users[0].purchases[0].orderDate);
+                    }
+                }
+
+                if (data.success && data.users) {
+                    if (data.users.length === 0) {
+                        listEl.innerHTML = '<div class="empty-state">No purchases found.</div>';
+                    } else {
+                        listEl.innerHTML = data.users.map(user => {
+                            const purchasesHtml = user.purchases.length > 0
+                                ? user.purchases.map(purchase => {
+                                    // Debug: Log each purchase
+                                    console.log('Processing purchase:', purchase.productName, 'orderDate:', purchase.orderDate, 'type:', typeof purchase.orderDate);
+                                    return `
+                                    <div class="purchase-item">
+                                        <div class="purchase-item-checkbox">
+                                            <input type="checkbox" class="purchase-checkbox" 
+                                                   data-order-id="${purchase.orderId}"
+                                                   data-product-name="${escapeHtml(purchase.productName)}">
+                                        </div>
+                                        <div class="purchase-item-info" style="flex: 1;">
+                                            <div class="purchase-item-name">${escapeHtml(purchase.productName)}</div>
+                                            <div class="purchase-item-details">
+                                                Order: ${escapeHtml(purchase.orderNumber)} | 
+                                                Quantity: ${purchase.quantity} | 
+                                                Price: $${purchase.price.toFixed(2)} | 
+                                                Date: ${formatPurchaseDate(purchase.orderDate || purchase.order_date || null)}
+                                            </div>
+                                        </div>
+                                        <div class="purchase-item-actions">
+                                            <button class="btn-danger delete-purchase-btn" 
+                                                    data-order-id="${purchase.orderId}"
+                                                    data-product-name="${escapeHtml(purchase.productName)}">
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                                }).join('')
+                                : '<div class="empty-state" style="padding: 1rem;">No purchases</div>';
+
+                            return `
+                                <div class="user-purchase-card">
+                                    <div class="user-purchase-header">
+                                        <div class="user-purchase-info">
+                                            <h3>${escapeHtml(user.username)}</h3>
+                                            <p>${escapeHtml(user.email)}</p>
+                                        </div>
+                                        <div class="user-purchase-actions">
+                                            <button class="btn-primary add-purchase-btn" 
+                                                    data-user-id="${user.id}"
+                                                    data-username="${escapeHtml(user.username)}">
+                                                + Add Purchase
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="purchases-list">
+                                        ${purchasesHtml}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+
+                    loadingEl.style.display = 'none';
+                    containerEl.style.display = 'block';
+                    
+                    // Reset selection after loading
+                    setTimeout(() => {
+                        updateSelectedCount();
+                    }, 100);
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                console.error('Error loading user purchases:', error);
+                showError('userPurchasesError', 'Failed to load user purchases. Please try again.');
+                loadingEl.style.display = 'none';
+            }
+        }
+
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.purchase-checkbox:checked');
+            const count = checkboxes.length;
+            const selectedCountEl = document.getElementById('selectedCount');
+            const bulkDeleteBtn = document.getElementById('bulkDeletePurchasesBtn');
+            
+            if (selectedCountEl) {
+                selectedCountEl.textContent = count;
+            }
+            
+            if (bulkDeleteBtn) {
+                bulkDeleteBtn.style.display = count > 0 ? 'inline-block' : 'none';
+            }
+            
+            // Update select all checkbox state
+            const selectAllCheckbox = document.getElementById('selectAllPurchases');
+            if (selectAllCheckbox) {
+                const allCheckboxes = document.querySelectorAll('.purchase-checkbox');
+                selectAllCheckbox.checked = allCheckboxes.length > 0 && checkboxes.length === allCheckboxes.length;
+                selectAllCheckbox.indeterminate = checkboxes.length > 0 && checkboxes.length < allCheckboxes.length;
+            }
+        }
+
+        async function removePurchase(orderId, productName) {
+            if (!confirm(`Are you sure you want to remove this purchase of "${productName}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetchWithCsrf(`/api/admin/orders/${orderId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showSuccess('userPurchasesSuccess', 'Purchase removed successfully');
+                    loadUserPurchases();
+                } else {
+                    throw new Error(data.error || 'Failed to remove purchase');
+                }
+            } catch (error) {
+                console.error('Error removing purchase:', error);
+                showError('userPurchasesError', 'Failed to remove purchase. Please try again.');
+            }
+        }
+
+        async function bulkDeletePurchases() {
+            const checkboxes = document.querySelectorAll('.purchase-checkbox:checked');
+            const selectedOrders = Array.from(checkboxes).map(cb => ({
+                orderId: parseInt(cb.getAttribute('data-order-id')),
+                productName: cb.getAttribute('data-product-name')
+            }));
+
+            if (selectedOrders.length === 0) {
+                return;
+            }
+
+            const count = selectedOrders.length;
+            if (!confirm(`Are you sure you want to delete ${count} purchase${count > 1 ? 's' : ''}? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                // Delete all selected orders
+                const deletePromises = selectedOrders.map(order => 
+                    fetchWithCsrf(`/api/admin/orders/${order.orderId}`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    })
+                );
+
+                const results = await Promise.allSettled(deletePromises);
+                
+                // Check for failures
+                const failures = results.filter(r => r.status === 'rejected' || !r.value.ok);
+                
+                if (failures.length > 0) {
+                    throw new Error(`${failures.length} of ${count} deletions failed`);
+                }
+
+                showSuccess('userPurchasesSuccess', `${count} purchase${count > 1 ? 's' : ''} deleted successfully`);
+                loadUserPurchases();
+            } catch (error) {
+                console.error('Error bulk deleting purchases:', error);
+                showError('userPurchasesError', 'Failed to delete some purchases. Please try again.');
+            }
+        }
+
+        function openAddPurchaseModal(userId, username) {
+            const modal = document.getElementById('addPurchaseModal');
+            const form = document.getElementById('addPurchaseForm');
+            
+            form.reset();
+            document.getElementById('addPurchaseUserId').value = userId;
+            
+            // Load products into select
+            loadProductsForPurchaseSelect();
+            
+            modal.classList.add('active');
+        }
+
+        function closeAddPurchaseModal() {
+            document.getElementById('addPurchaseModal').classList.remove('active');
+        }
+
+        async function loadProductsForPurchaseSelect() {
+            const selectEl = document.getElementById('addPurchaseProductId');
+            
+            try {
+                const response = await fetch('/api/admin/products?includeInactive=false', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load products');
+                }
+
+                const data = await response.json();
+
+                if (data.success && data.products) {
+                    selectEl.innerHTML = '<option value="">Select a product...</option>' +
+                        data.products.map(product => 
+                            `<option value="${product.id}">${escapeHtml(product.name)} - $${product.price.toFixed(2)}</option>`
+                        ).join('');
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                showError('userPurchasesError', 'Failed to load products');
+            }
+        }
+
+        // Close modals on outside click
+        document.getElementById('productModal').addEventListener('click', (e) => {
+            if (e.target.id === 'productModal') {
+                closeProductModal();
+            }
+        });
+
+        document.getElementById('discountCodeModal').addEventListener('click', (e) => {
+            if (e.target.id === 'discountCodeModal') {
+                closeDiscountCodeModal();
+            }
+        });
+
+        document.getElementById('addPurchaseModal').addEventListener('click', (e) => {
+            if (e.target.id === 'addPurchaseModal') {
+                closeAddPurchaseModal();
+            }
+        });
+
+        // Event listeners for buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add Product button
+            const addProductBtn = document.getElementById('addProductBtn');
+            if (addProductBtn) {
+                addProductBtn.addEventListener('click', () => openProductModal());
+            }
+
+            // Add Discount Code button
+            const addDiscountCodeBtn = document.getElementById('addDiscountCodeBtn');
+            if (addDiscountCodeBtn) {
+                addDiscountCodeBtn.addEventListener('click', () => openDiscountCodeModal());
+            }
+
+            // Close Product Modal buttons
+            const closeProductModalBtn = document.getElementById('closeProductModalBtn');
+            if (closeProductModalBtn) {
+                closeProductModalBtn.addEventListener('click', closeProductModal);
+            }
+
+            const cancelProductBtn = document.getElementById('cancelProductBtn');
+            if (cancelProductBtn) {
+                cancelProductBtn.addEventListener('click', closeProductModal);
+            }
+
+            // Close Discount Code Modal buttons
+            const closeDiscountCodeModalBtn = document.getElementById('closeDiscountCodeModalBtn');
+            if (closeDiscountCodeModalBtn) {
+                closeDiscountCodeModalBtn.addEventListener('click', closeDiscountCodeModal);
+            }
+
+            const cancelDiscountCodeBtn = document.getElementById('cancelDiscountCodeBtn');
+            if (cancelDiscountCodeBtn) {
+                cancelDiscountCodeBtn.addEventListener('click', closeDiscountCodeModal);
+            }
+
+            // Event delegation for dynamically created edit/delete buttons
+            document.addEventListener('click', (e) => {
+                // Edit Product
+                if (e.target.classList.contains('edit-product-btn')) {
+                    const productId = parseInt(e.target.getAttribute('data-product-id'));
+                    editProduct(productId);
+                }
+
+                // Delete Product
+                if (e.target.classList.contains('delete-product-btn')) {
+                    const productId = parseInt(e.target.getAttribute('data-product-id'));
+                    const productName = e.target.getAttribute('data-product-name');
+                    deleteProduct(productId, productName);
+                }
+
+                // Edit Discount Code
+                if (e.target.classList.contains('edit-discount-code-btn')) {
+                    const discountCodeId = parseInt(e.target.getAttribute('data-discount-code-id'));
+                    editDiscountCode(discountCodeId);
+                }
+
+                // Delete Discount Code
+                if (e.target.classList.contains('delete-discount-code-btn')) {
+                    const discountCodeId = parseInt(e.target.getAttribute('data-discount-code-id'));
+                    const discountCode = e.target.getAttribute('data-discount-code');
+                    deleteDiscountCode(discountCodeId, discountCode);
+                }
+
+                // Add Purchase
+                if (e.target.classList.contains('add-purchase-btn')) {
+                    const userId = parseInt(e.target.getAttribute('data-user-id'));
+                    const username = e.target.getAttribute('data-username');
+                    openAddPurchaseModal(userId, username);
+                }
+
+                // Delete Purchase
+                if (e.target.classList.contains('delete-purchase-btn')) {
+                    const orderId = parseInt(e.target.getAttribute('data-order-id'));
+                    const productName = e.target.getAttribute('data-product-name');
+                    removePurchase(orderId, productName);
+                }
+            });
+
+            // Select All checkbox
+            const selectAllCheckbox = document.getElementById('selectAllPurchases');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', (e) => {
+                    const checkboxes = document.querySelectorAll('.purchase-checkbox');
+                    checkboxes.forEach(cb => {
+                        cb.checked = e.target.checked;
+                    });
+                    updateSelectedCount();
+                });
+            }
+
+            // Individual checkbox change handler
+            document.addEventListener('change', (e) => {
+                if (e.target.classList.contains('purchase-checkbox')) {
+                    updateSelectedCount();
+                }
+            });
+
+            // Bulk delete button
+            const bulkDeleteBtn = document.getElementById('bulkDeletePurchasesBtn');
+            if (bulkDeleteBtn) {
+                bulkDeleteBtn.addEventListener('click', bulkDeletePurchases);
+            }
+
+            // Refresh Purchases button
+            const refreshPurchasesBtn = document.getElementById('refreshPurchasesBtn');
+            if (refreshPurchasesBtn) {
+                refreshPurchasesBtn.addEventListener('click', loadUserPurchases);
+            }
+
+            // Close Add Purchase Modal buttons
+            const closeAddPurchaseModalBtn = document.getElementById('closeAddPurchaseModalBtn');
+            if (closeAddPurchaseModalBtn) {
+                closeAddPurchaseModalBtn.addEventListener('click', closeAddPurchaseModal);
+            }
+
+            const cancelAddPurchaseBtn = document.getElementById('cancelAddPurchaseBtn');
+            if (cancelAddPurchaseBtn) {
+                cancelAddPurchaseBtn.addEventListener('click', closeAddPurchaseModal);
+            }
+
+            // Product application radio button handlers
+            const applyToAllRadio = document.getElementById('applyToAllProducts');
+            const applyToSpecificRadio = document.getElementById('applyToSpecificProducts');
+            const applyToNoRadio = document.getElementById('applyToNoProducts');
+            const productContainer = document.getElementById('productSelectionContainer');
+
+            function handleProductApplicationChange() {
+                if (applyToAllRadio.checked) {
+                    // Apply to all - hide product selection
+                    productContainer.style.display = 'none';
+                    // Uncheck all product checkboxes
+                    document.querySelectorAll('.product-checkbox').forEach(cb => {
+                        cb.checked = false;
+                    });
+                } else if (applyToSpecificRadio.checked) {
+                    // Apply to specific products - show product selection
+                    productContainer.style.display = 'block';
+                } else if (applyToNoRadio.checked) {
+                    // Apply to no products - hide product selection
+                    productContainer.style.display = 'none';
+                    // Uncheck all product checkboxes
+                    document.querySelectorAll('.product-checkbox').forEach(cb => {
+                        cb.checked = false;
+                    });
+                }
+            }
+
+            if (applyToAllRadio) {
+                applyToAllRadio.addEventListener('change', handleProductApplicationChange);
+            }
+            if (applyToSpecificRadio) {
+                applyToSpecificRadio.addEventListener('change', handleProductApplicationChange);
+            }
+            if (applyToNoRadio) {
+                applyToNoRadio.addEventListener('change', handleProductApplicationChange);
+            }
+
+            // Add Purchase Form submission
+            document.getElementById('addPurchaseForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const userId = parseInt(document.getElementById('addPurchaseUserId').value);
+                const productId = parseInt(document.getElementById('addPurchaseProductId').value);
+                const quantity = parseInt(document.getElementById('addPurchaseQuantity').value);
+
+                if (!productId) {
+                    showError('userPurchasesError', 'Please select a product');
+                    return;
+                }
+
+                try {
+                    const response = await fetchWithCsrf(`/api/admin/users/${userId}/purchases`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            productId,
+                            quantity
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        showSuccess('userPurchasesSuccess', 'Purchase added successfully');
+                        closeAddPurchaseModal();
+                        loadUserPurchases();
+                    } else {
+                        throw new Error(data.error || 'Failed to add purchase');
+                    }
+                } catch (error) {
+                    console.error('Error adding purchase:', error);
+                    showError('userPurchasesError', 'Failed to add purchase. Please try again.');
+                }
+            });
+        });
+
+        // Initialize
+        setTimeout(() => {
+            loadProducts();
+            loadDiscountCodes();
+            loadUserPurchases();
+        }, 500);
+    </script>
+</body>
+</html>
+

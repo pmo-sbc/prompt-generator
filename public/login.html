@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI Prompt Templates</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/csrf-helper.js"></script>
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+        }
+
+        .auth-box {
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .logo-circle {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .auth-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            color: var(--text-secondary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--dark-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-auth:hover {
+            background: #c0392b;
+        }
+
+        .btn-auth:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .auth-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 2rem 0;
+            color: var(--text-secondary);
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            cursor: pointer;
+            font-weight: normal;
+            margin-bottom: 0;
+        }
+
+        .warning-message {
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .warning-message.show {
+            display: block;
+        }
+
+        .warning-message a {
+            color: #fbbf24;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        .warning-message a:hover {
+            color: #f59e0b;
+        }
+    </style>
+    <link rel="icon" type="image/jpeg" href="/images/3rd-logo.jpeg">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <div class="logo-circle">AI</div>
+                </div>
+                <h1>Welcome Back</h1>
+                <p>Sign in to access your AI prompt templates</p>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+            <div class="warning-message" id="warningMessage"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username or Email</label>
+                    <input type="text" id="username" name="username" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="rememberMe" name="rememberMe">
+                    <label for="rememberMe">Remember me for 30 days</label>
+                </div>
+
+                <button type="submit" class="btn-auth" id="loginBtn">
+                    Sign In
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <a href="/forgot-password">Forgot password?</a>
+            </div>
+
+            <div class="auth-footer">
+                Don't have an account? <a href="/signup">Sign up</a>
+            </div>
+
+            <div class="divider">OR</div>
+
+            <div class="auth-footer">
+                <a href="/">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const warningMessage = document.getElementById('warningMessage');
+        const loginBtn = document.getElementById('loginBtn');
+        let unverifiedEmail = '';
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Clear previous messages
+            errorMessage.classList.remove('show');
+            warningMessage.classList.remove('show');
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Signing in...';
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+
+            try {
+                const response = await fetchWithCsrf('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password, rememberMe })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Success - check for redirect destination
+                    const redirectTo = sessionStorage.getItem('redirectAfterLogin');
+                    if (redirectTo) {
+                        sessionStorage.removeItem('redirectAfterLogin');
+                        window.location.href = redirectTo;
+                    } else {
+                        window.location.href = '/dashboard';
+                    }
+                } else if (response.status === 403 && data.requiresVerification) {
+                    // Email not verified
+                    unverifiedEmail = data.email || username;
+                    warningMessage.innerHTML = `
+                        ${data.message || 'Please verify your email before logging in.'}
+                        <br><br>
+                        <a href="#" id="resendVerificationLink">Resend verification email</a>
+                    `;
+                    warningMessage.classList.add('show');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+
+                    // Add event listener to resend link
+                    setTimeout(() => {
+                        const resendLink = document.getElementById('resendVerificationLink');
+                        if (resendLink) {
+                            resendLink.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                resendVerificationFromLogin();
+                            });
+                        }
+                    }, 0);
+                } else {
+                    // Show error
+                    errorMessage.textContent = data.error || 'Login failed';
+                    errorMessage.classList.add('show');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Network error. Please try again.';
+                errorMessage.classList.add('show');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+            }
+        });
+
+        async function resendVerificationFromLogin() {
+            if (!unverifiedEmail) {
+                alert('No email address found. Please try again.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/resend-verification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email: unverifiedEmail })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    alert('Verification email sent! Please check your inbox and verify your account.');
+                } else {
+                    alert(data.message || data.error || 'Failed to resend verification email.');
+                }
+            } catch (error) {
+                alert('Network error. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>

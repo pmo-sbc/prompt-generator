@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - AI Prompt Templates</title>
+    <link rel="icon" type="image/jpeg" href="/images/3rd-logo.jpeg">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/csrf-helper.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .profile-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .profile-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .profile-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #2c5aa0;
+        }
+
+        .profile-card {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .profile-card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            color: #1a1a1a;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            color: #666666;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-verified {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .status-unverified {
+            background: #ffe5e5;
+            color: #e74c3c;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem;
+            background: #ffffff;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            color: #1a1a1a;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2c5aa0;
+        }
+
+        .btn-profile {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .btn-primary-profile {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-primary-profile:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-profile:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .danger-zone {
+            background: #fff5f5;
+            border: 1px solid #ffcccc;
+        }
+
+        .danger-zone h2 {
+            color: #e74c3c;
+        }
+
+        .warning-text {
+            color: #666666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #ffe5e5;
+            border-radius: 6px;
+        }
+
+        .success-message,
+        .error-message {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+        }
+
+        .error-message {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .success-message.show,
+        .error-message.show {
+            display: block;
+        }
+
+        .password-requirements {
+            background: rgba(52, 152, 219, 0.1);
+            border: 1px solid #3498db;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: #3498db;
+            font-size: 0.9rem;
+        }
+
+        .password-requirements ul {
+            margin: 0.5rem 0 0 0;
+            padding-left: 1.5rem;
+        }
+
+        .password-requirements li {
+            margin: 0.25rem 0;
+        }
+
+        .transaction-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: #fafafa;
+        }
+
+        .transaction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .transaction-order-number {
+            font-weight: 600;
+            color: #2c5aa0;
+            font-size: 1.1rem;
+        }
+
+        .transaction-date {
+            color: #666666;
+            font-size: 0.9rem;
+        }
+
+        .transaction-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .transaction-items {
+            margin-bottom: 1rem;
+        }
+
+        .transaction-item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .transaction-item-row:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-item-name {
+            color: #1a1a1a;
+        }
+
+        .transaction-item-details {
+            color: #666666;
+            font-size: 0.9rem;
+        }
+
+        .transaction-item-price {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .transaction-totals {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding-top: 1rem;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .transaction-total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+        }
+
+        .transaction-total-row.discount {
+            color: #2ecc71;
+        }
+
+        .transaction-total-row.final {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1a1a1a;
+            padding-top: 0.5rem;
+        }
+
+        .purchased-product-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: #fafafa;
+            transition: box-shadow 0.2s;
+        }
+
+        .purchased-product-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .purchased-product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .purchased-product-name {
+            font-weight: 600;
+            color: #2c5aa0;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .purchased-product-date {
+            color: #666666;
+            font-size: 0.9rem;
+        }
+
+        .purchased-product-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+
+        .badge-course {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+        }
+
+        .badge-tokens {
+            background: rgba(241, 196, 15, 0.2);
+            color: #f1c40f;
+        }
+
+        .purchased-product-details {
+            margin-top: 1rem;
+        }
+
+        .product-detail-item {
+            padding: 0.75rem;
+            background: #ffffff;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid #3498db;
+        }
+
+        .product-detail-label {
+            font-weight: 600;
+            color: #666666;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .product-detail-value {
+            color: #1a1a1a;
+            font-size: 1rem;
+        }
+
+        .product-detail-value a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .product-detail-value a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-circle">
+                    <img src="images/3rd-logo.jpeg" alt="SBC Services Logo">
+                </div>
+            </a>
+            <ul class="nav-menu">
+                <!-- Navigation will be dynamically updated by auth.js -->
+            </ul>
+        </div>
+    </nav>
+
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1>My Profile</h1>
+            <p style="color: #666666;">Manage your account settings</p>
+            <p style="margin-top: 1rem;">
+                <a href="/companies" style="color: #2c5aa0; text-decoration: none; font-weight: 500;">
+                    🏢 Manage Company Profiles →
+                </a>
+            </p>
+        </div>
+
+        <!-- Account Information -->
+        <div class="profile-card">
+            <h2>👤 Account Information</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Username</span>
+                    <span class="info-value" id="profileUsername">Loading...</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value" id="profileEmail">Loading...</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email Status</span>
+                    <span class="status-badge" id="emailStatus">Loading...</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Token Balance</span>
+                    <span class="info-value">🪙 <span id="profileTokens">0</span> tokens</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Member Since</span>
+                    <span class="info-value" id="memberSince">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Information -->
+        <div class="profile-card">
+            <h2>📋 Customer Information</h2>
+            <p style="color: #666666; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                Save your information here to speed up checkout on future purchases.
+            </p>
+
+            <div class="success-message" id="customerInfoSuccess"></div>
+            <div class="error-message" id="customerInfoError"></div>
+
+            <form id="customerInfoForm">
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label required" for="profileFirstName">First Name</label>
+                        <input type="text" id="profileFirstName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required" for="profileLastName">Last Name</label>
+                        <input type="text" id="profileLastName" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required" for="profileEmailInput">Email Address</label>
+                    <input type="email" id="profileEmailInput" class="form-input" required readonly style="background-color: #f5f5f5; cursor: not-allowed;">
+                    <small style="color: #666; font-size: 0.85rem; margin-top: 0.25rem; display: block;">Email cannot be changed. It is linked to your account.</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required" for="profilePhone">Phone Number</label>
+                    <input type="tel" id="profilePhone" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required" for="profileAddress">Street Address</label>
+                    <input type="text" id="profileAddress" class="form-input" required>
+                </div>
+
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label required" for="profileCity">City</label>
+                        <input type="text" id="profileCity" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required" for="profileState">State/Province</label>
+                        <input type="text" id="profileState" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label required" for="profileZipCode">ZIP/Postal Code</label>
+                        <input type="text" id="profileZipCode" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required" for="profileCountry">Country</label>
+                        <select id="profileCountry" class="form-input" required style="padding: 0.875rem;">
+                            <option value="">Select Country</option>
+                            <option value="US">United States</option>
+                            <option value="CA">Canada</option>
+                            <option value="UK">United Kingdom</option>
+                            <option value="AU">Australia</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-profile btn-primary-profile" id="saveCustomerInfoBtn">
+                    Save Customer Information
+                </button>
+            </form>
+        </div>
+
+        <!-- Change Password -->
+        <div class="profile-card">
+            <h2>🔒 Change Password</h2>
+
+            <div class="success-message" id="passwordSuccess"></div>
+            <div class="error-message" id="passwordError"></div>
+
+            <form id="changePasswordForm">
+                <div class="form-group">
+                    <label class="form-label" for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" class="form-input" required minlength="8">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" class="form-input" required minlength="8">
+                </div>
+
+                <div class="password-requirements">
+                    <strong>Password Requirements:</strong>
+                    <ul>
+                        <li>At least 8 characters long</li>
+                        <li>Mix of uppercase and lowercase letters recommended</li>
+                        <li>Include numbers for better security</li>
+                    </ul>
+                </div>
+
+                <button type="submit" class="btn-profile btn-primary-profile" id="changePasswordBtn" style="margin-top: 1.5rem;">
+                    Change Password
+                </button>
+            </form>
+        </div>
+
+        <!-- My Purchased Products -->
+        <div class="profile-card">
+            <h2>🛍️ My Purchased Products</h2>
+            <p style="color: #666666; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                View all products you have purchased, including course access and token purchases.
+            </p>
+
+            <div id="purchasedProductsLoading" style="text-align: center; padding: 2rem; color: #666;">
+                Loading purchased products...
+            </div>
+
+            <div id="purchasedProductsError" class="error-message" style="display: none;"></div>
+
+            <div id="purchasedProductsList" style="display: none;">
+                <!-- Purchased products will be loaded here -->
+            </div>
+
+            <div id="noPurchasedProducts" style="text-align: center; padding: 2rem; color: #666; display: none;">
+                <p style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem;">No products purchased yet.</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Your purchased products will appear here once you make a purchase.</p>
+            </div>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="profile-card">
+            <h2>💳 Transaction History</h2>
+            <p style="color: #666666; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                View all your completed orders and transactions.
+            </p>
+
+            <div id="transactionsLoading" style="text-align: center; padding: 2rem; color: #666;">
+                Loading transactions...
+            </div>
+
+            <div id="transactionsError" class="error-message" style="display: none;"></div>
+
+            <div id="transactionsList" style="display: none;">
+                <!-- Transactions will be loaded here -->
+            </div>
+
+            <div id="noTransactions" style="text-align: center; padding: 2rem; color: #666; display: none;">
+                <p style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem;">No transactions have been made yet.</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Your completed orders will appear here once you make a purchase.</p>
+            </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="profile-card danger-zone">
+            <h2>⚠️ Danger Zone</h2>
+
+            <div class="error-message" id="deleteError"></div>
+
+            <p class="warning-text">
+                <strong>Warning:</strong> Deleting your account is permanent and cannot be undone.
+                All your saved prompts, projects, and data will be permanently deleted.
+            </p>
+
+            <form id="deleteAccountForm">
+                <div class="form-group">
+                    <label class="form-label" for="deletePassword">Enter your password to confirm deletion</label>
+                    <input type="password" id="deletePassword" class="form-input" required placeholder="Your password">
+                </div>
+
+                <button type="submit" class="btn-profile btn-danger" id="deleteAccountBtn">
+                    Delete My Account
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Load purchased products
+        async function loadPurchasedProducts() {
+            const loadingEl = document.getElementById('purchasedProductsLoading');
+            const errorEl = document.getElementById('purchasedProductsError');
+            const listEl = document.getElementById('purchasedProductsList');
+            const noProductsEl = document.getElementById('noPurchasedProducts');
+
+            try {
+                loadingEl.style.display = 'block';
+                errorEl.style.display = 'none';
+                listEl.style.display = 'none';
+                noProductsEl.style.display = 'none';
+
+                const response = await fetch('/api/orders/purchased-products', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        loadingEl.style.display = 'none';
+                        noProductsEl.style.display = 'block';
+                        return;
+                    }
+                    throw new Error('Failed to load purchased products');
+                }
+
+                const data = await response.json();
+                loadingEl.style.display = 'none';
+
+                if (!data.success || !data.products || data.products.length === 0) {
+                    noProductsEl.style.display = 'block';
+                    return;
+                }
+
+                // Display purchased products
+                listEl.innerHTML = data.products.map(product => {
+                    const purchaseDate = product.purchasedDate ? new Date(product.purchasedDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }) : 'Unknown';
+
+                    let badges = '';
+                    if (product.is_course) {
+                        badges += '<span class="purchased-product-badge badge-course">📚 Course</span>';
+                    }
+                    if (product.provides_tokens && product.token_quantity > 0) {
+                        badges += `<span class="purchased-product-badge badge-tokens">🪙 ${product.token_quantity} Tokens</span>`;
+                    }
+
+                    let detailsHtml = '';
+                    
+                    // Course details
+                    if (product.is_course) {
+                        if (product.course_date) {
+                            const courseDate = new Date(product.course_date);
+                            const courseDateStr = courseDate.toLocaleString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                            detailsHtml += `
+                                <div class="product-detail-item">
+                                    <div class="product-detail-label">📅 Course Date & Time</div>
+                                    <div class="product-detail-value">${courseDateStr}</div>
+                                </div>
+                            `;
+                        }
+                        if (product.course_zoom_link) {
+                            detailsHtml += `
+                                <div class="product-detail-item">
+                                    <div class="product-detail-label">🔗 Zoom Link</div>
+                                    <div class="product-detail-value">
+                                        <a href="${product.course_zoom_link}" target="_blank" rel="noopener noreferrer">
+                                            ${product.course_zoom_link}
+                                        </a>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    // Token details
+                    if (product.provides_tokens && product.token_quantity > 0) {
+                        detailsHtml += `
+                            <div class="product-detail-item">
+                                <div class="product-detail-label">🪙 Tokens Provided</div>
+                                <div class="product-detail-value">${product.token_quantity} tokens per purchase</div>
+                            </div>
+                        `;
+                    }
+
+                    // Product description
+                    if (product.description) {
+                        detailsHtml += `
+                            <div class="product-detail-item">
+                                <div class="product-detail-label">📝 Description</div>
+                                <div class="product-detail-value">${escapeHtml(product.description)}</div>
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="purchased-product-card">
+                            <div class="purchased-product-header">
+                                <div>
+                                    <div class="purchased-product-name">
+                                        ${escapeHtml(product.name)}
+                                        ${badges}
+                                    </div>
+                                    <div class="purchased-product-date">Purchased on ${purchaseDate}</div>
+                                </div>
+                                <div style="font-weight: 600; color: #2c5aa0;">
+                                    $${product.price.toFixed(2)}
+                                </div>
+                            </div>
+                            ${detailsHtml ? `<div class="purchased-product-details">${detailsHtml}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                listEl.style.display = 'block';
+            } catch (error) {
+                console.error('Error loading purchased products:', error);
+                loadingEl.style.display = 'none';
+                errorEl.textContent = 'Failed to load purchased products. Please try again later.';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load transactions
+        async function loadTransactions() {
+            const loadingEl = document.getElementById('transactionsLoading');
+            const errorEl = document.getElementById('transactionsError');
+            const listEl = document.getElementById('transactionsList');
+            const noTransactionsEl = document.getElementById('noTransactions');
+
+            try {
+                loadingEl.style.display = 'block';
+                errorEl.style.display = 'none';
+                listEl.style.display = 'none';
+                noTransactionsEl.style.display = 'none';
+
+                const response = await fetch('/api/orders', {
+                    credentials: 'include'
+                });
+
+                // If response is not ok, check if it's a 404 (no orders) or a real error
+                if (!response.ok) {
+                    // If 404 or similar, treat as no transactions
+                    if (response.status === 404) {
+                        loadingEl.style.display = 'none';
+                        noTransactionsEl.style.display = 'block';
+                        return;
+                    }
+                    // For other errors, try to parse the response to see if it's actually empty
+                    try {
+                        const errorData = await response.json();
+                        // If the API returns success: false but it's just empty, show no transactions
+                        if (errorData.success === false && (!errorData.orders || errorData.orders.length === 0)) {
+                            loadingEl.style.display = 'none';
+                            noTransactionsEl.style.display = 'block';
+                            return;
+                        }
+                    } catch (parseError) {
+                        // If we can't parse, it's a real error
+                        throw new Error('Failed to load transactions');
+                    }
+                    throw new Error('Failed to load transactions');
+                }
+
+                const data = await response.json();
+
+                loadingEl.style.display = 'none';
+
+                // Check if there are no orders (empty array or null/undefined)
+                if (!data.orders || data.orders.length === 0) {
+                    noTransactionsEl.style.display = 'block';
+                    return;
+                }
+
+                // Display transactions
+                listEl.innerHTML = data.orders.map(order => {
+                    const orderDate = new Date(order.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    const itemsHtml = order.items.map(item => `
+                        <div class="transaction-item-row">
+                            <div>
+                                <div class="transaction-item-name">${item.name}</div>
+                                <div class="transaction-item-details">Quantity: ${item.quantity || 1} × $${(item.price || 0).toFixed(2)}</div>
+                            </div>
+                            <div class="transaction-item-price">$${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</div>
+                        </div>
+                    `).join('');
+
+                    return `
+                        <div class="transaction-item">
+                            <div class="transaction-header">
+                                <div>
+                                    <div class="transaction-order-number">${order.order_number}</div>
+                                    <div class="transaction-date">${orderDate}</div>
+                                </div>
+                                <span class="transaction-status">${order.status || 'Completed'}</span>
+                            </div>
+                            <div class="transaction-items">
+                                ${itemsHtml}
+                            </div>
+                            <div class="transaction-totals">
+                                <div class="transaction-total-row">
+                                    <span>Subtotal:</span>
+                                    <span>$${order.subtotal.toFixed(2)}</span>
+                                </div>
+                                ${order.discount > 0 ? `
+                                <div class="transaction-total-row discount">
+                                    <span>Discount:</span>
+                                    <span>-$${order.discount.toFixed(2)}</span>
+                                </div>
+                                ` : ''}
+                                <div class="transaction-total-row final">
+                                    <span>Total:</span>
+                                    <span>$${order.total.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                listEl.style.display = 'block';
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+                loadingEl.style.display = 'none';
+                // Only show error for actual errors, not for empty transactions
+                // If we get here, it's a real network/server error
+                errorEl.textContent = 'Failed to load transactions. Please try again later.';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        // Load user profile data
+        async function loadProfileData() {
+            try {
+                const response = await fetch('/api/profile/activity', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    throw new Error('Failed to load profile');
+                }
+
+                const data = await response.json();
+                const user = data.user;
+                const customerInfo = data.customerInfo;
+
+                // Update profile information
+                const profileUsernameEl = document.getElementById('profileUsername');
+                const profileEmailEl = document.getElementById('profileEmail');
+                const profileTokensEl = document.getElementById('profileTokens');
+                const usernameNavEl = document.getElementById('usernameNav');
+                const tokensNavEl = document.getElementById('tokensNav');
+                const memberSinceEl = document.getElementById('memberSince');
+                
+                if (profileUsernameEl) profileUsernameEl.textContent = user.username || 'N/A';
+                if (profileEmailEl) profileEmailEl.textContent = user.email || 'N/A';
+                if (profileTokensEl) profileTokensEl.textContent = user.tokens || 0;
+                if (usernameNavEl) usernameNavEl.textContent = user.username;
+                if (tokensNavEl) tokensNavEl.textContent = user.tokens || 0;
+                if (memberSinceEl) memberSinceEl.textContent = user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A';
+
+                // Set email from user account (cannot be changed)
+                const emailInputEl = document.getElementById('profileEmailInput');
+                if (emailInputEl) {
+                    emailInputEl.value = user.email || '';
+                }
+
+                // Load customer information if available
+                if (customerInfo) {
+                    const firstNameEl = document.getElementById('profileFirstName');
+                    const lastNameEl = document.getElementById('profileLastName');
+                    const phoneEl = document.getElementById('profilePhone');
+                    const addressEl = document.getElementById('profileAddress');
+                    const cityEl = document.getElementById('profileCity');
+                    const stateEl = document.getElementById('profileState');
+                    const zipCodeEl = document.getElementById('profileZipCode');
+                    const countryEl = document.getElementById('profileCountry');
+                    
+                    if (firstNameEl) firstNameEl.value = customerInfo.firstName || '';
+                    if (lastNameEl) lastNameEl.value = customerInfo.lastName || '';
+                    // Email is already set from user account above
+                    if (phoneEl) phoneEl.value = customerInfo.phone || '';
+                    if (addressEl) addressEl.value = customerInfo.address || '';
+                    if (cityEl) cityEl.value = customerInfo.city || '';
+                    if (stateEl) stateEl.value = customerInfo.state || '';
+                    if (zipCodeEl) zipCodeEl.value = customerInfo.zipCode || '';
+                    if (countryEl) countryEl.value = customerInfo.country || '';
+                }
+
+                // Email status
+                const emailStatus = document.getElementById('emailStatus');
+                if (user.email_verified) {
+                    emailStatus.textContent = 'Verified ✓';
+                    emailStatus.className = 'status-badge status-verified';
+                } else {
+                    emailStatus.textContent = 'Not Verified';
+                    emailStatus.className = 'status-badge status-unverified';
+                }
+
+                // Show admin link if admin
+                if (user.is_admin) {
+                    const adminLinkEl = document.getElementById('adminMenuLink');
+                    if (adminLinkEl) adminLinkEl.style.display = 'list-item';
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                // Show error in account info section
+                const usernameEl = document.getElementById('profileUsername');
+                const emailEl = document.getElementById('profileEmail');
+                const memberSinceEl = document.getElementById('memberSince');
+                const emailStatusEl = document.getElementById('emailStatus');
+                
+                if (usernameEl) usernameEl.textContent = 'Error loading';
+                if (emailEl) emailEl.textContent = 'Error loading';
+                if (memberSinceEl) memberSinceEl.textContent = 'Error loading';
+                if (emailStatusEl) {
+                    emailStatusEl.textContent = 'Error';
+                    emailStatusEl.className = 'status-badge status-unverified';
+                }
+                showError('passwordError', 'Failed to load profile data');
+            }
+        }
+
+        // Utility functions
+        function showSuccess(elementId, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = message;
+                element.classList.add('show');
+            }
+        }
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = message;
+                element.classList.add('show');
+            }
+        }
+
+        function hideMessages() {
+            document.querySelectorAll('.success-message, .error-message').forEach(el => {
+                el.classList.remove('show');
+            });
+        }
+
+        // Setup logout handler (wait for auth.js to create the button)
+        function setupLogoutHandler() {
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                // Remove any existing listeners by cloning
+                const newLogoutBtn = logoutBtn.cloneNode(true);
+                logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+                newLogoutBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    try {
+                        await fetchWithCsrf('/api/logout', { method: 'POST' });
+                        window.location.href = '/login';
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                        window.location.href = '/login';
+                    }
+                });
+            } else {
+                // Retry after a short delay if button doesn't exist yet
+                setTimeout(setupLogoutHandler, 100);
+            }
+        }
+
+        // Setup form event listeners
+        function setupFormListeners() {
+            const changePasswordForm = document.getElementById('changePasswordForm');
+            const customerInfoForm = document.getElementById('customerInfoForm');
+            const deleteAccountForm = document.getElementById('deleteAccountForm');
+
+            if (changePasswordForm) {
+                changePasswordForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const currentPassword = document.getElementById('currentPassword').value;
+                    const newPassword = document.getElementById('newPassword').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+
+                    // Clear previous messages
+                    hideMessages();
+
+                    // Validate passwords match
+                    if (newPassword !== confirmPassword) {
+                        showError('passwordError', 'New passwords do not match');
+                        return;
+                    }
+
+                    // Validate password length
+                    if (newPassword.length < 8) {
+                        showError('passwordError', 'Password must be at least 8 characters long');
+                        return;
+                    }
+
+                    const btn = document.getElementById('changePasswordBtn');
+                    btn.disabled = true;
+                    btn.textContent = 'Changing...';
+
+                    try {
+                        const response = await fetchWithCsrf('/api/profile/change-password', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                currentPassword,
+                                newPassword
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            showSuccess('passwordSuccess', 'Password changed successfully!');
+                            document.getElementById('changePasswordForm').reset();
+                        } else {
+                            showError('passwordError', data.error || 'Failed to change password');
+                        }
+                    } catch (error) {
+                        console.error('Error changing password:', error);
+                        showError('passwordError', 'Network error. Please try again.');
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = 'Change Password';
+                    }
+                });
+            }
+
+            if (customerInfoForm) {
+                customerInfoForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const firstName = document.getElementById('profileFirstName').value.trim();
+                    const lastName = document.getElementById('profileLastName').value.trim();
+                    const phone = document.getElementById('profilePhone').value.trim();
+                    const address = document.getElementById('profileAddress').value.trim();
+                    const city = document.getElementById('profileCity').value.trim();
+                    const state = document.getElementById('profileState').value.trim();
+                    const zipCode = document.getElementById('profileZipCode').value.trim();
+                    const country = document.getElementById('profileCountry').value;
+
+                    // Clear previous messages
+                    hideMessages();
+
+                    // Validate required fields
+                    if (!firstName || !lastName || !phone || !address || !city || !state || !zipCode || !country) {
+                        showError('customerInfoError', 'Please fill in all required fields');
+                        return;
+                    }
+
+                    const btn = document.getElementById('saveCustomerInfoBtn');
+                    btn.disabled = true;
+                    btn.textContent = 'Saving...';
+
+                    try {
+                        const response = await fetchWithCsrf('/api/profile/customer-info', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                firstName,
+                                lastName,
+                                phone,
+                                address,
+                                city,
+                                state,
+                                zipCode,
+                                country
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            showSuccess('customerInfoSuccess', 'Customer information saved successfully!');
+                        } else {
+                            showError('customerInfoError', data.error || 'Failed to save customer information');
+                        }
+                    } catch (error) {
+                        console.error('Error saving customer info:', error);
+                        showError('customerInfoError', 'Network error. Please try again.');
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = 'Save Customer Information';
+                    }
+                });
+            }
+
+            if (deleteAccountForm) {
+                deleteAccountForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const confirmed = confirm(
+                        'Are you absolutely sure you want to delete your account?\n\n' +
+                        'This action CANNOT be undone. All your data will be permanently deleted.\n\n' +
+                        'Click OK to proceed with account deletion.'
+                    );
+
+                    if (!confirmed) return;
+
+                    const password = document.getElementById('deletePassword').value;
+
+                    hideMessages();
+
+                    const btn = document.getElementById('deleteAccountBtn');
+                    btn.disabled = true;
+                    btn.textContent = 'Deleting...';
+
+                    try {
+                        const response = await fetchWithCsrf('/api/profile/delete-account', {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ password })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            alert('Account deleted successfully. You will be redirected to the home page.');
+                            window.location.href = '/';
+                        } else {
+                            showError('deleteError', data.error || 'Failed to delete account');
+                            btn.disabled = false;
+                            btn.textContent = 'Delete My Account';
+                        }
+                    } catch (error) {
+                        console.error('Error deleting account:', error);
+                        showError('deleteError', 'Network error. Please try again.');
+                        btn.disabled = false;
+                        btn.textContent = 'Delete My Account';
+                    }
+                });
+            }
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setupFormListeners();
+                setTimeout(loadProfileData, 100);
+                setTimeout(loadPurchasedProducts, 150);
+                setTimeout(loadTransactions, 200);
+                setTimeout(setupLogoutHandler, 500); // Wait for auth.js to create navigation
+            });
+        } else {
+            setupFormListeners();
+            setTimeout(loadProfileData, 100);
+            setTimeout(loadPurchasedProducts, 150);
+            setTimeout(loadTransactions, 200);
+            setTimeout(setupLogoutHandler, 500); // Wait for auth.js to create navigation
+        }
+    </script>
+    <script src="js/session-manager.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+</body>
+</html>

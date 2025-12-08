@@ -1,0 +1,3532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Profiles - AI Prompt Templates</title>
+    <link rel="icon" type="image/jpeg" href="/images/3rd-logo.jpeg">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/csrf-helper.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .profile-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .profile-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .profile-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #2c5aa0;
+        }
+
+        .profile-card {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .profile-card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            color: #1a1a1a;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem;
+            background: #ffffff;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            color: #1a1a1a;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2c5aa0;
+        }
+
+        .btn-profile {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .btn-primary-profile {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-primary-profile:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .edit-company-btn,
+        .delete-company-btn {
+            cursor: pointer;
+        }
+
+        .edit-company-btn:hover,
+        .delete-company-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-profile:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .success-message,
+        .error-message {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+        }
+
+        .error-message {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .success-message.show,
+        .error-message.show {
+            display: block;
+        }
+
+        .company-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: #fafafa;
+            transition: box-shadow 0.2s;
+        }
+
+        .company-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .company-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .company-name {
+            font-weight: 600;
+            color: #2c5aa0;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .company-date {
+            color: #666666;
+            font-size: 0.9rem;
+        }
+
+        .company-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #2c5aa0;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .no-companies {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #666666;
+        }
+
+        .no-companies p {
+            margin: 0.5rem 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        #editModal {
+            backdrop-filter: blur(2px);
+        }
+
+        #editModal > div {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .communities-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .communities-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .communities-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .toggle-communities-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .toggle-communities-btn:hover {
+            background: #2980b9;
+        }
+
+        .communities-content {
+            display: block;
+        }
+
+        .communities-content.show {
+            display: block;
+        }
+
+        .service-packages-section {
+            margin-top: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 1.5rem;
+        }
+
+        .service-packages-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .service-packages-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .toggle-service-packages-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .toggle-service-packages-btn:hover {
+            background: #2980b9;
+        }
+
+        .service-packages-content {
+            display: none;
+        }
+
+        .service-packages-content.show {
+            display: block;
+        }
+
+        .add-service-package-form {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .service-package-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+
+        .service-package-info {
+            flex: 1;
+        }
+
+        .service-package-name {
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 0.25rem;
+        }
+
+        .service-package-details {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .service-package-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .service-package-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.375rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .service-package-btn:hover {
+            opacity: 0.9;
+        }
+
+        .service-package-edit-btn {
+            background: #3498db;
+        }
+
+        .service-package-delete-btn {
+            background: #e74c3c;
+        }
+
+        .no-service-packages {
+            text-align: center;
+            padding: 1rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .add-community-form {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .community-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+
+        .community-name {
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .community-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .community-btn {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+        }
+
+        .community-edit-btn {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .community-edit-btn:hover {
+            background: #7f8c8d;
+        }
+
+        .community-delete-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .community-delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .no-communities {
+            text-align: center;
+            padding: 1.5rem;
+            color: #666666;
+            font-size: 0.9rem;
+        }
+
+        .communities-loading {
+            text-align: center;
+            padding: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .community-form-section {
+            background: #f9f9f9;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .form-row-checkbox {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        .technology-option {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+
+        .technology-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .technology-details {
+            margin-left: 1.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .speed-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .license-select {
+            margin-top: 0.5rem;
+        }
+
+        .packages-container {
+            margin-top: 1rem;
+        }
+
+        .available-package-item {
+            cursor: pointer;
+        }
+
+        .available-package-item:hover {
+            border-color: #3498db !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .package-item {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            position: relative;
+        }
+
+        .package-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .package-title {
+            font-weight: 600;
+            color: #2c5aa0;
+            font-size: 0.95rem;
+        }
+
+        .package-remove-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .package-remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .package-save-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-right: 0.5rem;
+        }
+
+        .package-save-btn:hover {
+            background: #229954;
+        }
+
+        .package-edit-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-right: 0.5rem;
+        }
+
+        .package-edit-btn:hover {
+            background: #2980b9;
+        }
+
+        .package-item.saved .speed-inputs input,
+        .package-item.saved .speed-inputs select,
+        .package-item.saved .form-group input,
+        .package-item.saved .form-group select {
+            background-color: #f5f5f5;
+            border-color: #ddd;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .package-item.saved .speed-inputs input:focus,
+        .package-item.saved .speed-inputs select:focus,
+        .package-item.saved .form-group input:focus,
+        .package-item.saved .form-group select:focus {
+            outline: none;
+        }
+
+        .add-package-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+
+        .add-package-btn:hover {
+            background: #229954;
+        }
+
+        .community-details {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #f0f0f0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .detail-row {
+            margin: 0.25rem 0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-circle">
+                    <img src="images/3rd-logo.jpeg" alt="SBC Services Logo">
+                </div>
+            </a>
+            <ul class="nav-menu">
+                <!-- Navigation will be dynamically updated by auth.js -->
+            </ul>
+        </div>
+    </nav>
+
+    <div class="profile-container">
+        <a href="/profile" class="back-link">← Back to Profile</a>
+
+        <div class="profile-header">
+            <h1>🏢 Company Profiles</h1>
+            <p style="color: #666666;">Manage your company profiles</p>
+        </div>
+
+        <!-- Add Company Form -->
+        <div class="profile-card">
+            <h2>Add New Company</h2>
+
+            <div class="success-message" id="addCompanySuccess"></div>
+            <div class="error-message" id="addCompanyError"></div>
+
+            <form id="addCompanyForm">
+                <div class="form-group">
+                    <label class="form-label" for="companyName">Company Name *</label>
+                    <input type="text" id="companyName" class="form-input" required placeholder="Enter company name">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="legalName">Legal Name</label>
+                    <input type="text" id="legalName" class="form-input" placeholder="Enter legal name">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="marketingName">Marketing Name</label>
+                    <input type="text" id="marketingName" class="form-input" placeholder="Enter marketing name">
+                </div>
+
+                <button type="submit" class="btn-profile btn-primary-profile" id="addCompanyBtn">
+                    Add Company
+                </button>
+            </form>
+        </div>
+
+        <!-- Companies List -->
+        <div class="profile-card">
+            <h2>My Companies</h2>
+
+            <div id="companiesLoading" class="loading">
+                Loading companies...
+            </div>
+
+            <div id="companiesError" class="error-message" style="display: none;"></div>
+
+            <div id="companiesList" style="display: none;">
+                <!-- Companies will be loaded here -->
+            </div>
+
+            <div id="noCompanies" class="no-companies" style="display: none;">
+                <p style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem;">No companies added yet.</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Add your first company using the form above.</p>
+            </div>
+        </div>
+
+        <!-- Edit Service Package Modal -->
+        <div id="editServicePackageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
+            <div id="editServicePackageModalBackdrop" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+            <div id="editServicePackageModalContent" style="background: white; padding: 2rem; border-radius: 12px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative; z-index: 1001;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="margin: 0;">Edit Service Package</h2>
+                    <button type="button" id="closeEditServicePackageModal" class="modal-close-btn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px;">&times;</button>
+                </div>
+
+                <div class="success-message" id="editServicePackageSuccess" style="display: none;"></div>
+                <div class="error-message" id="editServicePackageError" style="display: none;"></div>
+
+                <form id="editServicePackageForm">
+                    <div class="form-group">
+                        <label class="form-label" for="editPackageName">Package Name *</label>
+                        <input type="text" id="editPackageName" class="form-input" required placeholder="e.g., Standard Internet, Premium Voice">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editTechnologyType">Technology Type</label>
+                        <select id="editTechnologyType" class="form-input">
+                            <option value="">Select technology type...</option>
+                            <option value="Fiber">Fiber</option>
+                            <option value="Copper">Copper</option>
+                            <option value="Fixed Wireless">Fixed Wireless</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="editLicenseTypeGroup" style="display: none;">
+                        <label class="form-label" for="editLicenseType">License Type</label>
+                        <select id="editLicenseType" class="form-input">
+                            <option value="">Select license type...</option>
+                            <option value="Licensed">Licensed</option>
+                            <option value="Unlicensed">Unlicensed</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="editDownloadSpeed">Download Speed</label>
+                            <input type="text" id="editDownloadSpeed" class="form-input" placeholder="e.g., 100 Mbps">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editUploadSpeed">Upload Speed</label>
+                            <input type="text" id="editUploadSpeed" class="form-input" placeholder="e.g., 20 Mbps">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                        <button type="button" class="btn-profile btn-secondary" id="cancelEditServicePackage">Cancel</button>
+                        <button type="submit" class="btn-profile btn-primary-profile" id="saveEditServicePackage">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Standalone Service Packages Section -->
+        <div class="profile-card">
+            <h2>📦 Service Packages</h2>
+            <p style="color: #666666; margin-bottom: 1.5rem;">Manage service packages across all your companies</p>
+
+            <div class="success-message" id="addStandalonePackageSuccess" style="display: none;"></div>
+            <div class="error-message" id="addStandalonePackageError" style="display: none;"></div>
+
+            <!-- Add Package Form -->
+            <div class="add-service-package-form" style="margin-bottom: 1.5rem; padding: 1rem; background: #f9f9f9; border-radius: 8px;">
+                <h3 style="font-size: 1.2rem; margin-top: 0; margin-bottom: 1rem; color: #1a1a1a;">Add New Service Package</h3>
+                <form id="addStandalonePackageForm" class="add-service-package-form-element">
+                    <div class="form-group">
+                        <label class="form-label" for="standalonePackageName">Package Name *</label>
+                        <input type="text" id="standalonePackageName" class="form-input" required placeholder="e.g., Standard Internet, Premium Voice">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="standaloneTechnologyType">Technology Type</label>
+                        <select id="standaloneTechnologyType" class="form-input">
+                            <option value="">Select technology type...</option>
+                            <option value="Fiber">Fiber</option>
+                            <option value="Copper">Copper</option>
+                            <option value="Fixed Wireless">Fixed Wireless</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="standaloneLicenseTypeGroup" style="display: none;">
+                        <label class="form-label" for="standaloneLicenseType">License Type</label>
+                        <select id="standaloneLicenseType" class="form-input">
+                            <option value="">Select license type...</option>
+                            <option value="Licensed">Licensed</option>
+                            <option value="Unlicensed">Unlicensed</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="standaloneDownloadSpeed">Download Speed</label>
+                            <input type="text" id="standaloneDownloadSpeed" class="form-input" placeholder="e.g., 100 Mbps">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="standaloneUploadSpeed">Upload Speed</label>
+                            <input type="text" id="standaloneUploadSpeed" class="form-input" placeholder="e.g., 20 Mbps">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-profile btn-primary-profile" id="addStandalonePackageBtn">Add Service Package</button>
+                </form>
+            </div>
+
+            <div id="allServicePackagesLoading" class="communities-loading" style="display: none;">Loading service packages...</div>
+            <div id="allServicePackagesError" class="error-message" style="display: none;"></div>
+
+            <div id="allServicePackagesList" style="display: none;">
+                <!-- Service packages will be loaded here -->
+            </div>
+
+            <div id="noServicePackages" class="no-companies" style="display: none;">
+                <p style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem;">No service packages found.</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Add your first service package using the form above.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Company Modal -->
+    <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div id="editModalBackdrop" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+        <div id="editModalContent" style="background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative; z-index: 1001;">
+            <h2 style="margin-top: 0; margin-bottom: 1.5rem;">Edit Company</h2>
+
+            <div class="success-message" id="editCompanySuccess"></div>
+            <div class="error-message" id="editCompanyError"></div>
+
+            <form id="editCompanyForm">
+                <div class="form-group">
+                    <label class="form-label" for="editCompanyName">Company Name *</label>
+                    <input type="text" id="editCompanyName" class="form-input" required placeholder="Enter company name">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editLegalName">Legal Name</label>
+                    <input type="text" id="editLegalName" class="form-input" placeholder="Enter legal name">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editMarketingName">Marketing Name</label>
+                    <input type="text" id="editMarketingName" class="form-input" placeholder="Enter marketing name">
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn-profile btn-secondary" id="cancelEditBtn">Cancel</button>
+                    <button type="submit" class="btn-profile btn-primary-profile" id="saveEditBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Community Modal -->
+    <div id="editCommunityModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div id="editCommunityModalBackdrop" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+        <div id="editCommunityModalContent" style="background: white; padding: 2rem; border-radius: 12px; max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative; z-index: 1001;">
+            <h2 style="margin-top: 0; margin-bottom: 1.5rem;">Edit Community</h2>
+
+            <div class="success-message" id="editCommunitySuccess"></div>
+            <div class="error-message" id="editCommunityError"></div>
+
+            <div id="editCommunityFormContainer">
+                <!-- Form will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let editingCompanyId = null;
+
+        // Utility functions
+        function showSuccess(elementId, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = message;
+                element.classList.add('show');
+                setTimeout(() => {
+                    element.classList.remove('show');
+                }, 5000);
+            }
+        }
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = message;
+                element.classList.add('show');
+            }
+        }
+
+        function hideMessages() {
+            document.querySelectorAll('.success-message, .error-message').forEach(el => {
+                el.classList.remove('show');
+            });
+        }
+
+        // Load companies
+        async function loadCompanies() {
+            const loadingEl = document.getElementById('companiesLoading');
+            const errorEl = document.getElementById('companiesError');
+            const listEl = document.getElementById('companiesList');
+            const noCompaniesEl = document.getElementById('noCompanies');
+
+            try {
+                loadingEl.style.display = 'block';
+                errorEl.style.display = 'none';
+                listEl.style.display = 'none';
+                noCompaniesEl.style.display = 'none';
+
+                const response = await fetch('/api/companies', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load companies');
+                }
+
+                const data = await response.json();
+                loadingEl.style.display = 'none';
+
+                if (!data.success || !data.companies || data.companies.length === 0) {
+                    noCompaniesEl.style.display = 'block';
+                    return;
+                }
+
+
+                // Display companies
+                listEl.innerHTML = data.companies.map(company => {
+                    const createdDate = company.created_at ? new Date(company.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }) : 'Unknown';
+
+                    return `
+                        <div class="company-card" data-company-id="${company.id}">
+                            <div class="company-header">
+                                <div style="flex: 1;">
+                                    <div class="company-name">${escapeHtml(company.name)}</div>
+                                    ${company.legal_name ? `
+                                    <div style="font-size: 0.9rem; color: #666; margin-top: 0.25rem;">
+                                        <span style="font-weight: 500;">Legal Name:</span> ${escapeHtml(company.legal_name)}
+                                    </div>
+                                    ` : ''}
+                                    ${company.marketing_name ? `
+                                    <div style="font-size: 0.9rem; color: #666; margin-top: 0.25rem;">
+                                        <span style="font-weight: 500;">Marketing Name:</span> ${escapeHtml(company.marketing_name)}
+                                    </div>
+                                    ` : ''}
+                                    <div class="company-date">Created on ${createdDate}</div>
+                                </div>
+                                <div class="company-actions">
+                                    <button class="btn-profile btn-primary-profile generate-prompt-btn" data-company-id="${company.id}" title="Generate company description prompt">📝 Generate Prompt</button>
+                                    <button class="btn-profile btn-secondary edit-company-btn" data-company-id="${company.id}">Edit</button>
+                                    <button class="btn-profile btn-danger delete-company-btn" data-company-id="${company.id}" data-company-name="${escapeHtml(company.name)}">Delete</button>
+                                </div>
+                            </div>
+                            <div class="communities-section">
+                                <div class="communities-header">
+                                    <div class="communities-title">📋 Communities</div>
+                                </div>
+                                <div class="communities-content show" id="communities-${company.id}">
+                                    <div class="communities-loading">Loading communities...</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                listEl.style.display = 'block';
+
+                // Attach event listeners to edit and delete buttons
+                attachCompanyEventListeners();
+                
+                // Load communities for all companies immediately
+                data.companies.forEach(company => {
+                    loadCommunities(company.id);
+                });
+            } catch (error) {
+                console.error('Error loading companies:', error);
+                loadingEl.style.display = 'none';
+                errorEl.textContent = 'Failed to load companies. Please try again later.';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        // Generate package HTML for a technology type
+        function generatePackageHTML(techType, packageIndex, packageData, companyId, communityId, isEdit) {
+            const idSuffix = isEdit ? `-${communityId}` : `-${companyId}`;
+            // Map tech type to slug (Fixed Wireless -> fw)
+            let techSlug;
+            if (techType === 'Fixed Wireless') {
+                techSlug = 'fw';
+            } else {
+                techSlug = techType.toLowerCase().replace(' ', '-');
+            }
+            const fullPrefix = isEdit ? `edit-${techSlug}` : techSlug;
+            const prefix = isEdit ? 'edit' : 'add';
+            
+            const pkg = packageData || {};
+            const packageId = `pkg-${techSlug}-${packageIndex}`;
+            // Store service package ID if this package came from the service package list
+            const servicePackageId = pkg.servicePackageId || null;
+            
+            // Determine if package is saved (has data) or new (empty)
+            const isSaved = packageData && (pkg.name || pkg.downloadSpeed || pkg.uploadSpeed);
+            const savedClass = isSaved ? 'saved' : '';
+            const saveBtnStyle = isSaved ? 'display: none;' : '';
+            const editBtnStyle = isSaved ? '' : 'display: none;';
+            
+            let licenseHTML = '';
+            if (techType === 'Fixed Wireless') {
+                const licenseValue = pkg.licensed === true || pkg.licensed === 'true' ? 'Licensed' : (pkg.licensed === false || pkg.licensed === 'false' ? 'Unlicensed' : '');
+                licenseHTML = `
+                    <div class="license-select">
+                        <label class="form-label" style="font-size: 0.9rem;">License Type</label>
+                        <select class="form-input" id="${fullPrefix}-package-${packageIndex}-license${idSuffix}" style="padding: 0.875rem;" ${isSaved ? 'disabled' : ''}>
+                            <option value="">Select...</option>
+                            <option value="Licensed" ${licenseValue === 'Licensed' ? 'selected' : ''}>Licensed</option>
+                            <option value="Unlicensed" ${licenseValue === 'Unlicensed' ? 'selected' : ''}>Unlicensed</option>
+                        </select>
+                    </div>
+                `;
+            }
+            
+            // Build data attribute for service package ID if available
+            const servicePackageIdAttr = servicePackageId ? `data-service-package-id="${servicePackageId}"` : '';
+            
+            return `
+                <div class="package-item ${savedClass}" data-package-id="${packageId}" data-saved="${isSaved}" ${servicePackageIdAttr}>
+                    <div class="package-header">
+                        <span class="package-title">${isSaved && pkg.name ? escapeHtml(pkg.name) : `Package ${packageIndex + 1}`}</span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button type="button" class="package-save-btn" data-package-id="${packageId}" style="${saveBtnStyle}">Save</button>
+                            <button type="button" class="package-edit-btn" data-package-id="${packageId}" style="${editBtnStyle}">Edit</button>
+                            <button type="button" class="package-remove-btn" data-package-id="${packageId}" data-container-id="${techSlug}${idSuffix}">Remove</button>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0.75rem;">
+                        <label class="form-label" style="font-size: 0.9rem;">Package Name *</label>
+                        <input type="text" class="form-input" placeholder="e.g., Basic Plan, Premium Plan" 
+                               value="${escapeHtml(pkg.name || '')}" 
+                               id="${fullPrefix}-package-${packageIndex}-name${idSuffix}"
+                               ${isSaved ? 'disabled' : ''} required>
+                    </div>
+                    <div class="speed-inputs">
+                        <div>
+                            <label class="form-label" style="font-size: 0.9rem;">Download Speed</label>
+                            <input type="text" class="form-input" placeholder="e.g., 100" 
+                                   value="${escapeHtml(pkg.downloadSpeed || '')}" 
+                                   id="${fullPrefix}-package-${packageIndex}-download${idSuffix}"
+                                   ${isSaved ? 'disabled' : ''}>
+                        </div>
+                        <div>
+                            <label class="form-label" style="font-size: 0.9rem;">Upload Speed</label>
+                            <input type="text" class="form-input" placeholder="e.g., 100" 
+                                   value="${escapeHtml(pkg.uploadSpeed || '')}" 
+                                   id="${fullPrefix}-package-${packageIndex}-upload${idSuffix}"
+                                   ${isSaved ? 'disabled' : ''}>
+                        </div>
+                    </div>
+                    ${licenseHTML}
+                </div>
+            `;
+        }
+
+        // Generate packages container HTML
+        function generatePackagesHTML(techType, packages, companyId, communityId, isEdit, servicePackages = []) {
+            const idSuffix = isEdit ? `-${communityId}` : `-${companyId}`;
+            // Map tech type to slug (Fixed Wireless -> fw)
+            let techSlug;
+            if (techType === 'Fixed Wireless') {
+                techSlug = 'fw';
+            } else {
+                techSlug = techType.toLowerCase().replace(' ', '-');
+            }
+            const fullPrefix = isEdit ? `edit-${techSlug}` : techSlug;
+            const containerId = `packages-${fullPrefix}${idSuffix}`;
+            
+            let packagesHTML = '<div class="packages-container" id="' + containerId + '">';
+            
+            if (packages && packages.length > 0) {
+                packages.forEach((pkg, index) => {
+                    // If package has a servicePackageId, create a hidden reference instead of visible item
+                    if (pkg.servicePackageId) {
+                        const hiddenPackageHTML = `
+                            <div class="package-item" 
+                                 data-package-id="service-pkg-${pkg.servicePackageId}" 
+                                 data-service-package-id="${pkg.servicePackageId}"
+                                 data-saved="true"
+                                 style="display: none;">
+                                <input type="hidden" 
+                                       data-service-pkg-ref="${pkg.servicePackageId}"
+                                       data-package-name="${escapeHtml(pkg.name || '')}"
+                                       data-package-download="${escapeHtml(pkg.downloadSpeed || '')}"
+                                       data-package-upload="${escapeHtml(pkg.uploadSpeed || '')}"
+                                       data-package-license="${pkg.licensed ? 'Licensed' : (pkg.licensed === false ? 'Unlicensed' : '')}">
+                            </div>
+                        `;
+                        packagesHTML += hiddenPackageHTML;
+                    } else {
+                        // Regular package without servicePackageId - show full editable form
+                        packagesHTML += generatePackageHTML(techType, index, pkg, companyId, communityId, isEdit);
+                    }
+                });
+            }
+            
+            packagesHTML += '</div>';
+            
+            // Add dropdown to select existing service packages
+            // Filter service packages by technology type
+            const filteredServicePackages = servicePackages ? servicePackages.filter(sp => {
+                // Match technology type (case-insensitive)
+                const spTechType = (sp.technology_type || '').trim();
+                const currentTechType = techType.trim();
+                return spTechType.toLowerCase() === currentTechType.toLowerCase();
+            }) : [];
+            
+            if (filteredServicePackages.length > 0) {
+                // Check which packages are already added to this technology
+                const existingPackageIds = new Set();
+                if (packages && packages.length > 0) {
+                    packages.forEach(pkg => {
+                        if (pkg.servicePackageId) {
+                            existingPackageIds.add(String(pkg.servicePackageId));
+                        }
+                        // Also check by name (case-insensitive) if no service package ID
+                        if (pkg.name && !pkg.servicePackageId) {
+                            existingPackageIds.add(pkg.name.trim().toLowerCase());
+                        }
+                    });
+                }
+                
+                packagesHTML += `<div style="margin-bottom: 1rem;">
+                    <label class="form-label" style="margin-bottom: 0.75rem; display: block; font-weight: 600;">Available Service Packages</label>
+                    <div class="available-packages-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto; padding: 0.5rem; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        ${filteredServicePackages.map(sp => {
+                            const speedInfo = sp.download_speed || sp.upload_speed 
+                                ? `(${sp.download_speed || ''}${sp.download_speed && sp.upload_speed ? ' / ' : ''}${sp.upload_speed || ''})` 
+                                : '';
+                            const licenseInfo = sp.license_type ? ` [${escapeHtml(sp.license_type)}]` : '';
+                            // Check if this package is already added
+                            const isAlreadyAdded = existingPackageIds.has(String(sp.id)) || existingPackageIds.has((sp.name || '').trim().toLowerCase());
+                            const buttonDisabled = isAlreadyAdded ? 'disabled' : '';
+                            const buttonText = isAlreadyAdded ? 'Already Added' : '+ Add';
+                            const buttonStyle = isAlreadyAdded 
+                                ? 'padding: 0.5rem 1rem; font-size: 0.85rem; white-space: nowrap; margin-left: 1rem; background: #95a5a6; cursor: not-allowed;' 
+                                : 'padding: 0.5rem 1rem; font-size: 0.85rem; white-space: nowrap; margin-left: 1rem;';
+                            
+                            return `
+                                <div class="available-package-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e0e0e0; transition: all 0.2s;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: #2c3e50; margin-bottom: 0.25rem;">${escapeHtml(sp.name)}</div>
+                                        <div style="font-size: 0.85rem; color: #666;">
+                                            ${speedInfo ? `<span>${speedInfo}</span>` : ''}
+                                            ${licenseInfo ? `<span>${licenseInfo}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <button type="button" 
+                                            class="btn-profile btn-secondary add-package-from-list-btn" 
+                                            data-package-id="${sp.id}"
+                                            data-package-name="${escapeHtml(sp.name)}"
+                                            data-package-download="${escapeHtml(sp.download_speed || '')}"
+                                            data-package-upload="${escapeHtml(sp.upload_speed || '')}"
+                                            data-package-license="${escapeHtml(sp.license_type || '')}"
+                                            data-container-id="${fullPrefix}${idSuffix}"
+                                            data-tech-type="${techType}"
+                                            data-id="${isEdit ? (communityId || '') : companyId}"
+                                            data-is-edit="${isEdit}"
+                                            ${buttonDisabled}
+                                            style="${buttonStyle}">
+                                        ${buttonText}
+                                    </button>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>`;
+            }
+            
+            packagesHTML += `<button type="button" class="add-package-btn" data-container-id="${fullPrefix}${idSuffix}" data-tech-type="${techType}" data-id="${isEdit ? (communityId || '') : companyId}" data-is-edit="${isEdit}">Add New Package</button>`;
+            
+            return packagesHTML;
+        }
+
+        // Generate community form HTML
+        function generateCommunityFormHTML(companyId, communityData = null, isEdit = false, companyData = null, servicePackages = []) {
+            const community = communityData || {
+                name: '',
+                ilec: false,
+                clec: false,
+                serving_company_name: '',
+                technologies: []
+            };
+
+            // Determine selected serving company option
+            let selectedServingCompany = '';
+            if (community.serving_company_name) {
+                if (companyData && companyData.legal_name === community.serving_company_name) {
+                    selectedServingCompany = 'legal_name';
+                } else if (companyData && companyData.marketing_name === community.serving_company_name) {
+                    selectedServingCompany = 'marketing_name';
+                }
+            }
+
+            const technologies = community.technologies || [];
+            const hasFiber = technologies.some(t => t.type === 'Fiber');
+            const hasCopper = technologies.some(t => t.type === 'Copper');
+            const hasFixedWireless = technologies.some(t => t.type === 'Fixed Wireless');
+
+            const fiberTech = technologies.find(t => t.type === 'Fiber') || { packages: [] };
+            const copperTech = technologies.find(t => t.type === 'Copper') || { packages: [] };
+            const fwTech = technologies.find(t => t.type === 'Fixed Wireless') || { packages: [] };
+            
+            // Ensure packages is an array
+            const fiberPackages = Array.isArray(fiberTech.packages) ? fiberTech.packages : (fiberTech.downloadSpeed ? [{ downloadSpeed: fiberTech.downloadSpeed, uploadSpeed: fiberTech.uploadSpeed }] : []);
+            const copperPackages = Array.isArray(copperTech.packages) ? copperTech.packages : (copperTech.downloadSpeed ? [{ downloadSpeed: copperTech.downloadSpeed, uploadSpeed: copperTech.uploadSpeed }] : []);
+            const fwPackages = Array.isArray(fwTech.packages) ? fwTech.packages : (fwTech.downloadSpeed ? [{ downloadSpeed: fwTech.downloadSpeed, uploadSpeed: fwTech.uploadSpeed, licensed: fwTech.licensed }] : []);
+
+            const formClass = isEdit ? 'edit-community-form-element' : 'add-community-form-element';
+            const formId = isEdit ? `edit-community-form-${community.id}` : `add-community-form-${companyId}`;
+
+            // Build serving company dropdown options
+            let servingCompanyOptions = '<option value="">None</option>';
+            if (companyData) {
+                if (companyData.legal_name) {
+                    servingCompanyOptions += `<option value="legal_name" ${selectedServingCompany === 'legal_name' ? 'selected' : ''}>Legal Name: ${escapeHtml(companyData.legal_name)}</option>`;
+                }
+                if (companyData.marketing_name) {
+                    servingCompanyOptions += `<option value="marketing_name" ${selectedServingCompany === 'marketing_name' ? 'selected' : ''}>Marketing Name: ${escapeHtml(companyData.marketing_name)}</option>`;
+                }
+            }
+
+            return `
+                <form class="${formClass}" data-company-id="${companyId}" ${isEdit ? `data-community-id="${community.id}"` : ''} id="${formId}">
+                    <div class="form-group">
+                        <label class="form-label">Community Name *</label>
+                        <input type="text" class="form-input" placeholder="Enter community name" required 
+                               value="${escapeHtml(community.name)}" 
+                               id="${isEdit ? `edit-community-name-${community.id}` : `community-name-${companyId}`}">
+                    </div>
+
+                    <div class="form-row-checkbox">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="${isEdit ? `edit-ilec-${community.id}` : `ilec-${companyId}`}" 
+                                   ${community.ilec ? 'checked' : ''}>
+                            <label for="${isEdit ? `edit-ilec-${community.id}` : `ilec-${companyId}`}">ILEC</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="${isEdit ? `edit-clec-${community.id}` : `clec-${companyId}`}" 
+                                   ${community.clec ? 'checked' : ''}>
+                            <label for="${isEdit ? `edit-clec-${community.id}` : `clec-${companyId}`}">CLEC</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Serving Company Name</label>
+                        <select class="form-input" id="${isEdit ? `edit-serving-company-${community.id}` : `serving-company-${companyId}`}" style="padding: 0.875rem;">
+                            ${servingCompanyOptions}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Technology Types</label>
+                        
+                        <div class="technology-option">
+                            <div class="technology-header">
+                                <input type="checkbox" id="${isEdit ? `edit-tech-fiber-${community.id}` : `tech-fiber-${companyId}`}" 
+                                       ${hasFiber ? 'checked' : ''} 
+                                       class="tech-checkbox" data-tech="Fiber">
+                                <label for="${isEdit ? `edit-tech-fiber-${community.id}` : `tech-fiber-${companyId}`}" style="font-weight: 600;">Fiber</label>
+                            </div>
+                            <div class="technology-details" id="${isEdit ? `edit-fiber-details-${community.id}` : `fiber-details-${companyId}`}" style="display: ${hasFiber ? 'block' : 'none'};">
+                                ${generatePackagesHTML('Fiber', fiberPackages, companyId, isEdit ? community.id : null, isEdit, servicePackages)}
+                            </div>
+                        </div>
+
+                        <div class="technology-option">
+                            <div class="technology-header">
+                                <input type="checkbox" id="${isEdit ? `edit-tech-copper-${community.id}` : `tech-copper-${companyId}`}" 
+                                       ${hasCopper ? 'checked' : ''} 
+                                       class="tech-checkbox" data-tech="Copper">
+                                <label for="${isEdit ? `edit-tech-copper-${community.id}` : `tech-copper-${companyId}`}" style="font-weight: 600;">Copper</label>
+                            </div>
+                            <div class="technology-details" id="${isEdit ? `edit-copper-details-${community.id}` : `copper-details-${companyId}`}" style="display: ${hasCopper ? 'block' : 'none'};">
+                                ${generatePackagesHTML('Copper', copperPackages, companyId, isEdit ? community.id : null, isEdit, servicePackages)}
+                            </div>
+                        </div>
+
+                        <div class="technology-option">
+                            <div class="technology-header">
+                                <input type="checkbox" id="${isEdit ? `edit-tech-fw-${community.id}` : `tech-fw-${companyId}`}" 
+                                       ${hasFixedWireless ? 'checked' : ''} 
+                                       class="tech-checkbox" data-tech="Fixed Wireless">
+                                <label for="${isEdit ? `edit-tech-fw-${community.id}` : `tech-fw-${companyId}`}" style="font-weight: 600;">Fixed Wireless</label>
+                            </div>
+                            <div class="technology-details" id="${isEdit ? `edit-fw-details-${community.id}` : `fw-details-${companyId}`}" style="display: ${hasFixedWireless ? 'block' : 'none'};">
+                                ${generatePackagesHTML('Fixed Wireless', fwPackages, companyId, isEdit ? community.id : null, isEdit, servicePackages)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-profile btn-primary-profile" style="width: 100%;">
+                        ${isEdit ? 'Update Community' : 'Add Community'}
+                    </button>
+                </form>
+            `;
+        }
+
+
+        // Re-index packages after add/remove
+        function reindexPackages(containerId) {
+            // Container ID should already include "packages-" prefix
+            const container = document.getElementById(containerId) || document.getElementById(`packages-${containerId}`);
+            if (!container) {
+                console.error('Container not found for reindexPackages:', containerId);
+                return;
+            }
+            
+            const actualContainerId = container.id;
+            const packages = Array.from(container.querySelectorAll('.package-item'));
+            
+            // Extract tech type and ID suffix from container ID
+            // Format: packages-fiber-5 or packages-edit-fiber-123 or packages-fixed-wireless-5
+            // Handle both "fw" and "fixed-wireless" for Fixed Wireless
+            let match = actualContainerId.match(/^packages-(edit-)?(fiber|copper|fw)-(.+)$/);
+            if (!match) {
+                // Try matching fixed-wireless
+                match = actualContainerId.match(/^packages-(edit-)?fixed-wireless-(.+)$/);
+                if (match) {
+                    // Normalize to fw
+                    match[2] = 'fw';
+                } else {
+                    console.error('Could not parse container ID:', actualContainerId);
+                    return;
+                }
+            }
+            
+            const isEdit = !!match[1]; // "edit-" prefix exists
+            const techSlug = match[2]; // fiber, copper, or fw
+            const idSuffix = match[3]; // the ID suffix (companyId or communityId)
+            const fullPrefix = isEdit ? `edit-${techSlug}` : techSlug;
+            const containerIdSuffix = `${fullPrefix}-${idSuffix}`;
+            
+            packages.forEach((pkg, index) => {
+                // Preserve saved state
+                const isSaved = pkg.classList.contains('saved') || pkg.getAttribute('data-saved') === 'true';
+                
+                // Update package title
+                const titleEl = pkg.querySelector('.package-title');
+                if (titleEl) {
+                    titleEl.textContent = `Package ${index + 1}`;
+                }
+                
+                // Update package data-package-id
+                const newPackageId = `pkg-${techSlug}-${index}`;
+                pkg.setAttribute('data-package-id', newPackageId);
+                if (isSaved) {
+                    pkg.classList.add('saved');
+                    pkg.setAttribute('data-saved', 'true');
+                } else {
+                    pkg.classList.remove('saved');
+                    pkg.setAttribute('data-saved', 'false');
+                }
+                
+                // Update save/edit/remove button attributes
+                const saveBtn = pkg.querySelector('.package-save-btn');
+                const editBtn = pkg.querySelector('.package-edit-btn');
+                const removeBtn = pkg.querySelector('.package-remove-btn');
+                
+                if (saveBtn) {
+                    saveBtn.setAttribute('data-package-id', newPackageId);
+                    saveBtn.style.display = isSaved ? 'none' : '';
+                }
+                if (editBtn) {
+                    editBtn.setAttribute('data-package-id', newPackageId);
+                    editBtn.style.display = isSaved ? '' : 'none';
+                }
+                if (removeBtn) {
+                    removeBtn.setAttribute('data-package-id', newPackageId);
+                    removeBtn.setAttribute('data-container-id', containerIdSuffix);
+                }
+                
+                // Update IDs in all inputs and selects
+                const inputs = pkg.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    const oldId = input.id;
+                    if (oldId) {
+                        // Extract the field name (name, download, upload, or license)
+                        const fieldMatch = oldId.match(/package-\d+-(name|download|upload|license)/);
+                        if (fieldMatch) {
+                            const fieldName = fieldMatch[1];
+                            const newId = `${fullPrefix}-package-${index}-${fieldName}-${idSuffix}`;
+                            input.id = newId;
+                            
+                            // Preserve disabled state based on saved status
+                            if (isSaved) {
+                                input.disabled = true;
+                            }
+                        }
+                    }
+                });
+                
+                // Update package title if name field exists and has value
+                const nameInput = pkg.querySelector('input[id*="-name"]');
+                if (nameInput && nameInput.value && nameInput.value.trim()) {
+                    const titleEl = pkg.querySelector('.package-title');
+                    if (titleEl) {
+                        titleEl.textContent = escapeHtml(nameInput.value.trim());
+                    }
+                }
+            });
+        }
+
+        // Setup technology checkbox handlers
+        // Refresh service packages list for a specific technology type
+        async function refreshServicePackagesDropdown(techType, formElement, detailsElement = null) {
+            try {
+                // Find the packages list container for this technology type
+                let packagesListContainer = null;
+                
+                if (detailsElement) {
+                    packagesListContainer = detailsElement.querySelector('.available-packages-list');
+                }
+                
+                if (!packagesListContainer && formElement) {
+                    packagesListContainer = formElement.querySelector(`.available-packages-list`);
+                }
+                
+                // Fetch latest service packages
+                const response = await fetch('/api/service-packages', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    console.error('Failed to fetch service packages for refresh');
+                    return;
+                }
+                
+                const data = await response.json();
+                if (!data.success || !data.servicePackages) {
+                    console.log('No service packages found');
+                    return;
+                }
+                
+                // Filter packages by technology type
+                const filteredPackages = data.servicePackages.filter(sp => {
+                    const spTechType = (sp.technology_type || '').trim();
+                    return spTechType.toLowerCase() === techType.toLowerCase();
+                });
+                
+                // If list doesn't exist but we have packages, create it
+                if (!packagesListContainer && filteredPackages.length > 0 && detailsElement) {
+                    const addButton = detailsElement.querySelector('.add-package-btn[data-tech-type="' + techType + '"]') || 
+                                     detailsElement.querySelector('.add-package-btn');
+                    if (addButton) {
+                        const containerId = addButton.getAttribute('data-container-id');
+                        const isEdit = addButton.getAttribute('data-is-edit') === 'true';
+                        const idValue = addButton.getAttribute('data-id');
+                        
+                        const packageListHTML = filteredPackages.map(sp => {
+                            const speedInfo = sp.download_speed || sp.upload_speed 
+                                ? `(${sp.download_speed || ''}${sp.download_speed && sp.upload_speed ? ' / ' : ''}${sp.upload_speed || ''})` 
+                                : '';
+                            const licenseInfo = sp.license_type ? ` [${escapeHtml(sp.license_type)}]` : '';
+                            return `
+                                <div class="available-package-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e0e0e0; transition: all 0.2s;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: #2c3e50; margin-bottom: 0.25rem;">${escapeHtml(sp.name)}</div>
+                                        <div style="font-size: 0.85rem; color: #666;">
+                                            ${speedInfo ? `<span>${speedInfo}</span>` : ''}
+                                            ${licenseInfo ? `<span>${licenseInfo}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <button type="button" 
+                                            class="btn-profile btn-secondary add-package-from-list-btn" 
+                                            data-package-id="${sp.id}"
+                                            data-package-name="${escapeHtml(sp.name)}"
+                                            data-package-download="${escapeHtml(sp.download_speed || '')}"
+                                            data-package-upload="${escapeHtml(sp.upload_speed || '')}"
+                                            data-package-license="${escapeHtml(sp.license_type || '')}"
+                                            data-container-id="${containerId}"
+                                            data-tech-type="${techType}"
+                                            data-id="${idValue}"
+                                            data-is-edit="${isEdit}"
+                                            style="padding: 0.5rem 1rem; font-size: 0.85rem; white-space: nowrap; margin-left: 1rem;">
+                                        + Add
+                                    </button>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        const listHTML = `<div style="margin-bottom: 1rem;">
+                            <label class="form-label" style="margin-bottom: 0.75rem; display: block; font-weight: 600;">Available Service Packages</label>
+                            <div class="available-packages-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto; padding: 0.5rem; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e0e0;">
+                                ${packageListHTML}
+                            </div>
+                        </div>`;
+                        
+                        addButton.insertAdjacentHTML('beforebegin', listHTML);
+                        packagesListContainer = addButton.previousElementSibling.querySelector('.available-packages-list');
+                        
+                        // Re-attach listeners
+                        const form = formElement.closest('.add-community-form-element, .edit-community-form-element') || formElement;
+                        if (form) {
+                            attachSelectExistingPackageListeners(form);
+                        }
+                        return;
+                    }
+                }
+                
+                // Update existing list if it exists
+                if (packagesListContainer && filteredPackages.length > 0) {
+                    // Get container info from existing list or button
+                    const existingButton = packagesListContainer.querySelector('.add-package-from-list-btn');
+                    const containerId = existingButton ? existingButton.getAttribute('data-container-id') : null;
+                    const isEdit = existingButton ? (existingButton.getAttribute('data-is-edit') === 'true') : false;
+                    const idValue = existingButton ? existingButton.getAttribute('data-id') : null;
+                    
+                    if (containerId) {
+                        // Update the packages list
+                        const packageListHTML = filteredPackages.map(sp => {
+                            const speedInfo = sp.download_speed || sp.upload_speed 
+                                ? `(${sp.download_speed || ''}${sp.download_speed && sp.upload_speed ? ' / ' : ''}${sp.upload_speed || ''})` 
+                                : '';
+                            const licenseInfo = sp.license_type ? ` [${escapeHtml(sp.license_type)}]` : '';
+                            return `
+                                <div class="available-package-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e0e0e0; transition: all 0.2s;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: #2c3e50; margin-bottom: 0.25rem;">${escapeHtml(sp.name)}</div>
+                                        <div style="font-size: 0.85rem; color: #666;">
+                                            ${speedInfo ? `<span>${speedInfo}</span>` : ''}
+                                            ${licenseInfo ? `<span>${licenseInfo}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <button type="button" 
+                                            class="btn-profile btn-secondary add-package-from-list-btn" 
+                                            data-package-id="${sp.id}"
+                                            data-package-name="${escapeHtml(sp.name)}"
+                                            data-package-download="${escapeHtml(sp.download_speed || '')}"
+                                            data-package-upload="${escapeHtml(sp.upload_speed || '')}"
+                                            data-package-license="${escapeHtml(sp.license_type || '')}"
+                                            data-container-id="${containerId}"
+                                            data-tech-type="${techType}"
+                                            data-id="${idValue}"
+                                            data-is-edit="${isEdit}"
+                                            style="padding: 0.5rem 1rem; font-size: 0.85rem; white-space: nowrap; margin-left: 1rem;">
+                                        + Add
+                                    </button>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        packagesListContainer.innerHTML = packageListHTML;
+                        
+                        // Re-attach listeners
+                        const form = formElement.closest('.add-community-form-element, .edit-community-form-element') || formElement;
+                        if (form) {
+                            attachSelectExistingPackageListeners(form);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error refreshing service packages dropdown:', error);
+            }
+        }
+
+        function setupTechnologyCheckboxes(prefix) {
+            document.querySelectorAll(`#${prefix} .tech-checkbox, .tech-checkbox`).forEach(checkbox => {
+                checkbox.addEventListener('change', async function() {
+                    const techType = this.getAttribute('data-tech');
+                    let detailsId;
+                    
+                    // Handle different ID patterns
+                    if (this.id.includes('tech-fw')) {
+                        // Fixed Wireless uses 'fw' in ID
+                        detailsId = this.id.replace('tech-fw', 'fw-details');
+                    } else if (this.id.includes('tech-fiber')) {
+                        detailsId = this.id.replace('tech-fiber', 'fiber-details');
+                    } else if (this.id.includes('tech-copper')) {
+                        detailsId = this.id.replace('tech-copper', 'copper-details');
+                    } else {
+                        // Fallback: try to replace based on tech type
+                        const techSlug = techType.toLowerCase().replace(' ', '-');
+                        detailsId = this.id.replace(`tech-${techSlug}`, `${techSlug}-details`);
+                    }
+                    
+                    const detailsEl = document.getElementById(detailsId);
+                    if (detailsEl) {
+                        detailsEl.style.display = this.checked ? 'block' : 'none';
+                        
+                        // If technology is checked, refresh the service packages dropdown
+                        // Use setTimeout to ensure DOM is updated after showing the details section
+                        if (this.checked) {
+                            // Determine tech type from checkbox ID or attribute
+                            let techTypeToUse = techType;
+                            if (!techTypeToUse) {
+                                if (this.id.includes('fiber')) {
+                                    techTypeToUse = 'Fiber';
+                                } else if (this.id.includes('copper')) {
+                                    techTypeToUse = 'Copper';
+                                } else if (this.id.includes('fw')) {
+                                    techTypeToUse = 'Fixed Wireless';
+                                }
+                            }
+                            
+                            if (techTypeToUse) {
+                                // Find the form element (could be add or edit form)
+                                const formElement = this.closest('.add-community-form-element, .edit-community-form-element') || 
+                                                  this.closest('form') ||
+                                                  document.querySelector(`#${prefix} form`);
+                                
+                                // Wait a bit for DOM to update, then refresh dropdown
+                                setTimeout(async () => {
+                                    if (formElement) {
+                                        // Also search within the details element for more accurate targeting
+                                        await refreshServicePackagesDropdown(techTypeToUse, formElement, detailsEl);
+                                    }
+                                }, 50);
+                            }
+                        }
+                    } else {
+                        console.warn('Could not find details element with ID:', detailsId, 'for checkbox:', this.id);
+                    }
+                });
+            });
+        }
+
+        // Attach listeners for selecting existing service packages
+        function attachSelectExistingPackageListeners(formElement) {
+            if (!formElement) return;
+            
+            // Handle "Add Package" button clicks from the package list
+            formElement.addEventListener('click', function(e) {
+                if (e.target.classList.contains('add-package-from-list-btn')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const containerId = e.target.getAttribute('data-container-id');
+                    const techType = e.target.getAttribute('data-tech-type');
+                    
+                    if (!containerId || !techType) return;
+                    
+                    // Get package data directly from button data attributes
+                    const packageData = {
+                        name: e.target.getAttribute('data-package-name') || '',
+                        downloadSpeed: e.target.getAttribute('data-package-download') || '',
+                        uploadSpeed: e.target.getAttribute('data-package-upload') || '',
+                        licenseType: e.target.getAttribute('data-package-license') || ''
+                    };
+                    
+                    if (!packageData.name) {
+                        alert('Package data not found');
+                        return;
+                    }
+                    
+                    // Find or create a package container for this technology
+                    // Map tech type to slug (Fixed Wireless -> fw)
+                    let techSlug = techType.toLowerCase();
+                    if (techType === 'Fixed Wireless') {
+                        techSlug = 'fw';
+                    } else {
+                        techSlug = techType.toLowerCase();
+                    }
+                    
+                    // Determine if this is an edit form
+                    const isEdit = containerId.includes('edit-') || e.target.getAttribute('data-is-edit') === 'true';
+                    
+                    // Extract the ID suffix from containerId 
+                    // containerId format: "fiber-1" or "edit-fiber-1" -> need to get "1"
+                    let idSuffix = containerId;
+                    if (containerId.includes('-')) {
+                        const parts = containerId.split('-');
+                        // For "fiber-1", parts = ["fiber", "1"]
+                        // For "edit-fiber-1", parts = ["edit", "fiber", "1"]
+                        idSuffix = parts[parts.length - 1]; // Get last part (the ID)
+                    }
+                    
+                    // Construct the technology details ID based on form type
+                    // Format: "fiber-details-1" or "edit-fiber-details-1"
+                    let techDetailsId;
+                    if (isEdit) {
+                        techDetailsId = `edit-${techSlug}-details-${idSuffix}`;
+                    } else {
+                        techDetailsId = `${techSlug}-details-${idSuffix}`;
+                    }
+                    
+                    // Try to find the technology details element
+                    let techDetailsEl = document.getElementById(techDetailsId);
+                    
+                    // If not found, try searching within the form element or all documents
+                    if (!techDetailsEl) {
+                        // Search in form first
+                        if (formElement) {
+                            techDetailsEl = formElement.querySelector(`#${techDetailsId}`);
+                        }
+                        // If still not found, search document-wide
+                        if (!techDetailsEl) {
+                            techDetailsEl = document.getElementById(techDetailsId);
+                        }
+                    }
+                    
+                    if (!techDetailsEl) {
+                        alert('Technology section not found. Please ensure the technology checkbox is checked.');
+                        return;
+                    }
+                    
+                    // Make sure the technology details section is visible
+                    if (techDetailsEl.style.display === 'none') {
+                        techDetailsEl.style.display = 'block';
+                        // Also check the corresponding checkbox to ensure it's checked
+                        const checkboxId = isEdit ? `edit-tech-${techSlug}-${idSuffix}` : `tech-${techSlug}-${idSuffix}`;
+                        const checkbox = document.getElementById(checkboxId);
+                        if (checkbox && !checkbox.checked) {
+                            checkbox.checked = true;
+                            // Trigger change event to ensure any listeners are notified
+                            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    }
+                    
+                    // Construct the packages container ID
+                    // containerId is like "fiber-4" or "edit-fiber-4"
+                    // We need "packages-fiber-4" or "packages-edit-fiber-4"
+                    const packagesContainerId = `packages-${containerId}`;
+                    let packagesContainer = document.getElementById(packagesContainerId);
+                    
+                    if (!packagesContainer) {
+                        // Create the packages container if it doesn't exist
+                        const addBtn = techDetailsEl.querySelector('.add-package-btn');
+                        if (addBtn) {
+                            const container = document.createElement('div');
+                            container.id = packagesContainerId;
+                            container.className = 'packages-container';
+                            addBtn.parentNode.insertBefore(container, addBtn);
+                            packagesContainer = container;
+                        } else {
+                            alert('Cannot find package container');
+                            return;
+                        }
+                    }
+                    
+                    // Check if package already exists (by service package ID or name)
+                    const existingPackages = packagesContainer.querySelectorAll('.package-item');
+                    const packageIdToAdd = e.target.getAttribute('data-package-id');
+                    let packageExists = false;
+                    
+                    existingPackages.forEach(existingPkg => {
+                        // First check by service package ID if available
+                        const existingServicePackageId = existingPkg.getAttribute('data-service-package-id');
+                        if (packageIdToAdd && existingServicePackageId && existingServicePackageId === packageIdToAdd) {
+                            packageExists = true;
+                            return;
+                        }
+                        
+                        // Fallback: check by name (case-insensitive)
+                        const nameInput = existingPkg.querySelector('input[id*="-name"]');
+                        if (nameInput && packageData.name) {
+                            const existingName = nameInput.value.trim().toLowerCase();
+                            const newName = packageData.name.trim().toLowerCase();
+                            if (existingName === newName && existingName !== '') {
+                                packageExists = true;
+                            }
+                        }
+                    });
+                    
+                    if (packageExists) {
+                        // Instead of alert, just disable the button and show it's already added
+                        e.target.disabled = true;
+                        e.target.textContent = 'Already Added';
+                        e.target.style.background = '#95a5a6';
+                        e.target.style.cursor = 'not-allowed';
+                        return;
+                    }
+                    
+                    // Store the service package reference without creating a visible UI element
+                    // We'll create a hidden data element that will be picked up by collectPackages
+                    const packageIndex = packagesContainer.children.length;
+                    const companyId = e.target.getAttribute('data-id') ? parseInt(e.target.getAttribute('data-id')) : null;
+                    const communityId = isEdit && companyId ? companyId : null;
+                    
+                    // Create a minimal hidden package item that stores the service package reference
+                    // This will be picked up by collectPackages but won't display in the UI
+                    const hiddenPackageHTML = `
+                        <div class="package-item" 
+                             data-package-id="service-pkg-${packageIdToAdd}" 
+                             data-service-package-id="${packageIdToAdd}"
+                             data-saved="true"
+                             style="display: none;">
+                            <input type="hidden" 
+                                   data-service-pkg-ref="${packageIdToAdd}"
+                                   data-package-name="${escapeHtml(packageData.name)}"
+                                   data-package-download="${escapeHtml(packageData.downloadSpeed)}"
+                                   data-package-upload="${escapeHtml(packageData.uploadSpeed)}"
+                                   data-package-license="${escapeHtml(packageData.licenseType)}">
+                        </div>
+                    `;
+                    
+                    packagesContainer.insertAdjacentHTML('beforeend', hiddenPackageHTML);
+                    
+                    // Disable the button to show it's been added
+                    e.target.disabled = true;
+                    e.target.textContent = 'Added';
+                    e.target.style.background = '#95a5a6';
+                    e.target.style.cursor = 'not-allowed';
+                    
+                    // No need to reindex or setup buttons since this is hidden
+                }
+            });
+        }
+
+        // Setup package button handlers (event delegation)
+        // Use a Set to track which forms already have listeners attached
+        const formsWithPackageListeners = new WeakSet();
+        
+        function setupPackageButtons(formElement) {
+            if (!formElement) return;
+            
+            // Only add listener once per form
+            if (formsWithPackageListeners.has(formElement)) {
+                return;
+            }
+            formsWithPackageListeners.add(formElement);
+            
+            // Handle add package buttons and remove package buttons
+            formElement.addEventListener('click', function(e) {
+                if (e.target.classList.contains('add-package-btn')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const containerId = e.target.getAttribute('data-container-id');
+                    const techType = e.target.getAttribute('data-tech-type');
+                    const id = e.target.getAttribute('data-id');
+                    const isEdit = e.target.getAttribute('data-is-edit') === 'true';
+                    
+                    const fullContainerId = `packages-${containerId}`;
+                    const container = document.getElementById(fullContainerId);
+                    if (!container) {
+                        console.error('Container not found:', fullContainerId);
+                        return;
+                    }
+                    
+                    // Get companyId and communityId from form or data attributes
+                    const form = e.target.closest('form');
+                    const companyId = isEdit ? null : (id ? parseInt(id) : null);
+                    const communityId = isEdit ? (id ? parseInt(id) : null) : null;
+                    
+                    // Count existing packages before adding
+                    const packages = container.querySelectorAll('.package-item');
+                    const packageIndex = packages.length;
+                    
+                    const packageHTML = generatePackageHTML(techType, packageIndex, null, companyId, communityId, isEdit);
+                    container.insertAdjacentHTML('beforeend', packageHTML);
+                    
+                    // Re-index all packages after adding (this will update all IDs and labels)
+                    reindexPackages(fullContainerId);
+                }
+                
+                // Handle save package buttons
+                if (e.target.classList.contains('package-save-btn')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const packageId = e.target.getAttribute('data-package-id');
+                    const packageEl = document.querySelector(`[data-package-id="${packageId}"]`);
+                    if (packageEl) {
+                        // Get all inputs in this package
+                        const inputs = packageEl.querySelectorAll('input, select');
+                        const nameInput = packageEl.querySelector('input[id*="-name"]');
+                        let hasData = false;
+                        
+                        inputs.forEach(input => {
+                            if (input.value && input.value.trim()) {
+                                hasData = true;
+                            }
+                        });
+                        
+                        if (!hasData) {
+                            alert('Please fill in at least one field before saving.');
+                            return;
+                        }
+                        
+                        // Update package title with name if provided
+                        if (nameInput && nameInput.value.trim()) {
+                            const titleEl = packageEl.querySelector('.package-title');
+                            if (titleEl) {
+                                titleEl.textContent = escapeHtml(nameInput.value.trim());
+                            }
+                        }
+                        
+                        // Mark package as saved
+                        packageEl.classList.add('saved');
+                        packageEl.setAttribute('data-saved', 'true');
+                        
+                        // Disable all inputs
+                        inputs.forEach(input => {
+                            input.disabled = true;
+                        });
+                        
+                        // Toggle buttons
+                        const saveBtn = packageEl.querySelector('.package-save-btn');
+                        const editBtn = packageEl.querySelector('.package-edit-btn');
+                        if (saveBtn) saveBtn.style.display = 'none';
+                        if (editBtn) editBtn.style.display = '';
+                    }
+                }
+                
+                // Handle edit package buttons
+                if (e.target.classList.contains('package-edit-btn')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const packageId = e.target.getAttribute('data-package-id');
+                    const packageEl = document.querySelector(`[data-package-id="${packageId}"]`);
+                    if (packageEl) {
+                        // Mark package as editable
+                        packageEl.classList.remove('saved');
+                        packageEl.setAttribute('data-saved', 'false');
+                        
+                        // Enable all inputs
+                        const inputs = packageEl.querySelectorAll('input, select');
+                        inputs.forEach(input => {
+                            input.disabled = false;
+                        });
+                        
+                        // Toggle buttons
+                        const saveBtn = packageEl.querySelector('.package-save-btn');
+                        const editBtn = packageEl.querySelector('.package-edit-btn');
+                        if (saveBtn) saveBtn.style.display = '';
+                        if (editBtn) editBtn.style.display = 'none';
+                    }
+                }
+                
+                // Handle remove package buttons
+                if (e.target.classList.contains('package-remove-btn')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const packageId = e.target.getAttribute('data-package-id');
+                    const containerIdSuffix = e.target.getAttribute('data-container-id');
+                    
+                    // Find the container by looking for the package's parent
+                    const packageEl = document.querySelector(`[data-package-id="${packageId}"]`);
+                    if (packageEl) {
+                        const container = packageEl.closest('.packages-container');
+                        if (container && container.id) {
+                            packageEl.remove();
+                            reindexPackages(container.id);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load communities for a company
+        async function loadCommunities(companyId) {
+            const communitiesEl = document.getElementById(`communities-${companyId}`);
+            if (!communitiesEl) return;
+
+            try {
+                communitiesEl.innerHTML = '<div class="communities-loading">Loading communities...</div>';
+
+                // Fetch communities, company data, and service packages
+                const [communitiesResponse, companyResponse, servicePackagesResponse] = await Promise.all([
+                    fetch(`/api/companies/${companyId}/communities`, {
+                        credentials: 'include'
+                    }),
+                    fetch(`/api/companies/${companyId}`, {
+                        credentials: 'include'
+                    }),
+                    fetch(`/api/service-packages`, {
+                        credentials: 'include'
+                    })
+                ]);
+
+                if (!communitiesResponse.ok) {
+                    throw new Error('Failed to load communities');
+                }
+
+                if (!companyResponse.ok) {
+                    throw new Error('Failed to load company data');
+                }
+
+                const communitiesData = await communitiesResponse.json();
+                const companyData = await companyResponse.json();
+                
+                // Parse service packages response
+                let servicePackages = [];
+                if (servicePackagesResponse.ok) {
+                    const servicePackagesData = await servicePackagesResponse.json();
+                    servicePackages = (servicePackagesData.success && servicePackagesData.servicePackages) ? servicePackagesData.servicePackages : [];
+                }
+
+                const company = companyData.success ? companyData.company : null;
+                const communities = (communitiesData.success && communitiesData.communities) ? communitiesData.communities : [];
+                
+                if (communities.length === 0) {
+                    // No communities - show the form directly with add button below
+                    const addButtonHTML = `
+                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0;">
+                            <button type="button" class="btn-profile btn-primary-profile add-community-toggle-btn" data-company-id="${companyId}" style="width: 100%;">
+                                + Add Your First Community
+                            </button>
+                        </div>
+                        <div class="add-community-form" id="add-community-form-${companyId}" style="display: none; margin-top: 1.5rem;">
+                            <div class="community-form-section">
+                                ${generateCommunityFormHTML(companyId, null, false, company, servicePackages)}
+                            </div>
+                        </div>
+                    `;
+                    
+                    communitiesEl.innerHTML = `
+                        <div style="padding: 1rem; text-align: center; color: #666;">No communities yet. Add your first community below.</div>
+                        ${addButtonHTML}
+                    `;
+                    attachAddCommunityToggleListeners();
+                    const form = document.querySelector(`.add-community-form-element[data-company-id="${companyId}"]`);
+                    if (form) {
+                        setupPackageButtons(form);
+                        attachSelectExistingPackageListeners(form);
+                    }
+                    attachCommunityFormListeners(companyId, company);
+                    setupTechnologyCheckboxes(`communities-${companyId}`);
+                    return;
+                }
+
+                // Display communities
+                const communitiesList = communities.map(community => {
+                    const createdDate = community.created_at ? new Date(community.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    }) : 'Unknown';
+
+                    const types = [];
+                    if (community.ilec) types.push('ILEC');
+                    if (community.clec) types.push('CLEC');
+                    const typeStr = types.length > 0 ? types.join(', ') : 'None';
+
+                    // Build technology display with packages
+                    const techDisplay = [];
+                    (community.technologies || []).forEach(tech => {
+                        if (tech.packages && tech.packages.length > 0) {
+                            const packagesCount = tech.packages.length;
+                            techDisplay.push(`${tech.type} (${packagesCount} package${packagesCount !== 1 ? 's' : ''})`);
+                        } else {
+                            techDisplay.push(tech.type);
+                        }
+                    });
+                    const techTypes = techDisplay.length > 0 ? techDisplay.join(', ') : 'None';
+
+                    return `
+                        <div class="community-item" data-community-id="${community.id}">
+                            <div style="flex: 1;">
+                                <div class="community-name">${escapeHtml(community.name)}</div>
+                                <div class="community-details">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Type:</span> ${typeStr}
+                                    </div>
+                                    ${community.serving_company_name ? `
+                                    <div class="detail-row">
+                                        <span class="detail-label">Serving Company:</span> ${escapeHtml(community.serving_company_name)}
+                                    </div>
+                                    ` : ''}
+                                    <div class="detail-row">
+                                        <span class="detail-label">Technologies:</span> ${techTypes}
+                                    </div>
+                                </div>
+                                <div style="font-size: 0.8rem; color: #666; margin-top: 0.25rem;">Created ${createdDate}</div>
+                            </div>
+                            <div class="community-actions">
+                                <button class="community-btn community-edit-btn" data-community-id="${community.id}" data-company-id="${companyId}">Edit</button>
+                                <button class="community-btn community-delete-btn" data-community-id="${community.id}" data-community-name="${escapeHtml(community.name)}" data-company-id="${companyId}">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Show "Add Community" button below the communities list
+                const addButtonHTML = `
+                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0;">
+                        <button type="button" class="btn-profile btn-primary-profile add-community-toggle-btn" data-company-id="${companyId}" style="width: 100%;">
+                            ${communities.length > 0 ? '+ Add Community' : '+ Add Your First Community'}
+                        </button>
+                    </div>
+                    <div class="add-community-form" id="add-community-form-${companyId}" style="display: none; margin-top: 1.5rem;">
+                        <div class="community-form-section">
+                            ${generateCommunityFormHTML(companyId, null, false, company, servicePackages)}
+                        </div>
+                    </div>
+                `;
+
+                communitiesEl.innerHTML = `
+                    ${communitiesList || '<div style="padding: 1rem; text-align: center; color: #666;">No communities yet. Add your first community below.</div>'}
+                    ${addButtonHTML}
+                `;
+                
+                // Attach event listeners for dynamically created elements
+                const form = document.querySelector(`.add-community-form-element[data-company-id="${companyId}"]`);
+                if (form) {
+                    setupPackageButtons(form);
+                    attachSelectExistingPackageListeners(form);
+                }
+                attachCommunityFormListeners(companyId, company);
+                attachCommunityActionListeners(companyId);
+                setupTechnologyCheckboxes(`communities-${companyId}`);
+            } catch (error) {
+                console.error('Error loading communities:', error);
+                communitiesEl.innerHTML = '<div class="error-message show">Failed to load communities. Please try again.</div>';
+            }
+        }
+
+        // Toggle add community form visibility
+        function toggleAddCommunityForm(companyId) {
+            const formEl = document.getElementById(`add-community-form-${companyId}`);
+            const toggleBtn = document.querySelector(`.add-community-toggle-btn[data-company-id="${companyId}"]`);
+            
+            if (!formEl || !toggleBtn) return;
+
+            if (formEl.style.display === 'none') {
+                formEl.style.display = 'block';
+                toggleBtn.textContent = 'Cancel';
+                toggleBtn.classList.remove('btn-primary-profile');
+                toggleBtn.classList.add('btn-secondary');
+            } else {
+                formEl.style.display = 'none';
+                toggleBtn.textContent = '+ Add Community';
+                toggleBtn.classList.remove('btn-secondary');
+                toggleBtn.classList.add('btn-primary-profile');
+                // Reset form if needed
+                const form = formEl.querySelector('form');
+                if (form) {
+                    form.reset();
+                }
+            }
+        }
+
+        // Collect community form data
+        function collectCommunityFormData(prefix, companyId, communityId = null, companyData = null) {
+            const idSuffix = communityId ? `-${communityId}` : `-${companyId}`;
+            
+            // Determine the correct prefix based on whether we're editing or adding
+            let namePrefix, ilecPrefix, clecPrefix, servingCompanyPrefix;
+            if (communityId) {
+                // Edit form: uses edit- prefix
+                namePrefix = `edit-community-name`;
+                ilecPrefix = `edit-ilec`;
+                clecPrefix = `edit-clec`;
+                servingCompanyPrefix = `edit-serving-company`;
+            } else {
+                // Add form: uses simple prefix without "community-"
+                namePrefix = `community-name`;
+                ilecPrefix = `ilec`;
+                clecPrefix = `clec`;
+                servingCompanyPrefix = `serving-company`;
+            }
+
+            const nameInput = document.getElementById(`${namePrefix}${idSuffix}`);
+            const ilecCheckbox = document.getElementById(`${ilecPrefix}${idSuffix}`);
+            const clecCheckbox = document.getElementById(`${clecPrefix}${idSuffix}`);
+            
+            if (!nameInput || !ilecCheckbox || !clecCheckbox) {
+                console.error('Missing required form elements:', { nameInput, ilecCheckbox, clecCheckbox });
+                throw new Error('Required form elements not found');
+            }
+            
+            const name = nameInput.value.trim();
+            const ilec = ilecCheckbox.checked;
+            const clec = clecCheckbox.checked;
+            // Get serving company selection and convert to actual value
+            const servingCompanySelect = document.getElementById(`${servingCompanyPrefix}${idSuffix}`);
+            let servingCompanyName = null;
+            if (servingCompanySelect && servingCompanySelect.value) {
+                if (servingCompanySelect.value === 'legal_name' && companyData && companyData.legal_name) {
+                    servingCompanyName = companyData.legal_name;
+                } else if (servingCompanySelect.value === 'marketing_name' && companyData && companyData.marketing_name) {
+                    servingCompanyName = companyData.marketing_name;
+                }
+            }
+
+            const technologies = [];
+            
+            // Helper function to collect packages for a technology
+            function collectPackages(techSlug) {
+                const containerId = `packages-${techSlug}${idSuffix}`;
+                const container = document.getElementById(containerId);
+                if (!container) return [];
+                
+                const packages = [];
+                const packageItems = container.querySelectorAll('.package-item');
+                
+                // Determine the package prefix based on edit/add (techSlug already includes edit- if needed)
+                const packagePrefix = techSlug;
+                
+                packageItems.forEach((pkgEl, index) => {
+                    // Check if this is a hidden service package reference
+                    const servicePackageId = pkgEl.getAttribute('data-service-package-id');
+                    const hiddenInput = pkgEl.querySelector('input[data-service-pkg-ref]');
+                    
+                    if (hiddenInput && servicePackageId) {
+                        // This is a service package reference - extract data from hidden input
+                        const packageData = {
+                            name: hiddenInput.getAttribute('data-package-name') || null,
+                            downloadSpeed: hiddenInput.getAttribute('data-package-download') || null,
+                            uploadSpeed: hiddenInput.getAttribute('data-package-upload') || null,
+                            servicePackageId: servicePackageId
+                        };
+                        
+                        const licenseValue = hiddenInput.getAttribute('data-package-license');
+                        if (licenseValue) {
+                            packageData.licensed = licenseValue === 'Licensed';
+                        }
+                        
+                        packages.push(packageData);
+                    } else {
+                        // Regular package with visible inputs
+                        const nameInput = document.getElementById(`${packagePrefix}-package-${index}-name${idSuffix}`);
+                        const downloadInput = document.getElementById(`${packagePrefix}-package-${index}-download${idSuffix}`);
+                        const uploadInput = document.getElementById(`${packagePrefix}-package-${index}-upload${idSuffix}`);
+                        const licenseSelect = document.getElementById(`${packagePrefix}-package-${index}-license${idSuffix}`);
+                        
+                        if (nameInput && downloadInput && uploadInput) {
+                            const packageName = nameInput.value.trim();
+                            const downloadSpeed = downloadInput.value.trim();
+                            const uploadSpeed = uploadInput.value.trim();
+                            
+                            // Only add package if name or at least one speed is provided
+                            if (packageName || downloadSpeed || uploadSpeed) {
+                                const packageData = {
+                                    name: packageName || null,
+                                    downloadSpeed: downloadSpeed || null,
+                                    uploadSpeed: uploadSpeed || null
+                                };
+                                
+                                // Add license for Fixed Wireless
+                                if (licenseSelect) {
+                                    packageData.licensed = licenseSelect.value === 'Licensed';
+                                }
+                                
+                                // Get service package ID if this package came from a service package
+                                if (servicePackageId) {
+                                    packageData.servicePackageId = servicePackageId;
+                                }
+                                
+                                packages.push(packageData);
+                            }
+                        }
+                    }
+                });
+                
+                return packages;
+            }
+            
+            // Determine tech checkbox prefix
+            const techCheckboxPrefix = communityId ? 'edit-tech' : 'tech';
+            
+            // Fiber
+            const fiberCheckbox = document.getElementById(`${techCheckboxPrefix}-fiber${idSuffix}`);
+            if (fiberCheckbox && fiberCheckbox.checked) {
+                const fiberSlug = communityId ? 'edit-fiber' : 'fiber';
+                const packages = collectPackages(fiberSlug);
+                // Save technology even if no packages (packages can be added later)
+                technologies.push({
+                    type: 'Fiber',
+                    packages: packages || []
+                });
+            }
+
+            // Copper
+            const copperCheckbox = document.getElementById(`${techCheckboxPrefix}-copper${idSuffix}`);
+            if (copperCheckbox && copperCheckbox.checked) {
+                const copperSlug = communityId ? 'edit-copper' : 'copper';
+                const packages = collectPackages(copperSlug);
+                // Save technology even if no packages (packages can be added later)
+                technologies.push({
+                    type: 'Copper',
+                    packages: packages || []
+                });
+            }
+
+            // Fixed Wireless
+            const fwCheckbox = document.getElementById(`${techCheckboxPrefix}-fw${idSuffix}`);
+            if (fwCheckbox && fwCheckbox.checked) {
+                const fwSlug = communityId ? 'edit-fw' : 'fw';
+                const packages = collectPackages(fwSlug);
+                // Save technology even if no packages (packages can be added later)
+                technologies.push({
+                    type: 'Fixed Wireless',
+                    packages: packages || []
+                });
+            }
+
+            return { name, ilec, clec, servingCompanyName, technologies };
+        }
+
+        // Add community
+        async function addCommunity(companyId, companyData = null) {
+            // Try to get company data from form if not provided
+            if (!companyData) {
+                const form = document.querySelector(`.add-community-form-element[data-company-id="${companyId}"]`);
+                if (form && form.dataset.companyData) {
+                    companyData = JSON.parse(form.dataset.companyData);
+                }
+            }
+            
+            const formData = collectCommunityFormData('community', companyId, null, companyData);
+            
+            if (!formData.name) {
+                alert('Community name is required');
+                return;
+            }
+
+            const form = document.querySelector(`.add-community-form-element[data-company-id="${companyId}"]`);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Adding...';
+
+            try {
+                const response = await fetchWithCsrf(`/api/companies/${companyId}/communities`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    form.reset();
+                    loadCommunities(companyId);
+                    // Hide the form after successful addition
+                    setTimeout(() => {
+                        toggleAddCommunityForm(companyId);
+                    }, 500);
+                } else {
+                    alert(data.error || 'Failed to add community');
+                }
+            } catch (error) {
+                console.error('Error adding community:', error);
+                alert('Network error. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        // Edit community
+        async function editCommunity(communityId, companyId) {
+            try {
+                // Fetch community, company data, and service packages
+                const [communityResponse, companyResponse, servicePackagesResponse] = await Promise.all([
+                    fetch(`/api/communities/${communityId}`, {
+                        credentials: 'include'
+                    }),
+                    fetch(`/api/companies/${companyId}`, {
+                        credentials: 'include'
+                    }),
+                    fetch(`/api/service-packages`, {
+                        credentials: 'include'
+                    })
+                ]);
+
+                if (!communityResponse.ok) {
+                    alert('Failed to load community data');
+                    return;
+                }
+
+                if (!companyResponse.ok) {
+                    alert('Failed to load company data');
+                    return;
+                }
+
+                const communityData = await communityResponse.json();
+                const companyData = await companyResponse.json();
+                
+                // Parse service packages response
+                let servicePackages = [];
+                if (servicePackagesResponse.ok) {
+                    const servicePackagesData = await servicePackagesResponse.json();
+                    servicePackages = (servicePackagesData.success && servicePackagesData.servicePackages) ? servicePackagesData.servicePackages : [];
+                }
+
+                if (!communityData.success || !communityData.community) {
+                    alert('Community not found');
+                    return;
+                }
+
+                const community = communityData.community;
+                const company = companyData.success ? companyData.company : null;
+
+                // Populate edit form
+                const formContainer = document.getElementById('editCommunityFormContainer');
+                formContainer.innerHTML = generateCommunityFormHTML(companyId, community, true, company, servicePackages);
+
+                // Store company data on form for later use
+                const form = document.querySelector(`#edit-community-form-${communityId}`);
+                if (form && company) {
+                    form.dataset.companyData = JSON.stringify(company);
+                }
+
+                // Setup package buttons and select existing package listeners
+                if (form) {
+                    setupPackageButtons(form);
+                    attachSelectExistingPackageListeners(form);
+                    
+                    form.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        const storedCompanyData = form.dataset.companyData ? JSON.parse(form.dataset.companyData) : company;
+                        await updateCommunity(communityId, companyId, storedCompanyData);
+                    });
+                    
+                    // Setup package buttons and select existing package listeners
+                    setupPackageButtons(form);
+                    attachSelectExistingPackageListeners(form);
+                }
+
+                // Setup technology checkboxes
+                setupTechnologyCheckboxes('editCommunityModalContent');
+
+                // Show modal
+                document.getElementById('editCommunityModal').style.display = 'flex';
+                hideMessages();
+            } catch (error) {
+                console.error('Error loading community:', error);
+                alert('Failed to load community data');
+            }
+        }
+
+        // Update community
+        async function updateCommunity(communityId, companyId, companyData = null) {
+            // Try to get company data from form if not provided
+            if (!companyData) {
+                const form = document.querySelector(`#edit-community-form-${communityId}`);
+                if (form && form.dataset.companyData) {
+                    companyData = JSON.parse(form.dataset.companyData);
+                }
+            }
+            
+            const formData = collectCommunityFormData('edit-community', companyId, communityId, companyData);
+
+            if (!formData.name) {
+                showError('editCommunityError', 'Community name is required');
+                return;
+            }
+
+            const form = document.querySelector(`#edit-community-form-${communityId}`);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Updating...';
+            hideMessages();
+
+            try {
+                const response = await fetchWithCsrf(`/api/communities/${communityId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showSuccess('editCommunitySuccess', 'Community updated successfully!');
+                    setTimeout(() => {
+                        document.getElementById('editCommunityModal').style.display = 'none';
+                        loadCommunities(companyId);
+                    }, 1000);
+                } else {
+                    showError('editCommunityError', data.error || 'Failed to update community');
+                }
+            } catch (error) {
+                console.error('Error updating community:', error);
+                showError('editCommunityError', 'Network error. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        // Delete community
+        function deleteCommunity(communityId, communityName, companyId) {
+            // Decode HTML entities
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = communityName;
+            const decodedName = tempDiv.textContent || tempDiv.innerText || '';
+
+            if (!confirm(`Are you sure you want to delete "${decodedName}"?\n\nThis action cannot be undone.`)) {
+                return;
+            }
+
+            (async () => {
+                try {
+                    const response = await fetchWithCsrf(`/api/communities/${communityId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response.ok) {
+                        // Handle 404 or other errors
+                        if (response.status === 404) {
+                            // Community might have been deleted already, just reload
+                            const editModal = document.getElementById('editCommunityModal');
+                            if (editModal) {
+                                editModal.style.display = 'none';
+                            }
+                            loadCommunities(companyId);
+                            return;
+                        }
+                        
+                        const data = await response.json().catch(() => ({ error: 'Failed to delete community' }));
+                        alert(data.error || 'Failed to delete community');
+                        return;
+                    }
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Close edit modal if it's open (to prevent trying to edit deleted community)
+                        const editModal = document.getElementById('editCommunityModal');
+                        if (editModal) {
+                            editModal.style.display = 'none';
+                        }
+                        
+                        // Show success message
+                        const communitiesEl = document.getElementById(`communities-${companyId}`);
+                        if (communitiesEl) {
+                            communitiesEl.innerHTML = '<div class="success-message show">Community deleted successfully!</div>';
+                            setTimeout(() => {
+                                // Reload communities list
+                                loadCommunities(companyId);
+                            }, 1000);
+                        } else {
+                            // Reload immediately if container not found
+                            loadCommunities(companyId);
+                        }
+                    } else {
+                        alert(data.error || 'Failed to delete community');
+                    }
+                } catch (error) {
+                    console.error('Error deleting community:', error);
+                    alert('Network error. Please try again.');
+                }
+            })();
+        }
+
+        // Generate company prompt
+        async function generateCompanyPrompt(companyId) {
+            try {
+                const response = await fetch(`/api/generate-company-prompt/${companyId}`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Show prompt in a modal
+                    showPromptModal(data.prompt);
+                } else {
+                    alert(data.error || 'Failed to generate prompt');
+                }
+            } catch (error) {
+                console.error('Error generating prompt:', error);
+                alert('Network error. Please try again.');
+            }
+        }
+
+        // Show prompt in a modal
+        function showPromptModal(prompt) {
+            // Create modal if it doesn't exist
+            let modal = document.getElementById('promptModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'promptModal';
+                modal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;';
+                modal.innerHTML = `
+                    <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h2 style="margin: 0;">Generated Company Description</h2>
+                            <button type="button" id="closePromptModal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px;">&times;</button>
+                        </div>
+                        <textarea id="promptContent" readonly style="width: 100%; min-height: 300px; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; font-family: monospace; font-size: 0.9rem; line-height: 1.6; resize: vertical;"></textarea>
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                            <button type="button" class="btn-profile btn-secondary" id="copyPromptBtn">Copy to Clipboard</button>
+                            <button type="button" class="btn-profile btn-secondary" id="closePromptModalBtn">Close</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+
+                // Add event listeners
+                document.getElementById('closePromptModal').addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+                document.getElementById('closePromptModalBtn').addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+                document.getElementById('copyPromptBtn').addEventListener('click', () => {
+                    const textarea = document.getElementById('promptContent');
+                    textarea.select();
+                    document.execCommand('copy');
+                    const btn = document.getElementById('copyPromptBtn');
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                });
+                // Close on backdrop click
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+
+            // Set prompt content
+            document.getElementById('promptContent').value = prompt;
+            modal.style.display = 'flex';
+        }
+
+        // Make functions globally available (if needed)
+        window.toggleAddCommunityForm = toggleAddCommunityForm;
+        window.addCommunity = addCommunity;
+        window.deleteCommunity = deleteCommunity;
+        window.generateCompanyPrompt = generateCompanyPrompt;
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+        }
+
+        // Attach event listeners to company action buttons
+        function attachCompanyEventListeners() {
+            // Generate prompt buttons
+            document.querySelectorAll('.generate-prompt-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const companyId = parseInt(this.getAttribute('data-company-id'));
+                    generateCompanyPrompt(companyId);
+                });
+            });
+
+            // Edit buttons
+            document.querySelectorAll('.edit-company-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const companyId = parseInt(this.getAttribute('data-company-id'));
+                    editCompany(companyId);
+                });
+            });
+
+            // Delete buttons
+            document.querySelectorAll('.delete-company-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const companyId = parseInt(this.getAttribute('data-company-id'));
+                    const companyName = this.getAttribute('data-company-name');
+                    deleteCompany(companyId, companyName);
+                });
+            });
+        }
+
+        // Attach event listeners to toggle add community form buttons
+        function attachAddCommunityToggleListeners() {
+            document.querySelectorAll('.add-community-toggle-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const companyId = parseInt(this.getAttribute('data-company-id'));
+                    toggleAddCommunityForm(companyId);
+                });
+            });
+        }
+
+        // Company-specific service package functions removed - using standalone section only
+
+        // Attach event listeners to community form
+        function attachCommunityFormListeners(companyId, companyData = null) {
+            const form = document.querySelector(`.add-community-form-element[data-company-id="${companyId}"]`);
+            if (form) {
+                // Store company data on the form element for later use
+                if (companyData) {
+                    form.dataset.companyData = JSON.stringify(companyData);
+                }
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const storedCompanyData = form.dataset.companyData ? JSON.parse(form.dataset.companyData) : companyData;
+                    addCommunity(companyId, storedCompanyData);
+                });
+            }
+        }
+
+        // Attach event listeners to community action buttons
+        function attachCommunityActionListeners(companyId) {
+            const communitiesEl = document.getElementById(`communities-${companyId}`);
+            if (!communitiesEl) return;
+
+            // Use event delegation for dynamically created buttons
+            communitiesEl.addEventListener('click', function(e) {
+                const editBtn = e.target.closest('.community-edit-btn');
+                const deleteBtn = e.target.closest('.community-delete-btn');
+
+                if (editBtn) {
+                    const communityId = parseInt(editBtn.getAttribute('data-community-id'));
+                    const compId = parseInt(editBtn.getAttribute('data-company-id'));
+                    editCommunity(communityId, compId);
+                }
+
+                if (deleteBtn) {
+                    const communityId = parseInt(deleteBtn.getAttribute('data-community-id'));
+                    const communityName = deleteBtn.getAttribute('data-community-name');
+                    const compId = parseInt(deleteBtn.getAttribute('data-company-id'));
+                    deleteCommunity(communityId, communityName, compId);
+                }
+            });
+        }
+
+        // Company-specific service package listener functions removed - using standalone section only
+        async function addServicePackage(companyId) {
+            const name = document.getElementById(`service-package-name-${companyId}`).value.trim();
+            const technologyType = document.getElementById(`service-package-technology-${companyId}`)?.value || '';
+            const licenseType = document.getElementById(`service-package-license-${companyId}`)?.value || '';
+            const downloadSpeed = document.getElementById(`service-package-download-${companyId}`).value.trim();
+            const uploadSpeed = document.getElementById(`service-package-upload-${companyId}`).value.trim();
+
+            if (!name) {
+                alert('Package name is required');
+                return;
+            }
+
+            const form = document.querySelector(`.add-service-package-form-element[data-company-id="${companyId}"]`);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Adding...';
+
+            try {
+                const response = await fetchWithCsrf(`/api/service-packages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        technologyType: technologyType || null,
+                        licenseType: licenseType || null,
+                        downloadSpeed: downloadSpeed || null,
+                        uploadSpeed: uploadSpeed || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    form.reset();
+                    // Hide license type field if shown
+                    const licenseGroup = document.getElementById(`service-package-license-group-${companyId}`);
+                    if (licenseGroup) {
+                        licenseGroup.style.display = 'none';
+                        const licenseSelect = document.getElementById(`service-package-license-${companyId}`);
+                        if (licenseSelect) licenseSelect.value = '';
+                    }
+                    // Reload service packages
+                    loadAllServicePackages();
+                } else {
+                    alert(data.error || 'Failed to add service package');
+                }
+            } catch (error) {
+                console.error('Error adding service package:', error);
+                alert('Network error. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+
+        // Add standalone service package
+        async function addStandaloneServicePackage() {
+            const name = document.getElementById('standalonePackageName').value.trim();
+            const technologyTypeSelect = document.getElementById('standaloneTechnologyType');
+            const technologyType = technologyTypeSelect ? technologyTypeSelect.value.trim() : '';
+            const licenseTypeSelect = document.getElementById('standaloneLicenseType');
+            const licenseType = licenseTypeSelect ? licenseTypeSelect.value.trim() : '';
+            const downloadSpeed = document.getElementById('standaloneDownloadSpeed').value.trim();
+            const uploadSpeed = document.getElementById('standaloneUploadSpeed').value.trim();
+
+            if (!name) {
+                showError('addStandalonePackageError', 'Package name is required');
+                return;
+            }
+
+            const form = document.getElementById('addStandalonePackageForm');
+            const submitBtn = document.getElementById('addStandalonePackageBtn');
+            const originalText = submitBtn.textContent;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Adding...';
+            hideMessages();
+
+            try {
+                const response = await fetchWithCsrf(`/api/service-packages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        technologyType: technologyType && technologyType.length > 0 ? technologyType : null,
+                        licenseType: licenseType && licenseType.length > 0 ? licenseType : null,
+                        downloadSpeed: downloadSpeed || null,
+                        uploadSpeed: uploadSpeed || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    form.reset();
+                    // Hide license type field if shown
+                    const standaloneLicenseGroup = document.getElementById('standaloneLicenseTypeGroup');
+                    if (standaloneLicenseGroup) {
+                        standaloneLicenseGroup.style.display = 'none';
+                        document.getElementById('standaloneLicenseType').value = '';
+                    }
+                    showSuccess('addStandalonePackageSuccess', 'Service package added successfully!');
+                    loadAllServicePackages();
+                } else {
+                    showError('addStandalonePackageError', data.error || 'Failed to add service package');
+                }
+            } catch (error) {
+                console.error('Error adding service package:', error);
+                showError('addStandalonePackageError', 'Network error. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        // Edit service package - open modal
+        let currentEditingServicePackageId = null;
+        let currentEditingServicePackageData = null;
+        
+        async function editServicePackage(servicePackageId) {
+            try {
+                // Fetch service package data
+                const response = await fetch(`/api/service-packages/${servicePackageId}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    alert('Failed to load service package data');
+                    return;
+                }
+
+                const data = await response.json();
+                if (!data.success || !data.servicePackage) {
+                    alert('Service package not found');
+                    return;
+                }
+
+                const sp = data.servicePackage;
+                currentEditingServicePackageId = servicePackageId;
+                currentEditingServicePackageData = sp; // Store original data
+
+                // Populate form fields
+                document.getElementById('editPackageName').value = sp.name || '';
+                document.getElementById('editTechnologyType').value = sp.technology_type || '';
+                document.getElementById('editLicenseType').value = sp.license_type || '';
+                document.getElementById('editDownloadSpeed').value = sp.download_speed || '';
+                document.getElementById('editUploadSpeed').value = sp.upload_speed || '';
+
+                // Show/hide license type based on technology type
+                const licenseGroup = document.getElementById('editLicenseTypeGroup');
+                if (sp.technology_type && sp.technology_type.trim().toLowerCase() === 'fixed wireless') {
+                    licenseGroup.style.display = 'block';
+                } else {
+                    licenseGroup.style.display = 'none';
+                }
+
+                // Hide messages
+                document.getElementById('editServicePackageSuccess').style.display = 'none';
+                document.getElementById('editServicePackageError').style.display = 'none';
+
+                // Show modal
+                const editModal = document.getElementById('editServicePackageModal');
+                if (editModal) {
+                    editModal.style.display = 'flex';
+                }
+            } catch (error) {
+                console.error('Error loading service package:', error);
+                alert('Network error. Please try again.');
+            }
+        }
+
+        // Save edited service package
+        async function saveEditedServicePackage() {
+            if (!currentEditingServicePackageId) return;
+
+            const name = document.getElementById('editPackageName').value.trim();
+            const technologyType = document.getElementById('editTechnologyType').value;
+            const licenseType = document.getElementById('editLicenseType').value;
+            const downloadSpeed = document.getElementById('editDownloadSpeed').value.trim();
+            const uploadSpeed = document.getElementById('editUploadSpeed').value.trim();
+
+            if (!name) {
+                showError('editServicePackageError', 'Package name is required');
+                return;
+            }
+
+            const submitBtn = document.getElementById('saveEditServicePackage');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            try {
+                const updateResponse = await fetchWithCsrf(`/api/service-packages/${currentEditingServicePackageId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        technologyType: technologyType && technologyType.length > 0 ? technologyType : null,
+                        licenseType: licenseType && licenseType.length > 0 ? licenseType : null,
+                        downloadSpeed: downloadSpeed || null,
+                        uploadSpeed: uploadSpeed || null
+                    })
+                });
+
+                const updateData = await updateResponse.json();
+
+                if (updateResponse.ok) {
+                    // Check if there's a technology change warning
+                    if (updateData.technologyChangeWarning && updateData.usingCommunities) {
+                        const communitiesList = updateData.usingCommunities.map(c => 
+                            `- ${c.name} (${c.companyName}) - Technology: ${c.technologyType}`
+                        ).join('\n');
+                        
+                        const confirmMessage = `Warning: This package is used in the following communities:\n\n${communitiesList}\n\nChanging the technology type will affect those communities as well. Do you want to continue?`;
+                        
+                        if (!confirm(confirmMessage)) {
+                            // User cancelled, re-enable button and return
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = originalText;
+                            return;
+                        }
+                        
+                        // User confirmed, proceed with the update (send again with confirmation flag)
+                        const confirmResponse = await fetchWithCsrf(`/api/service-packages/${currentEditingServicePackageId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                name,
+                                technologyType: technologyType && technologyType.length > 0 ? technologyType : null,
+                                licenseType: licenseType && licenseType.length > 0 ? licenseType : null,
+                                downloadSpeed: downloadSpeed || null,
+                                uploadSpeed: uploadSpeed || null,
+                                confirmTechnologyChange: true
+                            })
+                        });
+
+                        const confirmData = await confirmResponse.json();
+
+                        if (confirmResponse.ok && confirmData.success) {
+                            showSuccess('editServicePackageSuccess', 'Service package updated successfully!');
+                            setTimeout(() => {
+                                closeEditServicePackageModal();
+                                loadAllServicePackages();
+                                // Reload companies to refresh any affected communities
+                                loadCompanies();
+                            }, 1000);
+                        } else {
+                            showError('editServicePackageError', confirmData.error || 'Failed to update service package');
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = originalText;
+                        }
+                        return;
+                    }
+                    
+                    if (updateData.success) {
+                        showSuccess('editServicePackageSuccess', 'Service package updated successfully!');
+                        setTimeout(() => {
+                            closeEditServicePackageModal();
+                            loadAllServicePackages();
+                            // Reload companies to refresh any affected communities
+                            loadCompanies();
+                        }, 1000);
+                    } else {
+                        showError('editServicePackageError', updateData.error || 'Failed to update service package');
+                    }
+                } else {
+                    showError('editServicePackageError', updateData.error || 'Failed to update service package');
+                }
+            } catch (error) {
+                console.error('Error updating service package:', error);
+                showError('editServicePackageError', 'Network error. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        // Close edit service package modal
+        function closeEditServicePackageModal() {
+            const editModal = document.getElementById('editServicePackageModal');
+            if (editModal) {
+                editModal.style.display = 'none';
+            }
+            currentEditingServicePackageId = null;
+            currentEditingServicePackageData = null;
+            document.getElementById('editServicePackageForm').reset();
+            document.getElementById('editServicePackageSuccess').style.display = 'none';
+            document.getElementById('editServicePackageError').style.display = 'none';
+        }
+
+        // Load all service packages (standalone section)
+        async function loadAllServicePackages() {
+            const loadingEl = document.getElementById('allServicePackagesLoading');
+            const errorEl = document.getElementById('allServicePackagesError');
+            const listEl = document.getElementById('allServicePackagesList');
+            const noPackagesEl = document.getElementById('noServicePackages');
+
+            try {
+                loadingEl.style.display = 'block';
+                errorEl.style.display = 'none';
+                listEl.style.display = 'none';
+                noPackagesEl.style.display = 'none';
+
+                // Fetch all service packages for the user
+                const response = await fetch('/api/service-packages', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    let errorMessage = 'Failed to load service packages';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorMessage;
+                    } catch (e) {
+                        // If response is not JSON, use status text
+                        errorMessage = response.statusText || errorMessage;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+
+                loadingEl.style.display = 'none';
+
+                if (!data.success || !data.servicePackages || data.servicePackages.length === 0) {
+                    noPackagesEl.style.display = 'block';
+                    return;
+                }
+
+                const allPackages = data.servicePackages;
+
+                // Display all packages (no grouping by company since packages are not company-specific)
+                const html = allPackages.map(sp => {
+                    const createdDate = sp.created_at ? new Date(sp.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    }) : 'Unknown';
+
+                    return `
+                        <div class="service-package-item" data-service-package-id="${sp.id}">
+                            <div class="service-package-info">
+                                <div class="service-package-name">${escapeHtml(sp.name)}</div>
+                                <div class="service-package-details">
+                                    ${sp.download_speed ? `Download: ${escapeHtml(sp.download_speed)}` : ''}
+                                    ${sp.download_speed && sp.upload_speed ? ' | ' : ''}
+                                    ${sp.upload_speed ? `Upload: ${escapeHtml(sp.upload_speed)}` : ''}
+                                    ${!sp.download_speed && !sp.upload_speed ? 'No speeds specified' : ''}
+                                </div>
+                                <div style="font-size: 0.8rem; color: #666; margin-top: 0.25rem;">Created ${createdDate}</div>
+                            </div>
+                            <div class="service-package-actions">
+                                <button class="service-package-btn service-package-edit-btn" data-service-package-id="${sp.id}">Edit</button>
+                                <button class="service-package-btn service-package-delete-btn" data-service-package-id="${sp.id}" data-service-package-name="${escapeHtml(sp.name)}">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                listEl.innerHTML = html;
+                listEl.style.display = 'block';
+
+                // Attach event listeners for edit/delete buttons
+                attachAllServicePackageActionListeners();
+
+            } catch (error) {
+                console.error('Error loading all service packages:', error);
+                loadingEl.style.display = 'none';
+                errorEl.textContent = error.message || 'Failed to load service packages. Please try again later.';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        // Attach event listeners to all service package action buttons (standalone section)
+        function attachAllServicePackageActionListeners() {
+            const listEl = document.getElementById('allServicePackagesList');
+            if (!listEl) return;
+
+            // Use event delegation for dynamically created buttons
+            listEl.addEventListener('click', function(e) {
+                const editBtn = e.target.closest('.service-package-edit-btn');
+                const deleteBtn = e.target.closest('.service-package-delete-btn');
+
+                if (editBtn) {
+                    const servicePackageId = parseInt(editBtn.getAttribute('data-service-package-id'));
+                    editServicePackage(servicePackageId);
+                }
+
+                if (deleteBtn) {
+                    const servicePackageId = parseInt(deleteBtn.getAttribute('data-service-package-id'));
+                    const servicePackageName = deleteBtn.getAttribute('data-service-package-name');
+                    deleteServicePackage(servicePackageId, servicePackageName);
+                }
+            });
+        }
+
+        // Delete service package
+        function deleteServicePackage(servicePackageId, servicePackageName) {
+            // Decode HTML entities
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = servicePackageName;
+            const decodedName = tempDiv.textContent || tempDiv.innerText || '';
+
+            if (!confirm(`Are you sure you want to delete "${decodedName}"?\n\nThis action cannot be undone.`)) {
+                return;
+            }
+
+            (async () => {
+                try {
+                    const response = await fetchWithCsrf(`/api/service-packages/${servicePackageId}`, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        // Reload service packages
+                        loadAllServicePackages();
+                    } else {
+                        alert(data.error || 'Failed to delete service package');
+                    }
+                } catch (error) {
+                    console.error('Error deleting service package:', error);
+                    alert('Network error. Please try again.');
+                }
+            })();
+        }
+
+        // Setup community edit modal event listeners
+        function setupCommunityModalListeners() {
+            const editCommunityModal = document.getElementById('editCommunityModal');
+            const editCommunityModalBackdrop = document.getElementById('editCommunityModalBackdrop');
+            const editCommunityModalContent = document.getElementById('editCommunityModalContent');
+
+            if (editCommunityModalBackdrop) {
+                editCommunityModalBackdrop.addEventListener('click', function() {
+                    editCommunityModal.style.display = 'none';
+                });
+            }
+
+            if (editCommunityModalContent) {
+                editCommunityModalContent.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        }
+
+        // Add company
+        const addCompanyForm = document.getElementById('addCompanyForm');
+        if (addCompanyForm) {
+            addCompanyForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const name = document.getElementById('companyName').value.trim();
+                const legalName = document.getElementById('legalName').value.trim();
+                const marketingName = document.getElementById('marketingName').value.trim();
+                hideMessages();
+
+                if (!name) {
+                    showError('addCompanyError', 'Company name is required');
+                    return;
+                }
+
+                const btn = document.getElementById('addCompanyBtn');
+                btn.disabled = true;
+                btn.textContent = 'Adding...';
+
+                try {
+                    const response = await fetchWithCsrf('/api/companies', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            name,
+                            legalName: legalName || null,
+                            marketingName: marketingName || null
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        showSuccess('addCompanySuccess', 'Company added successfully!');
+                        addCompanyForm.reset();
+                        loadCompanies();
+                    } else {
+                        showError('addCompanyError', data.error || 'Failed to add company');
+                    }
+                } catch (error) {
+                    console.error('Error adding company:', error);
+                    showError('addCompanyError', 'Network error. Please try again.');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Add Company';
+                }
+            });
+        }
+
+        // Edit company
+        async function editCompany(companyId) {
+            editingCompanyId = companyId;
+            
+            try {
+                // Fetch company data
+                const response = await fetch(`/api/companies/${companyId}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    alert('Failed to load company data');
+                    return;
+                }
+
+                const data = await response.json();
+                if (!data.success || !data.company) {
+                    alert('Company not found');
+                    return;
+                }
+
+                const company = data.company;
+
+                // Populate form fields
+                const nameInput = document.getElementById('editCompanyName');
+                const legalNameInput = document.getElementById('editLegalName');
+                const marketingNameInput = document.getElementById('editMarketingName');
+
+                if (nameInput) nameInput.value = company.name || '';
+                if (legalNameInput) legalNameInput.value = company.legal_name || '';
+                if (marketingNameInput) marketingNameInput.value = company.marketing_name || '';
+
+                // Show modal
+                const editModal = document.getElementById('editModal');
+                if (editModal) {
+                    editModal.style.display = 'flex';
+                }
+                hideMessages();
+            } catch (error) {
+                console.error('Error loading company:', error);
+                alert('Failed to load company data');
+            }
+        }
+
+        // Make editCompany available globally for backwards compatibility
+        window.editCompany = editCompany;
+
+        // Close edit modal function
+        function closeEditModal() {
+            const editModal = document.getElementById('editModal');
+            if (editModal) {
+                editModal.style.display = 'none';
+            }
+            editingCompanyId = null;
+            hideMessages();
+        }
+
+        // Setup modal event listeners
+        function setupModalListeners() {
+            // Edit service package modal listeners
+            const editServicePackageModal = document.getElementById('editServicePackageModal');
+            const closeEditServicePackageModalBtn = document.getElementById('closeEditServicePackageModal');
+            const cancelEditServicePackageBtn = document.getElementById('cancelEditServicePackage');
+            const editServicePackageForm = document.getElementById('editServicePackageForm');
+
+            if (closeEditServicePackageModalBtn) {
+                closeEditServicePackageModalBtn.addEventListener('click', closeEditServicePackageModal);
+                // Add hover effects without inline handlers (CSP compliant)
+                closeEditServicePackageModalBtn.addEventListener('mouseenter', function() {
+                    this.style.background = '#f0f0f0';
+                });
+                closeEditServicePackageModalBtn.addEventListener('mouseleave', function() {
+                    this.style.background = 'none';
+                });
+            }
+
+            if (cancelEditServicePackageBtn) {
+                cancelEditServicePackageBtn.addEventListener('click', closeEditServicePackageModal);
+            }
+
+            if (editServicePackageModal) {
+                editServicePackageModal.addEventListener('click', function(e) {
+                    if (e.target === editServicePackageModal) {
+                        closeEditServicePackageModal();
+                    }
+                });
+            }
+
+            if (editServicePackageForm) {
+                editServicePackageForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveEditedServicePackage();
+                });
+            }
+            
+            const editModal = document.getElementById('editModal');
+            const editModalBackdrop = document.getElementById('editModalBackdrop');
+            const editModalContent = document.getElementById('editModalContent');
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+            // Close modal when clicking backdrop
+            if (editModalBackdrop) {
+                editModalBackdrop.addEventListener('click', closeEditModal);
+            }
+
+            // Prevent modal from closing when clicking inside
+            if (editModalContent) {
+                editModalContent.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+
+            // Cancel button
+            if (cancelEditBtn) {
+                cancelEditBtn.addEventListener('click', closeEditModal);
+            }
+
+            // Setup community modal
+            setupCommunityModalListeners();
+        }
+
+        // Standalone package form
+        const addStandalonePackageForm = document.getElementById('addStandalonePackageForm');
+        if (addStandalonePackageForm) {
+            addStandalonePackageForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await addStandaloneServicePackage();
+            });
+        }
+
+        // Save edit
+        const editCompanyForm = document.getElementById('editCompanyForm');
+        if (editCompanyForm) {
+            editCompanyForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                if (!editingCompanyId) return;
+
+                const name = document.getElementById('editCompanyName').value.trim();
+                const legalName = document.getElementById('editLegalName').value.trim();
+                const marketingName = document.getElementById('editMarketingName').value.trim();
+                hideMessages();
+
+                if (!name) {
+                    showError('editCompanyError', 'Company name is required');
+                    return;
+                }
+
+                const btn = document.getElementById('saveEditBtn');
+                btn.disabled = true;
+                btn.textContent = 'Saving...';
+
+                try {
+                    const response = await fetchWithCsrf(`/api/companies/${editingCompanyId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            name,
+                            legalName: legalName || null,
+                            marketingName: marketingName || null
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        showSuccess('editCompanySuccess', 'Company updated successfully!');
+                        // Also show success in the main area
+                        showSuccess('addCompanySuccess', 'Company updated successfully!');
+                        setTimeout(() => {
+                            closeEditModal();
+                            loadCompanies();
+                        }, 1000);
+                    } else {
+                        showError('editCompanyError', data.error || 'Failed to update company');
+                    }
+                } catch (error) {
+                    console.error('Error updating company:', error);
+                    showError('editCompanyError', 'Network error. Please try again.');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Save Changes';
+                }
+            });
+        }
+
+        // Delete company
+        function deleteCompany(companyId, companyName) {
+            // Decode HTML entities for display
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = companyName;
+            const decodedName = tempDiv.textContent || tempDiv.innerText || companyName;
+
+            if (!confirm(`Are you sure you want to delete "${decodedName}"?\n\nThis action cannot be undone.`)) {
+                return;
+            }
+
+            (async () => {
+                try {
+                    const response = await fetchWithCsrf(`/api/companies/${companyId}`, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        // Show success message
+                        const successMsg = document.getElementById('addCompanySuccess');
+                        if (successMsg) {
+                            showSuccess('addCompanySuccess', `Company "${decodedName}" deleted successfully!`);
+                        }
+                        // Reload companies list
+                        loadCompanies();
+                    } else {
+                        alert(data.error || 'Failed to delete company');
+                    }
+                } catch (error) {
+                    console.error('Error deleting company:', error);
+                    alert('Network error. Please try again.');
+                }
+            })();
+        }
+
+        // Make deleteCompany available globally for backwards compatibility
+        window.deleteCompany = deleteCompany;
+
+        // Setup technology type change listeners for license type visibility
+        function setupTechnologyTypeListeners() {
+            // Standalone form
+            const standaloneTechSelect = document.getElementById('standaloneTechnologyType');
+            const standaloneLicenseGroup = document.getElementById('standaloneLicenseTypeGroup');
+            
+            if (standaloneTechSelect && standaloneLicenseGroup) {
+                standaloneTechSelect.addEventListener('change', function() {
+                    if (this.value === 'Fixed Wireless') {
+                        standaloneLicenseGroup.style.display = 'block';
+                    } else {
+                        standaloneLicenseGroup.style.display = 'none';
+                        document.getElementById('standaloneLicenseType').value = '';
+                    }
+                });
+            }
+            
+            // Company-specific forms (use event delegation for dynamically created forms)
+            document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('service-package-technology-select')) {
+                    const companyId = e.target.getAttribute('data-company-id');
+                    const licenseGroup = document.getElementById(`service-package-license-group-${companyId}`);
+                    if (licenseGroup) {
+                        if (e.target.value === 'Fixed Wireless') {
+                            licenseGroup.style.display = 'block';
+                        } else {
+                            licenseGroup.style.display = 'none';
+                            const licenseSelect = document.getElementById(`service-package-license-${companyId}`);
+                            if (licenseSelect) licenseSelect.value = '';
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setupModalListeners();
+                setupTechnologyTypeListeners();
+                loadCompanies();
+                loadAllServicePackages();
+            });
+        } else {
+            setupModalListeners();
+            setupTechnologyTypeListeners();
+            loadCompanies();
+            loadAllServicePackages();
+        }
+    </script>
+    <script src="js/session-manager.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+</body>
+</html>
+

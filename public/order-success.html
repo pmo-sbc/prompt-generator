@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - AI Prompt Templates</title>
+    <link rel="icon" type="image/jpeg" href="/images/3rd-logo.jpeg">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .success-container {
+            max-width: 800px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            box-shadow: 0 10px 30px rgba(46, 204, 113, 0.3);
+        }
+
+        .success-icon::before {
+            content: '✓';
+            font-size: 60px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .success-title {
+            font-size: 2.5rem;
+            color: #2ecc71;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .success-message {
+            font-size: 1.2rem;
+            color: #666666;
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        .order-details {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .order-details h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #1a1a1a;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 1rem;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .order-item-name {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .order-item-details {
+            color: #666666;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .order-item-price {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .order-summary {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            font-size: 1.1rem;
+        }
+
+        .summary-row.total {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2ecc71;
+            border-top: 2px solid #e0e0e0;
+            margin-top: 1rem;
+            padding-top: 1rem;
+        }
+
+        .email-notice {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            color: #2e7d32;
+        }
+
+        .email-notice strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .btn-container {
+            margin-top: 3rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary-success {
+            background: #2c5aa0;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-primary-success:hover {
+            background: #1e3f73;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(44, 90, 160, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #1a1a1a;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .success-container {
+                margin: 2rem auto;
+                padding: 0 1rem;
+            }
+
+            .success-title {
+                font-size: 2rem;
+            }
+
+            .btn-container {
+                flex-direction: column;
+            }
+
+            .btn-primary-success,
+            .btn-secondary {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-circle">
+                    <img src="images/3rd-logo.jpeg" alt="3rd Rock Ads Logo">
+                </div>
+            </a>
+            <ul class="nav-menu">
+                <!-- Navigation will be dynamically updated by auth.js -->
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Success Content -->
+    <div class="success-container">
+        <div class="success-icon"></div>
+        <h1 class="success-title">Payment Successful!</h1>
+        <p class="success-message">
+            Thank you for your purchase! Your order has been confirmed and a confirmation email has been sent to your email address.
+        </p>
+
+        <div class="email-notice">
+            <strong>📧 Check Your Email</strong>
+            We've sent a detailed order confirmation email with your product information to the email address you provided.
+            <br><br>
+            <strong>Email From:</strong> <a href="mailto:txrba.2025.training@3rdrockads.com" style="color: #2e7d32; text-decoration: underline;">txrba.2025.training@3rdrockads.com</a>
+            <br>
+            <small style="display: block; margin-top: 0.5rem; opacity: 0.8;">Please check your inbox and spam folder if you don't see the email.</small>
+        </div>
+
+        <div class="email-notice" id="tokensNotice" style="display: none; background: #fff3cd; border-color: #ffc107; color: #856404;">
+            <strong>🎉 Tokens Added!</strong>
+            Your tokens have been successfully added to your account and are ready to use.
+        </div>
+
+        <div class="order-details" id="orderDetails">
+            <h3>Order Summary</h3>
+            <div id="orderItems">
+                <!-- Order items will be loaded here -->
+            </div>
+            <div class="order-summary">
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span id="orderSubtotal">$0.00</span>
+                </div>
+                <div class="summary-row" id="orderDiscountRow" style="display: none;">
+                    <span>Discount:</span>
+                    <span id="orderDiscount">-$0.00</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Paid:</span>
+                    <span id="orderTotal">$0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <a href="/" class="btn-primary-success">Continue Shopping</a>
+            <a href="/dashboard" class="btn-secondary">Go to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <div class="logo-circle">
+                            <img src="images/3rd-logo.jpeg" alt="3rd Rock Ads Logo">
+                        </div>
+                    </div>
+                    <p class="footer-description">Professional AI prompt templates for marketing professionals.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 AI Prompt Templates. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/session-manager.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        // Load order details from sessionStorage
+        function loadOrderDetails() {
+            const orderData = sessionStorage.getItem('orderConfirmation');
+            
+            if (!orderData) {
+                // No order data, redirect to home
+                window.location.href = '/';
+                return;
+            }
+
+            try {
+                const order = JSON.parse(orderData);
+                
+                // Display order items
+                const orderItemsEl = document.getElementById('orderItems');
+                if (order.items && order.items.length > 0) {
+                    orderItemsEl.innerHTML = order.items.map(item => {
+                        const itemTotal = (item.finalPrice !== undefined ? item.finalPrice : item.price) * (item.quantity || 1);
+                        return `
+                            <div class="order-item">
+                                <div>
+                                    <div class="order-item-name">${item.name}</div>
+                                    <div class="order-item-details">Quantity: ${item.quantity || 1} × ${formatCurrency(item.price)}</div>
+                                </div>
+                                <div class="order-item-price">${formatCurrency(itemTotal)}</div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                // Display totals
+                document.getElementById('orderSubtotal').textContent = formatCurrency(order.subtotal || 0);
+                document.getElementById('orderTotal').textContent = formatCurrency(order.total || 0);
+                
+                if (order.discount && order.discount > 0) {
+                    document.getElementById('orderDiscountRow').style.display = 'flex';
+                    document.getElementById('orderDiscount').textContent = `-${formatCurrency(order.discount)}`;
+                }
+
+                // Display tokens added if any
+                if (order.tokensAdded && order.tokensAdded > 0) {
+                    const tokensNotice = document.getElementById('tokensNotice');
+                    if (tokensNotice) {
+                        tokensNotice.style.display = 'block';
+                        tokensNotice.querySelector('strong').textContent = `🎉 ${order.tokensAdded} tokens have been added to your account!`;
+                    }
+                }
+
+                // Clear order data from sessionStorage after displaying
+                sessionStorage.removeItem('orderConfirmation');
+            } catch (error) {
+                console.error('Error loading order details:', error);
+                window.location.href = '/';
+            }
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        // Initialize
+        loadOrderDetails();
+        updateCartCount();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Management - AI Prompt Templates</title>
+    <link rel="icon" type="image/jpeg" href="/images/3rd-logo.jpeg">
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/csrf-helper.js"></script>
+    <script src="js/session-manager.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .admin-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-create {
+            padding: 0.75rem 1.5rem;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-create:hover {
+            background: #2980b9;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card h3 {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+
+        .templates-table-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .templates-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        .templates-table thead {
+            background: var(--dark-bg);
+        }
+
+        .templates-table th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .templates-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .templates-table tbody tr:hover {
+            background: var(--dark-bg);
+        }
+
+        .templates-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .badge-active {
+            background: #27ae60;
+            color: white;
+        }
+
+        .badge-inactive {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .badge-premium {
+            background: #f39c12;
+            color: white;
+        }
+
+        .badge-free {
+            background: #3498db;
+            color: white;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            margin-right: 0.5rem;
+        }
+
+        .btn-edit {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2980b9;
+        }
+
+        .btn-delete {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-delete:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-restore {
+            background: transparent;
+            color: #27ae60;
+            border: 1px solid #27ae60;
+        }
+
+        .btn-restore:hover {
+            background: #27ae60;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 2% auto;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .modal-close {
+            color: var(--text-secondary);
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            font-family: monospace;
+            resize: vertical;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        .form-checkbox {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .inputs-container {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .input-item {
+            background: var(--dark-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .input-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .btn-remove-input {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .btn-remove-input:hover {
+            background: #c0392b;
+        }
+
+        .btn-add-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: transparent;
+            color: var(--secondary-color);
+            border: 2px dashed var(--secondary-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-add-input:hover {
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            background: #2980b9;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+
+        .filter-toggle {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .toggle-btn {
+            padding: 0.5rem 1rem;
+            background: var(--dark-bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn.active {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-circle">
+                    <img src="/images/3rd-logo.jpeg" alt="SBC Services Logo">
+                </div>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/templates.html">Prompt Studio</a></li>
+                <li><a href="/dashboard">My Vault</a></li>
+                <li><a href="/projects">Projects</a></li>
+                <li><a href="/admin/users">User Management</a></li>
+                <li><a href="/admin/templates" class="active">Template Management</a></li>
+                <li><a href="#" id="logoutBtn" class="btn-primary">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <div>
+                <h1>Template Management</h1>
+                <p style="color: var(--text-secondary);">Create and manage AI prompt templates</p>
+            </div>
+            <button class="btn-create" id="createTemplateBtn">
+                + Create Template
+            </button>
+        </div>
+
+        <!-- Statistics Summary -->
+        <div class="stats-summary">
+            <div class="stat-card">
+                <h3>Total Templates</h3>
+                <div class="stat-number" id="totalTemplates">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Active</h3>
+                <div class="stat-number" id="activeTemplates">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Inactive</h3>
+                <div class="stat-number" id="inactiveTemplates">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Premium</h3>
+                <div class="stat-number" id="premiumTemplates">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Free</h3>
+                <div class="stat-number" id="freeTemplates">0</div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <span style="color: var(--text-secondary);">Show:</span>
+            <div class="filter-toggle">
+                <button class="toggle-btn active" data-filter="active">Active Only</button>
+                <button class="toggle-btn" data-filter="all">All Templates</button>
+            </div>
+        </div>
+
+        <!-- Templates Table -->
+        <div class="templates-table-container">
+            <div id="loadingIndicator" class="loading">
+                Loading templates...
+            </div>
+            <table class="templates-table" id="templatesTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Subcategory</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="templatesTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Create/Edit Template Modal -->
+    <div id="templateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Create Template</h2>
+                <span class="modal-close" id="closeModal">&times;</span>
+            </div>
+            <form id="templateForm">
+                <div class="form-group">
+                    <label class="form-label">Template Name *</label>
+                    <input type="text" id="templateName" class="form-input" required placeholder="e.g., Blog Post Generator">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Category *</label>
+                        <input type="text" id="templateCategory" class="form-input" required placeholder="e.g., Content Creation">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Subcategory *</label>
+                        <input type="text" id="templateSubcategory" class="form-input" required placeholder="e.g., Blogging">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description *</label>
+                    <textarea id="templateDescription" class="form-textarea" required placeholder="Brief description of what this template does"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Prompt Template *</label>
+                    <textarea id="templatePrompt" class="form-textarea" required style="min-height: 150px;" placeholder="Write your prompt template here. Use {variableName} for dynamic inputs."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Template Inputs</label>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+                        Define the input fields users will fill in. Reference them in your prompt template using {inputName}.
+                    </p>
+                    <div id="inputsContainer" class="inputs-container">
+                        <!-- Input items will be added here dynamically -->
+                    </div>
+                    <button type="button" class="btn-add-input" id="addInputBtn">+ Add Input Field</button>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="templatePremium" class="form-checkbox">
+                        <span>Premium Template</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="templateActive" class="form-checkbox" checked>
+                        <span>Active (visible to users)</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitTemplate">Create Template</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let allTemplates = [];
+        let currentTemplateId = null;
+        let currentFilter = 'active';
+
+        // Load templates
+        async function loadTemplates() {
+            try {
+                const includeInactive = currentFilter === 'all';
+                const response = await fetch(`/api/admin/templates?includeInactive=${includeInactive}`);
+
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    throw new Error('Failed to load templates');
+                }
+
+                const data = await response.json();
+                allTemplates = data.templates;
+
+                displayTemplates(allTemplates);
+                loadStats();
+
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('templatesTable').style.display = 'table';
+            } catch (error) {
+                console.error('Error loading templates:', error);
+                document.getElementById('loadingIndicator').innerHTML =
+                    '<p style="color: var(--primary-color);">Error loading templates. Please try again.</p>';
+            }
+        }
+
+        // Display templates in table
+        function displayTemplates(templates) {
+            const tbody = document.getElementById('templatesTableBody');
+
+            if (templates.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No templates found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = templates.map(template => `
+                <tr>
+                    <td>${template.id}</td>
+                    <td><strong>${template.name}</strong></td>
+                    <td>${template.category}</td>
+                    <td>${template.subcategory}</td>
+                    <td>
+                        <span class="badge ${template.is_premium ? 'badge-premium' : 'badge-free'}">
+                            ${template.is_premium ? 'Premium' : 'Free'}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge ${template.is_active ? 'badge-active' : 'badge-inactive'}">
+                            ${template.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-edit" data-id="${template.id}">Edit</button>
+                        ${template.is_active
+                            ? `<button class="action-btn btn-delete" data-id="${template.id}">Deactivate</button>`
+                            : `<button class="action-btn btn-restore" data-id="${template.id}">Activate</button>`
+                        }
+                    </td>
+                </tr>
+            `).join('');
+
+            // Attach event listeners
+            tbody.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    editTemplate(parseInt(this.getAttribute('data-id')));
+                });
+            });
+
+            tbody.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    deleteTemplate(parseInt(this.getAttribute('data-id')));
+                });
+            });
+
+            tbody.querySelectorAll('.btn-restore').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    restoreTemplate(parseInt(this.getAttribute('data-id')));
+                });
+            });
+        }
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/admin/templates/stats');
+                const data = await response.json();
+
+                document.getElementById('totalTemplates').textContent = data.stats.total;
+                document.getElementById('activeTemplates').textContent = data.stats.active;
+                document.getElementById('inactiveTemplates').textContent = data.stats.inactive;
+                document.getElementById('premiumTemplates').textContent = data.stats.premium;
+                document.getElementById('freeTemplates').textContent = data.stats.free;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Open modal for creating template
+        function openCreateModal() {
+            currentTemplateId = null;
+            document.getElementById('modalTitle').textContent = 'Create Template';
+            document.getElementById('submitTemplate').textContent = 'Create Template';
+            document.getElementById('templateForm').reset();
+            document.getElementById('inputsContainer').innerHTML = '';
+            addInputField(); // Add one empty input field by default
+            document.getElementById('templateModal').style.display = 'block';
+        }
+
+        // Open modal for editing template
+        async function editTemplate(templateId) {
+            try {
+                const response = await fetch(`/api/admin/templates/${templateId}`);
+                const data = await response.json();
+                const template = data.template;
+
+                currentTemplateId = templateId;
+                document.getElementById('modalTitle').textContent = 'Edit Template';
+                document.getElementById('submitTemplate').textContent = 'Update Template';
+
+                // Populate form
+                document.getElementById('templateName').value = template.name;
+                document.getElementById('templateCategory').value = template.category;
+                document.getElementById('templateSubcategory').value = template.subcategory;
+                document.getElementById('templateDescription').value = template.description;
+                document.getElementById('templatePrompt').value = template.prompt_template;
+                document.getElementById('templatePremium').checked = template.is_premium;
+                document.getElementById('templateActive').checked = template.is_active;
+
+                // Populate inputs
+                document.getElementById('inputsContainer').innerHTML = '';
+                template.inputs.forEach(input => {
+                    addInputField(input);
+                });
+
+                document.getElementById('templateModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading template:', error);
+                alert('Failed to load template details');
+            }
+        }
+
+        // Add input field to form
+        function addInputField(data = null) {
+            const container = document.getElementById('inputsContainer');
+            const index = container.children.length;
+
+            const inputItem = document.createElement('div');
+            inputItem.className = 'input-item';
+            inputItem.innerHTML = `
+                <button type="button" class="btn-remove-input" onclick="removeInputField(this)">×</button>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label class="form-label">Input Name</label>
+                    <input type="text" class="form-input input-name" required placeholder="e.g., topic" value="${data?.name || ''}">
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label class="form-label">Label</label>
+                    <input type="text" class="form-input input-label" required placeholder="e.g., Blog Topic" value="${data?.label || ''}">
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label class="form-label">Input Type</label>
+                    <select class="form-input input-type">
+                        <option value="text" ${data?.type === 'text' ? 'selected' : ''}>Text</option>
+                        <option value="textarea" ${data?.type === 'textarea' ? 'selected' : ''}>Textarea</option>
+                        <option value="number" ${data?.type === 'number' ? 'selected' : ''}>Number</option>
+                        <option value="select" ${data?.type === 'select' ? 'selected' : ''}>Select</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Placeholder</label>
+                    <input type="text" class="form-input input-placeholder" placeholder="e.g., Enter your blog topic" value="${data?.placeholder || ''}">
+                </div>
+            `;
+
+            container.appendChild(inputItem);
+        }
+
+        // Remove input field
+        function removeInputField(btn) {
+            btn.parentElement.remove();
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('templateModal').style.display = 'none';
+            currentTemplateId = null;
+        }
+
+        // Submit template form
+        async function submitTemplateForm(event) {
+            event.preventDefault();
+
+            // Collect input fields
+            const inputsContainer = document.getElementById('inputsContainer');
+            const inputItems = inputsContainer.querySelectorAll('.input-item');
+            const inputs = [];
+
+            inputItems.forEach(item => {
+                inputs.push({
+                    name: item.querySelector('.input-name').value,
+                    label: item.querySelector('.input-label').value,
+                    type: item.querySelector('.input-type').value,
+                    placeholder: item.querySelector('.input-placeholder').value
+                });
+            });
+
+            const templateData = {
+                name: document.getElementById('templateName').value,
+                category: document.getElementById('templateCategory').value,
+                subcategory: document.getElementById('templateSubcategory').value,
+                description: document.getElementById('templateDescription').value,
+                prompt_template: document.getElementById('templatePrompt').value,
+                inputs: inputs,
+                is_premium: document.getElementById('templatePremium').checked,
+                is_active: document.getElementById('templateActive').checked
+            };
+
+            const submitBtn = document.getElementById('submitTemplate');
+            submitBtn.disabled = true;
+            submitBtn.textContent = currentTemplateId ? 'Updating...' : 'Creating...';
+
+            try {
+                const url = currentTemplateId
+                    ? `/api/admin/templates/${currentTemplateId}`
+                    : '/api/admin/templates';
+
+                const method = currentTemplateId ? 'PUT' : 'POST';
+
+                const response = await fetchWithCsrf(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(templateData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    closeModal();
+                    loadTemplates();
+                } else {
+                    alert(data.error || 'Failed to save template');
+                }
+            } catch (error) {
+                console.error('Error saving template:', error);
+                alert('Failed to save template. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = currentTemplateId ? 'Update Template' : 'Create Template';
+            }
+        }
+
+        // Delete (deactivate) template
+        async function deleteTemplate(templateId) {
+            if (!confirm('Are you sure you want to deactivate this template? It will no longer be visible to users.')) {
+                return;
+            }
+
+            try {
+                const response = await fetchWithCsrf(`/api/admin/templates/${templateId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    loadTemplates();
+                } else {
+                    alert(data.error || 'Failed to deactivate template');
+                }
+            } catch (error) {
+                console.error('Error deactivating template:', error);
+                alert('Failed to deactivate template. Please try again.');
+            }
+        }
+
+        // Restore (activate) template
+        async function restoreTemplate(templateId) {
+            try {
+                const response = await fetchWithCsrf(`/api/admin/templates/${templateId}/restore`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    loadTemplates();
+                } else {
+                    alert(data.error || 'Failed to activate template');
+                }
+            } catch (error) {
+                console.error('Error activating template:', error);
+                alert('Failed to activate template. Please try again.');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('createTemplateBtn').addEventListener('click', openCreateModal);
+        document.getElementById('closeModal').addEventListener('click', closeModal);
+        document.getElementById('templateModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        // Note: logoutBtn is handled by auth.js, so we don't need to attach it here
+        
+        // Wait for auth.js to finish updating navigation before attaching other listeners
+        setTimeout(() => {
+            document.getElementById('addInputBtn').addEventListener('click', () => addInputField());
+            document.getElementById('templateForm').addEventListener('submit', submitTemplateForm);
+        }, 100);
+
+        // Filter toggle
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.getAttribute('data-filter');
+                loadTemplates();
+            });
+        });
+
+        // Initialize
+        loadTemplates();
+    </script>
+</body>
+</html>

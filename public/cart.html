@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Shopping Cart</title>
+    <link rel="icon" type="image/jpeg" href="/images/3rd-logo.jpeg">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .cart-container {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .cart-header {
+            margin-bottom: 2rem;
+        }
+
+        .cart-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .cart-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+        }
+
+        .cart-items {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .item-price {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .item-quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+
+        .btn-quantity-small {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .btn-quantity-small:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .btn-quantity-small:active {
+            transform: scale(0.95);
+        }
+
+        .btn-quantity-small:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .quantity-display {
+            min-width: 50px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .item-total {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            min-width: 120px;
+            text-align: right;
+        }
+
+        .btn-remove-item {
+            background: transparent;
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
+        }
+
+        .btn-remove-item:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-cart h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .empty-cart p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .btn-continue-shopping {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-continue-shopping:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .cart-summary {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .summary-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .discount-section {
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--darker-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .discount-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .discount-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .discount-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .discount-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .discount-input.success {
+            border-color: var(--success-color);
+        }
+
+        .discount-input.error {
+            border-color: #e74c3c;
+        }
+
+        .btn-apply-discount {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .btn-apply-discount:hover {
+            background: var(--primary-color);
+        }
+
+        .discount-message {
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .discount-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .discount-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .summary-row.total {
+            font-size: 1.5rem;
+            font-weight: 700;
+            padding-top: 1rem;
+            border-top: 2px solid var(--border-color);
+            margin-top: 1rem;
+            color: var(--primary-color);
+        }
+
+        .summary-row.discount {
+            color: var(--success-color);
+        }
+
+        .summary-label {
+            color: var(--text-secondary);
+        }
+
+        .summary-value {
+            font-weight: 600;
+        }
+
+        .btn-checkout {
+            width: 100%;
+            padding: 1.25rem 2rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1.5rem;
+        }
+
+        .btn-checkout:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-checkout:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 968px) {
+            .cart-content {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-summary {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-circle">
+                    <img src="images/3rd-logo.jpeg" alt="3rd Rock Ads Logo">
+                </div>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/product">Product</a></li>
+                <li><a href="/cart" id="cartLink">Cart (<span id="cartCount">0</span>)</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Cart Section -->
+    <section class="cart-container">
+        <div class="cart-header">
+            <h1>Shopping Cart</h1>
+        </div>
+
+        <div class="cart-content">
+            <!-- Cart Items -->
+            <div class="cart-items" id="cartItems">
+                <div class="empty-cart">
+                    <h2>Your cart is empty</h2>
+                    <p>Add some products to get started!</p>
+                    <a href="/product" class="btn-continue-shopping">Continue Shopping</a>
+                </div>
+            </div>
+
+            <!-- Cart Summary -->
+            <div class="cart-summary">
+                <h2 class="summary-title">Order Summary</h2>
+
+                <!-- Discount Code Section -->
+                <div class="discount-section">
+                    <h3>Have a discount code?</h3>
+                    <div class="discount-input-group">
+                        <input 
+                            type="text" 
+                            id="discountCode" 
+                            class="discount-input" 
+                            placeholder="Enter discount code"
+                            maxlength="20"
+                        >
+                        <button class="btn-apply-discount" id="applyDiscountBtn">Apply</button>
+                    </div>
+                    <div class="discount-message" id="discountMessage"></div>
+                </div>
+
+                <!-- Summary Details -->
+                <div class="summary-details">
+                    <div class="summary-row">
+                        <span class="summary-label">Subtotal:</span>
+                        <span class="summary-value" id="subtotal">$0.00</span>
+                    </div>
+                    <div class="summary-row discount" id="discountRow" style="display: none;">
+                        <span class="summary-label">Discount:</span>
+                        <span class="summary-value" id="discountAmount">-$0.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span class="summary-label">Total:</span>
+                        <span class="summary-value" id="totalPrice">$0.00</span>
+                    </div>
+                </div>
+
+                <div id="checkoutSection">
+                    <button class="btn-checkout" id="checkoutBtn" disabled>Proceed to Checkout</button>
+                    <div id="loginPrompt" style="display: none; margin-top: 1rem; padding: 1.5rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; text-align: center;">
+                        <p style="margin: 0 0 1rem 0; color: #856404; font-size: 1.1rem;">
+                            <strong>🔒 Login Required</strong>
+                        </p>
+                        <p style="margin: 0 0 1rem 0; color: #856404;">
+                            Please log in to proceed with checkout.
+                        </p>
+                        <a href="/login" class="btn-checkout" style="display: inline-block; text-decoration: none; background: var(--primary-color);">
+                            Go to Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <div class="logo-circle">
+                            <img src="images/3rd-logo.jpeg" alt="3rd Rock Ads Logo">
+                        </div>
+                    </div>
+                    <p class="footer-description">Professional AI prompt templates for marketing professionals.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <ul>
+                            <li><a href="templates.html">Templates</a></li>
+                            <li><a href="about.html">About</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <ul>
+                            <li><a href="templates.html">All Templates</a></li>
+                            <li><a href="templates.html">Get Started</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 AI Prompt Templates. All rights reserved.</p>
+                <p class="footer-note">All AI can make mistakes or even hallucinate. Confirm all responses.</p>
+                <div class="footer-sbc">
+                    <img src="images/logo.png" alt="SBC Services - Parent Company Logo" class="footer-sbc-logo">
+                    <p class="footer-sbc-text">3rdRockAds an SBC-Services solely owned AI consultancy focused on sales outreach development</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/session-manager.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        let cartDiscountApplied = false;
+        let cartDiscountCode = null;
+        let currentDiscountPercentage = 0;
+
+        // DOM elements
+        const cartItemsEl = document.getElementById('cartItems');
+        const discountCodeInput = document.getElementById('discountCode');
+        const applyDiscountBtn = document.getElementById('applyDiscountBtn');
+        const discountMessage = document.getElementById('discountMessage');
+        const subtotalEl = document.getElementById('subtotal');
+        const discountRow = document.getElementById('discountRow');
+        const discountAmountEl = document.getElementById('discountAmount');
+        const totalPriceEl = document.getElementById('totalPrice');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        // Load cart items
+        function loadCartItems() {
+            const cart = getCart();
+            
+            if (cart.length === 0) {
+                cartItemsEl.innerHTML = `
+                    <div class="empty-cart">
+                        <h2>Your cart is empty</h2>
+                        <p>Add some products to get started!</p>
+                        <a href="/product" class="btn-continue-shopping">Continue Shopping</a>
+                    </div>
+                `;
+                updateSummary();
+                updateCheckoutButton();
+                return;
+            }
+
+            updateCheckoutButton();
+
+            cartItemsEl.innerHTML = cart.map(item => {
+                const itemTotal = (item.finalPrice !== undefined ? item.finalPrice : item.price) * (item.quantity || 1);
+                return `
+                    <div class="cart-item" data-item-id="${item.id}">
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price">${formatCurrency(item.price)} each</div>
+                            <div class="item-quantity-controls">
+                                <button class="btn-quantity-small" data-action="decrease" data-item-id="${item.id}">-</button>
+                                <span class="quantity-display">${item.quantity || 1}</span>
+                                <button class="btn-quantity-small" data-action="increase" data-item-id="${item.id}">+</button>
+                            </div>
+                            <button class="btn-remove-item" data-action="remove" data-item-id="${item.id}">Remove</button>
+                        </div>
+                        <div class="item-total">${formatCurrency(itemTotal)}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Attach event listeners to quantity buttons using event delegation
+            cartItemsEl.querySelectorAll('.btn-quantity-small').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const itemId = parseInt(this.getAttribute('data-item-id'));
+                    const action = this.getAttribute('data-action');
+                    const change = action === 'increase' ? 1 : -1;
+                    updateQuantity(itemId, change);
+                });
+            });
+
+            // Attach event listeners to remove buttons
+            cartItemsEl.querySelectorAll('.btn-remove-item').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const itemId = parseInt(this.getAttribute('data-item-id'));
+                    removeItem(itemId);
+                });
+            });
+
+            updateSummary();
+            updateCheckoutButton();
+        }
+
+        // Update quantity function
+        function updateQuantity(itemId, change) {
+            // This function is called by event listeners, updateCheckoutButton will be called after loadCartItems
+            if (typeof getCart !== 'function' || typeof updateItemQuantity !== 'function') {
+                console.error('Cart functions not available');
+                return;
+            }
+
+            const cart = getCart();
+            const item = cart.find(i => i.id === itemId);
+            
+            if (!item) {
+                console.warn('Item not found in cart:', itemId);
+                return;
+            }
+
+            const currentQuantity = item.quantity || 1;
+            const newQuantity = currentQuantity + change;
+            
+            if (newQuantity <= 0) {
+                if (confirm('Remove this item from your cart?')) {
+                    removeItemFromCart(itemId);
+                    loadCartItems();
+                }
+            } else if (newQuantity > 99) {
+                alert('Maximum quantity is 99');
+            } else {
+                updateItemQuantity(itemId, newQuantity);
+                loadCartItems();
+            }
+        }
+
+        // Remove item function
+        function removeItem(itemId) {
+            if (typeof removeItemFromCart !== 'function') {
+                console.error('removeItemFromCart function not available');
+                return;
+            }
+
+            if (confirm('Are you sure you want to remove this item from your cart?')) {
+                removeItemFromCart(itemId);
+                loadCartItems();
+            }
+        }
+
+        // Apply discount code
+        async function applyDiscount() {
+            const code = discountCodeInput.value.trim().toUpperCase();
+            
+            if (!code) {
+                showDiscountMessage('Please enter a discount code', 'error');
+                return;
+            }
+
+            try {
+                // Get current cart items to validate against product restrictions
+                const cart = getCart();
+                const cartItems = cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity || 1
+                }));
+
+                const response = await fetch('/api/discount-codes/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ code, cartItems })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.valid) {
+                    cartDiscountApplied = true;
+                    cartDiscountCode = data.discountCode.code;
+                    currentDiscountPercentage = data.discountCode.discount_percentage;
+                    discountCodeInput.classList.add('success');
+                    discountCodeInput.classList.remove('error');
+                    const discountText = currentDiscountPercentage === 100 
+                        ? 'You get 100% off!' 
+                        : `You get ${currentDiscountPercentage}% off!`;
+                    showDiscountMessage(`Discount code applied! ${discountText}`, 'success');
+                    updateSummary();
+                } else {
+                    cartDiscountApplied = false;
+                    cartDiscountCode = null;
+                    currentDiscountPercentage = 0;
+                    discountCodeInput.classList.add('error');
+                    discountCodeInput.classList.remove('success');
+                    const errorMessage = data.error || 'Invalid discount code. Please try again.';
+                    showDiscountMessage(errorMessage, 'error');
+                    updateSummary();
+                }
+            } catch (error) {
+                console.error('Error validating discount code:', error);
+                cartDiscountApplied = false;
+                cartDiscountCode = null;
+                currentDiscountPercentage = 0;
+                discountCodeInput.classList.add('error');
+                discountCodeInput.classList.remove('success');
+                showDiscountMessage('Failed to validate discount code. Please try again.', 'error');
+                updateSummary();
+            }
+        }
+
+        // Show discount message
+        function showDiscountMessage(message, type) {
+            discountMessage.textContent = message;
+            discountMessage.className = `discount-message ${type}`;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    discountMessage.className = 'discount-message';
+                }, 5000);
+            }
+        }
+
+        // Update summary
+        function updateSummary() {
+            const subtotal = getCartSubtotal();
+            let discount = 0;
+            let total = subtotal;
+
+            if (cartDiscountApplied && currentDiscountPercentage > 0) {
+                // Apply discount percentage to entire cart
+                discount = (subtotal * currentDiscountPercentage) / 100;
+                total = subtotal - discount;
+                if (total < 0) total = 0;
+            }
+
+            subtotalEl.textContent = formatCurrency(subtotal);
+            
+            if (cartDiscountApplied) {
+                discountRow.style.display = 'flex';
+                discountAmountEl.textContent = `-${formatCurrency(discount)}`;
+            } else {
+                discountRow.style.display = 'none';
+            }
+
+            totalPriceEl.textContent = formatCurrency(total);
+        }
+
+        // Event listeners
+        applyDiscountBtn.addEventListener('click', applyDiscount);
+        
+        discountCodeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                applyDiscount();
+            }
+        });
+
+        // Check if user is logged in
+        let isLoggedIn = false;
+        
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/api/user', {
+                    credentials: 'include'
+                });
+                isLoggedIn = response.ok;
+                updateCheckoutButton();
+            } catch (error) {
+                isLoggedIn = false;
+                updateCheckoutButton();
+            }
+        }
+
+        function updateCheckoutButton() {
+            const loginPrompt = document.getElementById('loginPrompt');
+            const cart = getCart();
+            const hasItems = cart && cart.length > 0;
+            
+            if (isLoggedIn) {
+                checkoutBtn.style.display = hasItems ? 'block' : 'none';
+                if (loginPrompt) loginPrompt.style.display = 'none';
+                checkoutBtn.disabled = !hasItems;
+            } else {
+                checkoutBtn.style.display = 'none';
+                if (loginPrompt) {
+                    loginPrompt.style.display = hasItems ? 'block' : 'none';
+                }
+            }
+        }
+
+        checkoutBtn.addEventListener('click', function() {
+            // Check if user is logged in before proceeding
+            if (!isLoggedIn) {
+                // Save cart state and redirect to login
+                if (cartDiscountApplied) {
+                    sessionStorage.setItem('cartDiscountApplied', 'true');
+                    sessionStorage.setItem('cartDiscountCode', cartDiscountCode || '');
+                    sessionStorage.setItem('cartDiscountPercentage', currentDiscountPercentage.toString());
+                }
+                // Store intended destination
+                sessionStorage.setItem('redirectAfterLogin', '/checkout');
+                window.location.href = '/login';
+                return;
+            }
+
+            // Save discount state to sessionStorage
+            if (cartDiscountApplied) {
+                sessionStorage.setItem('cartDiscountApplied', 'true');
+                sessionStorage.setItem('cartDiscountCode', cartDiscountCode || '');
+                sessionStorage.setItem('cartDiscountPercentage', currentDiscountPercentage.toString());
+            } else {
+                sessionStorage.removeItem('cartDiscountApplied');
+                sessionStorage.removeItem('cartDiscountCode');
+                sessionStorage.removeItem('cartDiscountPercentage');
+            }
+            window.location.href = '/checkout';
+        });
+
+        // Auto-apply TXRBA.2025 discount code
+        async function autoApplyDiscount() {
+            const hardcodedCode = 'TXRBA.2025';
+            
+            // Set the discount code input value
+            if (discountCodeInput) {
+                discountCodeInput.value = hardcodedCode;
+            }
+            
+            // Apply the discount automatically
+            try {
+                // Get current cart items to validate against product restrictions
+                const cart = getCart();
+                const cartItems = cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity || 1
+                }));
+
+                const response = await fetch('/api/discount-codes/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ code: hardcodedCode, cartItems })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.valid) {
+                    cartDiscountApplied = true;
+                    cartDiscountCode = data.discountCode.code;
+                    currentDiscountPercentage = data.discountCode.discount_percentage;
+                    if (discountCodeInput) {
+                        discountCodeInput.classList.add('success');
+                        discountCodeInput.classList.remove('error');
+                    }
+                    const discountText = currentDiscountPercentage === 100 
+                        ? 'You get 100% off!' 
+                        : `You get ${currentDiscountPercentage}% off!`;
+                    showDiscountMessage(`Discount code ${hardcodedCode} automatically applied! ${discountText}`, 'success');
+                    updateSummary();
+                } else {
+                    // If validation fails, silently continue without discount
+                    cartDiscountApplied = false;
+                    cartDiscountCode = null;
+                    currentDiscountPercentage = 0;
+                    updateSummary();
+                }
+            } catch (error) {
+                // If error occurs, silently continue without discount
+                console.error('Error auto-applying discount code:', error);
+                cartDiscountApplied = false;
+                cartDiscountCode = null;
+                currentDiscountPercentage = 0;
+                updateSummary();
+            }
+        }
+
+        // Initialize
+        loadCartItems();
+        updateCartCount();
+        checkAuthStatus();
+        
+        // Auto-apply discount code after a short delay to ensure cart is loaded
+        setTimeout(() => {
+            autoApplyDiscount();
+        }, 500);
+
+        // Listen for cart updates
+        window.addEventListener('cartUpdated', function() {
+            loadCartItems();
+            // Re-apply discount after cart update
+            setTimeout(() => {
+                autoApplyDiscount();
+            }, 100);
+        });
+    </script>
+</body>
+</html>
+

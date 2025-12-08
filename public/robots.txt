@@ -1,0 +1,39 @@
+# robots.txt for AI Prompt Templates
+User-agent: *
+Allow: /
+
+# Allow crawling of public pages
+Allow: /index.html
+Allow: /about.html
+Allow: /templates.html
+Allow: /css/
+Allow: /js/
+Allow: /images/
+
+# Disallow authentication and user pages
+Disallow: /login
+Disallow: /login.html
+Disallow: /signup
+Disallow: /signup.html
+Disallow: /forgot-password
+Disallow: /forgot-password.html
+Disallow: /reset-password
+Disallow: /reset-password.html
+Disallow: /verify-email
+Disallow: /verify-email.html
+Disallow: /dashboard
+Disallow: /dashboard.html
+Disallow: /profile
+Disallow: /profile.html
+Disallow: /projects
+Disallow: /projects.html
+Disallow: /admin-users
+Disallow: /admin-users.html
+Disallow: /admin-templates
+Disallow: /admin-templates.html
+Disallow: /admin-analytics
+Disallow: /admin-analytics.html
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://txrba-2025.3rdrockads.com/sitemap.xml

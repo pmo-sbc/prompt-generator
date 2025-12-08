@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Dashboard - AI Prompt Templates</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" type="image/jpeg" href="/images/3rd-logo.jpeg">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .analytics-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .stat-card h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.9rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: var(--primary-color, #007bff);
+      margin: 0.5rem 0;
+    }
+
+    .stat-subtitle {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 0.5rem;
+    }
+
+    .stat-change {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .stat-change.positive {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .stat-change.negative {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .chart-card h2 {
+      margin: 0 0 1rem 0;
+      font-size: 1.25rem;
+      color: #333;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+    }
+
+    .table-card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+
+    .table-card h2 {
+      margin: 0 0 1rem 0;
+      font-size: 1.25rem;
+      color: #333;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .data-table th {
+      background: #f8f9fa;
+      padding: 0.75rem;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 2px solid #dee2e6;
+    }
+
+    .data-table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .data-table tr:hover {
+      background: #f8f9fa;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .badge.premium {
+      background: #ffc107;
+      color: #000;
+    }
+
+    .badge.free {
+      background: #28a745;
+      color: white;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+    }
+
+    .loading::after {
+      content: '...';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 1rem;
+      border-radius: 4px;
+      margin: 1rem 0;
+      border-left: 4px solid #f5c6cb;
+    }
+
+    .refresh-button {
+      background: var(--primary-color, #007bff);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .refresh-button:hover {
+      opacity: 0.9;
+    }
+
+    .filters {
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .filters label {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+
+    .filters select {
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .analytics-container {
+        padding: 1rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filters {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-left">
+        <a href="/" class="logo">AI Prompt Templates</a>
+        <div class="nav-links">
+          <a href="/dashboard">Dashboard</a>
+          <a href="/templates">Templates</a>
+          <a href="/projects">Projects</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <span class="user-info">Welcome, <span id="username"></span></span>
+        <a href="/admin-users" class="btn-secondary">Users</a>
+        <a href="/admin-templates" class="btn-secondary">Templates</a>
+        <a href="/admin-analytics" class="btn-primary">Analytics</a>
+        <a href="/profile" class="btn-secondary">Profile</a>
+        <button onclick="logout()" class="btn-danger">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="analytics-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h1>Analytics Dashboard</h1>
+      <button onclick="refreshData()" class="refresh-button">Refresh Data</button>
+    </div>
+
+    <div class="filters">
+      <div>
+        <label for="timeRange">Time Range:</label>
+        <select id="timeRange" onchange="updateTimeRange()">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="loading" class="loading">Loading analytics data</div>
+    <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+    <div id="analyticsContent" style="display: none;">
+      <!-- Overview Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Total Users</h3>
+          <div class="stat-value" id="totalUsers">0</div>
+          <div class="stat-subtitle">
+            <span id="verifiedUsers">0</span> verified
+            <span class="stat-change positive" id="recentUsers">+0 this month</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Templates</h3>
+          <div class="stat-value" id="totalTemplates">0</div>
+          <div class="stat-subtitle">
+            <span id="premiumTemplates">0</span> premium,
+            <span id="activeTemplates">0</span> active
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Prompts Created</h3>
+          <div class="stat-value" id="totalPrompts">0</div>
+          <div class="stat-subtitle">
+            <span class="stat-change positive" id="promptsLast30Days">+0 last 30 days</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Projects</h3>
+          <div class="stat-value" id="totalProjects">0</div>
+          <div class="stat-subtitle">
+            <span class="stat-change positive" id="projectsLast30Days">+0 last 30 days</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Activities</h3>
+          <div class="stat-value" id="totalActivities">0</div>
+          <div class="stat-subtitle">
+            <span id="activitiesLast24Hours">0</span> in last 24 hours
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <h3>System Health</h3>
+          <div class="stat-value" style="font-size: 1.5rem;" id="dbSize">0 MB</div>
+          <div class="stat-subtitle">
+            Database size | <span id="uptime">0h 0m</span> uptime
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h2>User Growth</h2>
+          <div class="chart-container">
+            <canvas id="userGrowthChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h2>Activity Timeline</h2>
+          <div class="chart-container">
+            <canvas id="activityTimelineChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h2>Template Usage by Category</h2>
+          <div class="chart-container">
+            <canvas id="categoryUsageChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h2>Premium vs Free Usage</h2>
+          <div class="chart-container">
+            <canvas id="premiumVsFreeChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tables -->
+      <div class="table-card">
+        <h2>Most Active Users</h2>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Activity Count (30 days)</th>
+            </tr>
+          </thead>
+          <tbody id="activeUsersTable">
+            <tr>
+              <td colspan="3">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-card">
+        <h2>Popular Templates</h2>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Template Name</th>
+              <th>Category</th>
+              <th>Usage Count</th>
+            </tr>
+          </thead>
+          <tbody id="popularTemplatesTable">
+            <tr>
+              <td colspan="3">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let charts = {};
+    let currentTimeRange = 30;
+
+    // Check authentication and admin status
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/session/status');
+        const data = await response.json();
+
+        if (!data.authenticated) {
+          window.location.href = '/login';
+          return false;
+        }
+
+        if (!data.is_admin) {
+          alert('Access denied. Admin privileges required.');
+          window.location.href = '/dashboard';
+          return false;
+        }
+
+        document.getElementById('username').textContent = data.username;
+        return true;
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login';
+        return false;
+      }
+    }
+
+    // Load all analytics data
+    async function loadAnalytics() {
+      try {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('analyticsContent').style.display = 'none';
+        document.getElementById('errorMessage').style.display = 'none';
+
+        // Load overview data
+        const overviewResponse = await fetch('/api/analytics/overview');
+        const overviewData = await overviewResponse.json();
+
+        if (!overviewData.success) {
+          throw new Error('Failed to load overview data');
+        }
+
+        updateOverviewStats(overviewData.overview);
+        updateTables(overviewData.overview);
+
+        // Load user growth data
+        const growthResponse = await fetch(`/api/analytics/users/growth?days=${currentTimeRange}`);
+        const growthData = await growthResponse.json();
+        updateUserGrowthChart(growthData.growth);
+
+        // Load activity timeline
+        const timelineResponse = await fetch(`/api/analytics/activity/timeline?days=${currentTimeRange}`);
+        const timelineData = await timelineResponse.json();
+        updateActivityTimelineChart(timelineData.timeline);
+
+        // Load template usage
+        const usageResponse = await fetch('/api/analytics/templates/usage');
+        const usageData = await usageResponse.json();
+        updateTemplateUsageCharts(usageData.usage);
+
+        // Load system health
+        const healthResponse = await fetch('/api/analytics/system/health');
+        const healthData = await healthResponse.json();
+        updateSystemHealth(healthData.health);
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('analyticsContent').style.display = 'block';
+      } catch (error) {
+        console.error('Error loading analytics:', error);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('errorMessage').textContent = 'Failed to load analytics data: ' + error.message;
+        document.getElementById('errorMessage').style.display = 'block';
+      }
+    }
+
+    function updateOverviewStats(overview) {
+      document.getElementById('totalUsers').textContent = overview.users.total;
+      document.getElementById('verifiedUsers').textContent = overview.users.verified;
+      document.getElementById('recentUsers').textContent = '+' + overview.users.recentRegistrations + ' this month';
+
+      document.getElementById('totalTemplates').textContent = overview.templates.total;
+      document.getElementById('premiumTemplates').textContent = overview.templates.premium;
+      document.getElementById('activeTemplates').textContent = overview.templates.active;
+
+      document.getElementById('totalPrompts').textContent = overview.prompts.total;
+      document.getElementById('promptsLast30Days').textContent = '+' + overview.prompts.last30Days + ' last 30 days';
+
+      document.getElementById('totalProjects').textContent = overview.projects.total;
+      document.getElementById('projectsLast30Days').textContent = '+' + overview.projects.last30Days + ' last 30 days';
+
+      document.getElementById('totalActivities').textContent = overview.activities.total;
+      document.getElementById('activitiesLast24Hours').textContent = overview.activities.last24Hours;
+    }
+
+    function updateSystemHealth(health) {
+      document.getElementById('dbSize').textContent = health.database.sizeFormatted;
+      document.getElementById('uptime').textContent = health.process.uptime;
+    }
+
+    function updateTables(overview) {
+      // Most active users
+      const activeUsersTable = document.getElementById('activeUsersTable');
+      if (overview.mostActiveUsers.length === 0) {
+        activeUsersTable.innerHTML = '<tr><td colspan="3">No activity data available</td></tr>';
+      } else {
+        activeUsersTable.innerHTML = overview.mostActiveUsers.map(user => `
+          <tr>
+            <td>${escapeHtml(user.username)}</td>
+            <td>${escapeHtml(user.email)}</td>
+            <td>${user.activity_count}</td>
+          </tr>
+        `).join('');
+      }
+
+      // Popular templates
+      const popularTemplatesTable = document.getElementById('popularTemplatesTable');
+      if (overview.popularTemplates.length === 0) {
+        popularTemplatesTable.innerHTML = '<tr><td colspan="3">No template usage data available</td></tr>';
+      } else {
+        popularTemplatesTable.innerHTML = overview.popularTemplates.map(template => `
+          <tr>
+            <td>${escapeHtml(template.name)}</td>
+            <td>${escapeHtml(template.category)}</td>
+            <td>${template.usage_count}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function updateUserGrowthChart(growth) {
+      const ctx = document.getElementById('userGrowthChart').getContext('2d');
+
+      if (charts.userGrowth) {
+        charts.userGrowth.destroy();
+      }
+
+      charts.userGrowth = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: growth.dailyRegistrations.map(d => d.date),
+          datasets: [{
+            label: 'New Users',
+            data: growth.dailyRegistrations.map(d => d.count),
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateActivityTimelineChart(timeline) {
+      const ctx = document.getElementById('activityTimelineChart').getContext('2d');
+
+      if (charts.activityTimeline) {
+        charts.activityTimeline.destroy();
+      }
+
+      charts.activityTimeline = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: timeline.hourlyActivity.map(d => new Date(d.hour).toLocaleTimeString('en-US', { hour: '2-digit' })),
+          datasets: [{
+            label: 'Activities',
+            data: timeline.hourlyActivity.map(d => d.count),
+            backgroundColor: '#28a745',
+            borderColor: '#218838',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    function updateTemplateUsageCharts(usage) {
+      // Category usage chart
+      const categoryCtx = document.getElementById('categoryUsageChart').getContext('2d');
+
+      if (charts.categoryUsage) {
+        charts.categoryUsage.destroy();
+      }
+
+      charts.categoryUsage = new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+          labels: usage.byCategory.map(c => c.category),
+          datasets: [{
+            data: usage.byCategory.map(c => c.prompt_count),
+            backgroundColor: [
+              '#007bff', '#28a745', '#ffc107', '#dc3545', '#6c757d',
+              '#17a2b8', '#e83e8c', '#fd7e14', '#20c997', '#6610f2'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'right'
+            }
+          }
+        }
+      });
+
+      // Premium vs Free chart
+      const premiumCtx = document.getElementById('premiumVsFreeChart').getContext('2d');
+
+      if (charts.premiumVsFree) {
+        charts.premiumVsFree.destroy();
+      }
+
+      charts.premiumVsFree = new Chart(premiumCtx, {
+        type: 'pie',
+        data: {
+          labels: usage.premiumVsFree.map(u => u.type),
+          datasets: [{
+            data: usage.premiumVsFree.map(u => u.usage_count),
+            backgroundColor: ['#ffc107', '#28a745']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+
+    function updateTimeRange() {
+      currentTimeRange = parseInt(document.getElementById('timeRange').value);
+      loadAnalytics();
+    }
+
+    function refreshData() {
+      loadAnalytics();
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function logout() {
+      try {
+        const csrfToken = getCookie('csrf-token');
+        const response = await fetch('/api/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          }
+        });
+
+        if (response.ok) {
+          window.location.href = '/login';
+        }
+      } catch (error) {
+        console.error('Logout failed:', error);
+      }
+    }
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', async () => {
+      const authenticated = await checkAuth();
+      if (authenticated) {
+        await loadAnalytics();
+      }
+    });
+  </script>
+  <script src="js/session-manager.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+</body>
+</html>

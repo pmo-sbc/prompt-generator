@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Checkout</title>
+    <link rel="icon" type="image/jpeg" href="/images/3rd-logo.jpeg">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .checkout-container {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .checkout-header {
+            margin-bottom: 2rem;
+        }
+
+        .checkout-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .checkout-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+        }
+
+        .checkout-form-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-label.required::after {
+            content: " *";
+            color: #e74c3c;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-input.error,
+        .form-select.error {
+            border-color: #e74c3c;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .order-summary {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .order-items {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .order-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .order-item-name {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .order-item-details {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .order-item-price {
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .summary-row.total {
+            font-size: 1.5rem;
+            font-weight: 700;
+            padding-top: 1rem;
+            border-top: 2px solid var(--border-color);
+            margin-top: 1rem;
+            color: var(--primary-color);
+        }
+
+        .summary-row.discount {
+            color: var(--success-color);
+        }
+
+        .summary-label {
+            color: var(--text-secondary);
+        }
+
+        .summary-value {
+            font-weight: 600;
+        }
+
+        .btn-place-order {
+            width: 100%;
+            padding: 1.25rem 2rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1.5rem;
+        }
+
+        .btn-place-order:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-place-order:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-cart-message {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .empty-cart-message h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .empty-cart-message p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .btn-back-to-cart {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-back-to-cart:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .payment-method {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .payment-method:hover {
+            border-color: var(--primary-color);
+        }
+
+        .payment-method.selected {
+            border-color: var(--primary-color);
+            background: rgba(44, 90, 160, 0.1);
+        }
+
+        .payment-method input[type="radio"] {
+            margin-right: 0.5rem;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .btn-save-info {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-save-info:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-save-info:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #saveInfoMessage {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        #saveInfoMessage.success {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
+            display: block;
+        }
+
+        #saveInfoMessage.error {
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
+            display: block;
+        }
+
+        @media (max-width: 968px) {
+            .checkout-content {
+                grid-template-columns: 1fr;
+            }
+
+            .order-summary {
+                position: static;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-methods {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-circle">
+                    <img src="images/3rd-logo.jpeg" alt="3rd Rock Ads Logo">
+                </div>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/product">Product</a></li>
+                <li><a href="/cart" id="cartLink">Cart (<span id="cartCount">0</span>)</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Checkout Section -->
+    <section class="checkout-container">
+        <div class="checkout-header">
+            <h1>Checkout</h1>
+        </div>
+
+        <div id="emptyCartMessage" class="empty-cart-message" style="display: none;">
+            <h2>Your cart is empty</h2>
+            <p>Add some products to your cart before checkout.</p>
+            <a href="/cart" class="btn-back-to-cart">Back to Cart</a>
+        </div>
+
+        <div class="checkout-content" id="checkoutContent">
+            <!-- Checkout Form -->
+            <div class="checkout-form">
+                <!-- Customer Information -->
+                <div class="checkout-form-section">
+                    <h2 class="section-title">Customer Information</h2>
+                    <form id="checkoutForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label required" for="firstName">First Name</label>
+                                <input type="text" id="firstName" class="form-input" required>
+                                <div class="error-message" id="firstNameError"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required" for="lastName">Last Name</label>
+                                <input type="text" id="lastName" class="form-input" required>
+                                <div class="error-message" id="lastNameError"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required" for="email">Email Address</label>
+                            <input type="email" id="email" class="form-input" required readonly style="background-color: #f5f5f5; cursor: not-allowed;">
+                            <div class="error-message" id="emailError"></div>
+                            <small style="color: #666; font-size: 0.85rem; margin-top: 0.25rem; display: block;">Email cannot be changed. It is linked to your account.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required" for="phone">Phone Number</label>
+                            <input type="tel" id="phone" class="form-input" required>
+                            <div class="error-message" id="phoneError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required" for="address">Street Address</label>
+                            <input type="text" id="address" class="form-input" required>
+                            <div class="error-message" id="addressError"></div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label required" for="city">City</label>
+                                <input type="text" id="city" class="form-input" required>
+                                <div class="error-message" id="cityError"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required" for="state">State/Province</label>
+                                <input type="text" id="state" class="form-input" required>
+                                <div class="error-message" id="stateError"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label required" for="zipCode">ZIP/Postal Code</label>
+                                <input type="text" id="zipCode" class="form-input" required>
+                                <div class="error-message" id="zipCodeError"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required" for="country">Country</label>
+                                <select id="country" class="form-select" required>
+                                    <option value="">Select Country</option>
+                                    <option value="US">United States</option>
+                                    <option value="CA">Canada</option>
+                                    <option value="UK">United Kingdom</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="OTHER">Other</option>
+                                </select>
+                                <div class="error-message" id="countryError"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="notes">Order Notes (Optional)</label>
+                            <textarea id="notes" class="form-textarea" placeholder="Special instructions for your order..."></textarea>
+                        </div>
+
+                        <div id="saveInfoMessage" style="display: none; padding: 1rem; border-radius: 6px; margin-top: 1rem; font-size: 0.9rem;"></div>
+
+                        <button type="button" class="btn-save-info" id="saveInfoBtn" style="margin-top: 1rem;">
+                            💾 Save Personal Information
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Payment Information -->
+                <div class="checkout-form-section">
+                    <h2 class="section-title">Payment Method</h2>
+                    <div class="payment-methods">
+                        <label class="payment-method" id="paymentCard">
+                            <input type="radio" name="paymentMethod" value="card" checked>
+                            <span>💳 Credit/Debit Card</span>
+                        </label>
+                        <!-- PayPal disabled - uncomment to re-enable -->
+                        <!--
+                        <label class="payment-method" id="paymentPaypal">
+                            <input type="radio" name="paymentMethod" value="paypal">
+                            <span>🅿️ PayPal</span>
+                        </label>
+                        -->
+                    </div>
+
+                    <div id="paypalPaymentDetails" style="display: none;">
+                        <div id="paypalTestInfo" style="display: none; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; font-size: 0.9rem;">
+                            <strong>🧪 PayPal Sandbox Mode Active</strong>
+                            <p style="margin: 0.5rem 0 0 0;">Use PayPal sandbox test accounts. You can create test accounts at <a href="https://developer.paypal.com" target="_blank">PayPal Developer</a>.</p>
+                        </div>
+                        <div id="paypal-button-container" style="margin-top: 1rem;"></div>
+                        <div id="paypalError" class="error-message" style="display: none; margin-top: 1rem;"></div>
+                    </div>
+
+                    <div id="cardPaymentDetails">
+                        <div id="testCardInfo" style="display: none; background: #e8f5e9; border: 1px solid #4caf50; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; font-size: 0.9rem;">
+                            <strong>🧪 Test Mode Active</strong>
+                            <p style="margin: 0.5rem 0 0 0;">Use these test cards:</p>
+                            <ul style="margin: 0.5rem 0 0 0; padding-left: 1.5rem;">
+                                <li><strong>Success:</strong> 4242 4242 4242 4242</li>
+                                <li><strong>Decline:</strong> 4000 0000 0000 0002</li>
+                                <li>Use any future expiry date and any 3-digit CVC</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Stripe Elements Container -->
+                        <div class="form-group">
+                            <label class="form-label required">Card Details</label>
+                            <div id="stripe-card-element" style="padding: 0.75rem 1rem; border: 2px solid var(--border-color); border-radius: 6px; background: var(--card-bg); min-height: 40px;">
+                                <!-- Stripe Elements will create form elements here -->
+                            </div>
+                            <div id="stripe-card-errors" class="error-message" role="alert" style="display: none; margin-top: 0.5rem;"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label required" for="cardName">Name on Card</label>
+                            <input type="text" id="cardName" class="form-input" required>
+                            <div class="error-message" id="cardNameError"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h2 class="section-title">Order Summary</h2>
+
+                <div class="order-items" id="orderItems">
+                    <!-- Items will be loaded here -->
+                </div>
+
+                <div class="summary-details">
+                    <div class="summary-row">
+                        <span class="summary-label">Subtotal:</span>
+                        <span class="summary-value" id="subtotal">$0.00</span>
+                    </div>
+                    <div class="summary-row discount" id="discountRow" style="display: none;">
+                        <span class="summary-label">Discount:</span>
+                        <span class="summary-value" id="discountAmount">-$0.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span class="summary-label">Total:</span>
+                        <span class="summary-value" id="totalPrice">$0.00</span>
+                    </div>
+                </div>
+
+                <button class="btn-place-order" id="placeOrderBtn">Place Order</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <div class="logo-circle">
+                            <img src="images/3rd-logo.jpeg" alt="3rd Rock Ads Logo">
+                        </div>
+                    </div>
+                    <p class="footer-description">Professional AI prompt templates for marketing professionals.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <ul>
+                            <li><a href="templates.html">Templates</a></li>
+                            <li><a href="about.html">About</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <ul>
+                            <li><a href="templates.html">All Templates</a></li>
+                            <li><a href="templates.html">Get Started</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 AI Prompt Templates. All rights reserved.</p>
+                <p class="footer-note">All AI can make mistakes or even hallucinate. Confirm all responses.</p>
+                <div class="footer-sbc">
+                    <img src="images/logo.png" alt="SBC Services - Parent Company Logo" class="footer-sbc-logo">
+                    <p class="footer-sbc-text">3rdRockAds an SBC-Services solely owned AI consultancy focused on sales outreach development</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="js/session-manager.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        // DOM elements
+        const checkoutContent = document.getElementById('checkoutContent');
+        const emptyCartMessage = document.getElementById('emptyCartMessage');
+        const orderItemsEl = document.getElementById('orderItems');
+        const subtotalEl = document.getElementById('subtotal');
+        const discountRow = document.getElementById('discountRow');
+        const discountAmountEl = document.getElementById('discountAmount');
+        const totalPriceEl = document.getElementById('totalPrice');
+        const placeOrderBtn = document.getElementById('placeOrderBtn');
+        const checkoutForm = document.getElementById('checkoutForm');
+        const cardPaymentDetails = document.getElementById('cardPaymentDetails');
+        const paymentMethods = document.querySelectorAll('input[name="paymentMethod"]');
+
+        let cartDiscountApplied = false;
+        let cartDiscountCode = null;
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        // Load customer information from profile
+        async function loadCustomerInfo() {
+            try {
+                // First, get user's account email
+                const userResponse = await fetch('/api/profile/activity', {
+                    credentials: 'include'
+                });
+                
+                if (userResponse.ok) {
+                    const userData = await userResponse.json();
+                    if (userData.user && userData.user.email) {
+                        // Set email from user account (cannot be changed)
+                        document.getElementById('email').value = userData.user.email;
+                    }
+                }
+
+                // Then, get customer info for other fields
+                const response = await fetch('/api/profile/customer-info', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.customerInfo) {
+                        const info = data.customerInfo;
+                        if (info.firstName) document.getElementById('firstName').value = info.firstName;
+                        if (info.lastName) document.getElementById('lastName').value = info.lastName;
+                        // Email is already set from user account above
+                        if (info.phone) document.getElementById('phone').value = info.phone;
+                        if (info.address) document.getElementById('address').value = info.address;
+                        if (info.city) document.getElementById('city').value = info.city;
+                        if (info.state) document.getElementById('state').value = info.state;
+                        if (info.zipCode) document.getElementById('zipCode').value = info.zipCode;
+                        if (info.country) document.getElementById('country').value = info.country;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading customer info:', error);
+                // Silently fail - user can still fill form manually
+            }
+        }
+
+        // Load order summary
+        function loadOrderSummary() {
+            const cart = getCart();
+            
+            if (cart.length === 0) {
+                checkoutContent.style.display = 'none';
+                emptyCartMessage.style.display = 'block';
+                return;
+            }
+
+            checkoutContent.style.display = 'grid';
+            emptyCartMessage.style.display = 'none';
+
+            // Load order items
+            orderItemsEl.innerHTML = cart.map(item => {
+                const itemTotal = (item.finalPrice !== undefined ? item.finalPrice : item.price) * (item.quantity || 1);
+                return `
+                    <div class="order-item">
+                        <div>
+                            <div class="order-item-name">${item.name}</div>
+                            <div class="order-item-details">Quantity: ${item.quantity || 1} × ${formatCurrency(item.price)}</div>
+                        </div>
+                        <div class="order-item-price">${formatCurrency(itemTotal)}</div>
+                    </div>
+                `;
+            }).join('');
+
+            updateSummary();
+        }
+
+        // Update summary
+        function updateSummary() {
+            const subtotal = getCartSubtotal();
+            let discount = 0;
+            let total = subtotal;
+
+            // Check if discount was applied (stored in sessionStorage from cart page)
+            const appliedDiscount = sessionStorage.getItem('cartDiscountApplied');
+            const discountCodeFromStorage = sessionStorage.getItem('cartDiscountCode');
+            const discountPercentageFromStorage = parseFloat(sessionStorage.getItem('cartDiscountPercentage') || '0');
+            
+            if (appliedDiscount === 'true' && discountCodeFromStorage && discountPercentageFromStorage > 0) {
+                discount = (subtotal * discountPercentageFromStorage) / 100;
+                total = subtotal - discount;
+                if (total < 0) total = 0;
+                cartDiscountApplied = true;
+                cartDiscountCode = discountCodeFromStorage;
+            } else {
+                cartDiscountApplied = false;
+                cartDiscountCode = null;
+            }
+
+            subtotalEl.textContent = formatCurrency(subtotal);
+            
+            if (cartDiscountApplied) {
+                discountRow.style.display = 'flex';
+                discountAmountEl.textContent = `-${formatCurrency(discount)}`;
+            } else {
+                discountRow.style.display = 'none';
+            }
+
+            totalPriceEl.textContent = formatCurrency(total);
+
+            // Hide payment section if total is $0
+            const paymentSection = document.querySelector('.checkout-form-section:last-of-type');
+            const paymentInputs = paymentSection ? paymentSection.querySelectorAll('input[required], select[required]') : [];
+            
+            if (total === 0) {
+                if (paymentSection) {
+                    paymentSection.style.display = 'none';
+                }
+                // Remove required attribute from payment fields
+                paymentInputs.forEach(field => {
+                    field.required = false;
+                });
+                // Update button text
+                placeOrderBtn.textContent = 'Complete Order';
+            } else {
+                if (paymentSection) {
+                    paymentSection.style.display = 'block';
+                }
+                // Add required attribute back to payment fields if card is selected
+                const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked');
+                if (selectedPayment && selectedPayment.value === 'card') {
+                    paymentInputs.forEach(field => {
+                        if (field.id === 'cardNumber' || field.id === 'expiryDate' || field.id === 'cvv' || field.id === 'cardName') {
+                            field.required = true;
+                        }
+                    });
+                }
+                placeOrderBtn.textContent = 'Place Order';
+            }
+        }
+
+        // Format card number
+        // Card formatting functions removed - Stripe Elements handles this
+        function formatCardNumber_OLD(value) {
+            const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            const matches = v.match(/\d{4,16}/g);
+            const match = matches && matches[0] || '';
+            const parts = [];
+            for (let i = 0, len = match.length; i < len; i += 4) {
+                parts.push(match.substring(i, i + 4));
+            }
+            if (parts.length) {
+                return parts.join(' ');
+            } else {
+                return v;
+            }
+        }
+
+        // Format expiry date
+        function formatExpiryDate_OLD(value) {
+            const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            if (v.length >= 2) {
+                return v.substring(0, 2) + '/' + v.substring(2, 4);
+            }
+            return v;
+        }
+
+        // Validate form
+        function validateForm() {
+            let isValid = true;
+            const total = cartDiscountApplied ? 0 : getCartSubtotal();
+            
+            // Only validate customer information fields (always required)
+            const customerFields = checkoutForm.querySelectorAll('#firstName, #lastName, #email, #phone, #address, #city, #state, #zipCode, #country');
+            
+            customerFields.forEach(field => {
+                const errorEl = document.getElementById(field.id + 'Error');
+                if (!field.value.trim()) {
+                    field.classList.add('error');
+                    if (errorEl) {
+                        errorEl.textContent = 'This field is required';
+                        errorEl.classList.add('show');
+                    }
+                    isValid = false;
+                } else {
+                    field.classList.remove('error');
+                    if (errorEl) {
+                        errorEl.classList.remove('show');
+                    }
+                }
+            });
+
+            // Validate email
+            const email = document.getElementById('email');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email.value && !emailRegex.test(email.value)) {
+                email.classList.add('error');
+                document.getElementById('emailError').textContent = 'Please enter a valid email address';
+                document.getElementById('emailError').classList.add('show');
+                isValid = false;
+            }
+
+            // Validate card details if card payment selected AND total is not $0
+            // Note: Stripe Elements handles card validation, we just check if it's ready
+            if (total > 0) {
+                const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked');
+                if (selectedPayment && selectedPayment.value === 'card') {
+                    // Check if Stripe Elements is initialized
+                    if (!stripe || !stripeCardElement) {
+                        alert('Payment system is not ready. Please refresh the page.');
+                        isValid = false;
+                    }
+                    
+                    // Check for Stripe validation errors
+                    const stripeError = document.getElementById('stripe-card-errors');
+                    if (stripeError && stripeError.textContent && stripeError.style.display !== 'none') {
+                        isValid = false;
+                    }
+                }
+            }
+
+            return isValid;
+        }
+
+        // Stripe variables
+        let stripe = null;
+        let stripeElements = null;
+        let stripeCardElement = null;
+        let stripePublishableKey = null;
+
+        // PayPal variables
+        let paypalButtons = null;
+        let paypalClientId = null;
+
+        // Initialize Stripe Elements
+        async function initializeStripe() {
+            try {
+                // Get Stripe publishable key from server
+                const response = await fetch('/api/config/stripe-publishable-key');
+                const data = await response.json();
+                
+                if (data.publishableKey) {
+                    stripePublishableKey = data.publishableKey;
+                    stripe = Stripe(stripePublishableKey);
+                    stripeElements = stripe.elements();
+                    
+                    // Create card element
+                    stripeCardElement = stripeElements.create('card', {
+                        style: {
+                            base: {
+                                fontSize: '16px',
+                                color: '#32325d',
+                                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                                '::placeholder': {
+                                    color: '#aab7c4',
+                                },
+                            },
+                            invalid: {
+                                color: '#fa755a',
+                                iconColor: '#fa755a',
+                            },
+                        },
+                    });
+                    
+                    // Mount card element
+                    const cardElementContainer = document.getElementById('stripe-card-element');
+                    if (cardElementContainer) {
+                        stripeCardElement.mount('#stripe-card-element');
+                        
+                        // Handle real-time validation errors
+                        stripeCardElement.on('change', ({error}) => {
+                            const displayError = document.getElementById('stripe-card-errors');
+                            if (error) {
+                                displayError.textContent = error.message;
+                                displayError.style.display = 'block';
+                            } else {
+                                displayError.textContent = '';
+                                displayError.style.display = 'none';
+                            }
+                        });
+                        
+                        console.log('Stripe Elements initialized successfully');
+                    } else {
+                        console.error('Stripe card element container not found');
+                    }
+                } else {
+                    console.warn('Stripe publishable key not available');
+                }
+            } catch (error) {
+                console.error('Failed to initialize Stripe:', error);
+                const displayError = document.getElementById('stripe-card-errors');
+                if (displayError) {
+                    displayError.textContent = 'Failed to load payment form. Please refresh the page.';
+                    displayError.style.display = 'block';
+                }
+            }
+        }
+
+        // Load PayPal SDK and initialize buttons
+        async function loadPayPalSDK() {
+            try {
+                const response = await fetch('/api/config/paypal-client-id');
+                const data = await response.json();
+                
+                if (data.clientId) {
+                    paypalClientId = data.clientId;
+                    
+                    // Load PayPal SDK dynamically
+                    const script = document.createElement('script');
+                    script.src = `https://www.paypal.com/sdk/js?client-id=${data.clientId}&currency=USD`;
+                    script.async = true;
+                    script.onload = () => {
+                        initializePayPalButtons();
+                    };
+                    document.head.appendChild(script);
+
+                    // Show test mode info if in sandbox
+                    if (data.sandboxMode) {
+                        const paypalTestInfo = document.getElementById('paypalTestInfo');
+                        if (paypalTestInfo) {
+                            paypalTestInfo.style.display = 'block';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load PayPal configuration:', error);
+            }
+        }
+
+        // Initialize PayPal buttons
+        function initializePayPalButtons() {
+            if (typeof paypal === 'undefined' || !paypalClientId) {
+                return;
+            }
+
+            const paypalContainer = document.getElementById('paypal-button-container');
+            if (!paypalContainer) return;
+
+            // Clear existing buttons
+            paypalContainer.innerHTML = '';
+
+            const total = getTotalAmount();
+            if (total <= 0) return;
+
+            paypal.Buttons({
+                createOrder: async (data, actions) => {
+                    try {
+                        const response = await fetch('/api/paypal/create-order', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                                amount: total
+                            })
+                        });
+
+                        const result = await response.json();
+                        if (result.success && result.orderId) {
+                            return result.orderId;
+                        } else {
+                            throw new Error(result.error || 'Failed to create PayPal order');
+                        }
+                    } catch (error) {
+                        console.error('Error creating PayPal order:', error);
+                        const errorEl = document.getElementById('paypalError');
+                        if (errorEl) {
+                            errorEl.textContent = error.message || 'Failed to initialize PayPal. Please try again.';
+                            errorEl.style.display = 'block';
+                        }
+                        throw error;
+                    }
+                },
+                onApprove: async (data, actions) => {
+                    try {
+                        // Get customer info
+                        if (!validateForm()) {
+                            alert('Please fill in all required customer information before completing payment.');
+                            return;
+                        }
+
+                        const customerData = {
+                            firstName: document.getElementById('firstName').value,
+                            lastName: document.getElementById('lastName').value,
+                            email: document.getElementById('email').value,
+                            phone: document.getElementById('phone').value,
+                            address: document.getElementById('address').value,
+                            city: document.getElementById('city').value,
+                            state: document.getElementById('state').value,
+                            zipCode: document.getElementById('zipCode').value,
+                            country: document.getElementById('country').value,
+                            notes: document.getElementById('notes').value
+                        };
+
+                        const cart = getCart();
+                        const discountCodeFromStorage = sessionStorage.getItem('cartDiscountCode');
+                        const discountPercentageFromStorage = parseFloat(sessionStorage.getItem('cartDiscountPercentage') || '0');
+                        const subtotal = getCartSubtotal();
+                        let discountAmount = 0;
+                        let total = subtotal;
+                        
+                        if (cartDiscountApplied && discountPercentageFromStorage > 0) {
+                            discountAmount = (subtotal * discountPercentageFromStorage) / 100;
+                            total = subtotal - discountAmount;
+                            if (total < 0) total = 0;
+                        }
+
+                        // Process order with PayPal
+                        const response = await fetch('/api/orders/process', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                                customer: customerData,
+                                payment: {
+                                    method: 'paypal',
+                                    orderId: data.orderID
+                                },
+                                order: {
+                                    items: cart,
+                                    subtotal: subtotal,
+                                    discount: discountAmount,
+                                    total: total
+                                },
+                                discountCode: cartDiscountApplied && discountCodeFromStorage ? discountCodeFromStorage : null
+                            })
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            // Store order data in sessionStorage for success page
+                            const orderData = {
+                                ...result.order,
+                                tokensAdded: result.tokensAdded
+                            };
+                            sessionStorage.setItem('orderConfirmation', JSON.stringify(orderData));
+                            
+                            // Clear cart
+                            clearCart();
+                            
+                            // Redirect to success page
+                            window.location.href = '/order-success';
+                        } else {
+                            const errorMsg = result.error || result.paymentError || 'Failed to process PayPal payment';
+                            alert(errorMsg);
+                            const errorEl = document.getElementById('paypalError');
+                            if (errorEl) {
+                                errorEl.textContent = errorMsg;
+                                errorEl.style.display = 'block';
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error processing PayPal payment:', error);
+                        const errorMsg = error.message || 'There was an error processing your PayPal payment. Please try again.';
+                        alert(errorMsg);
+                        const errorEl = document.getElementById('paypalError');
+                        if (errorEl) {
+                            errorEl.textContent = errorMsg;
+                            errorEl.style.display = 'block';
+                        }
+                    }
+                },
+                onError: (err) => {
+                    console.error('PayPal error:', err);
+                    const errorEl = document.getElementById('paypalError');
+                    if (errorEl) {
+                        errorEl.textContent = 'An error occurred with PayPal. Please try again or use a different payment method.';
+                        errorEl.style.display = 'block';
+                    }
+                }
+            }).render('#paypal-button-container');
+        }
+
+        // Handle payment method change (only if total is not $0)
+        paymentMethods.forEach(method => {
+            method.addEventListener('change', function() {
+                const total = getTotalAmount();
+                if (total > 0) {
+                    const paymentMethod = this.value;
+                    if (paymentMethod === 'card') {
+                        cardPaymentDetails.style.display = 'block';
+                        document.getElementById('paypalPaymentDetails').style.display = 'none';
+                        // Ensure Stripe Elements is initialized
+                        if (!stripeCardElement && stripePublishableKey) {
+                            initializeStripe();
+                        }
+                        // Name on card is still required
+                        const cardNameField = document.getElementById('cardName');
+                        if (cardNameField) {
+                            cardNameField.required = true;
+                        }
+                    } else if (paymentMethod === 'paypal') {
+                        cardPaymentDetails.style.display = 'none';
+                        document.getElementById('paypalPaymentDetails').style.display = 'block';
+                        cardPaymentDetails.querySelectorAll('input').forEach(field => {
+                            field.required = false;
+                        });
+                        // Reinitialize PayPal buttons if needed
+                        if (paypalClientId && typeof paypal !== 'undefined') {
+                            initializePayPalButtons();
+                        }
+                    }
+                }
+            });
+        });
+
+        // Handle payment method selection
+        document.querySelectorAll('.payment-method').forEach(label => {
+            label.addEventListener('click', function() {
+                document.querySelectorAll('.payment-method').forEach(l => l.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // Set initial selected state
+        document.getElementById('paymentCard').classList.add('selected');
+
+        // Card formatting functions removed - Stripe Elements handles this
+
+        // Save customer information
+        async function saveCustomerInfo() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const state = document.getElementById('state').value.trim();
+            const zipCode = document.getElementById('zipCode').value.trim();
+            const country = document.getElementById('country').value;
+
+            const messageEl = document.getElementById('saveInfoMessage');
+            const saveBtn = document.getElementById('saveInfoBtn');
+
+            // Clear previous messages
+            if (messageEl) {
+                messageEl.className = '';
+                messageEl.style.display = 'none';
+            }
+
+            // Validate required fields
+            if (!firstName || !lastName || !phone || !address || !city || !state || !zipCode || !country) {
+                if (messageEl) {
+                    messageEl.className = 'error';
+                    messageEl.textContent = 'Please fill in all required fields before saving.';
+                    messageEl.style.display = 'block';
+                }
+                return;
+            }
+
+            // Validate email
+            const email = document.getElementById('email').value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email || !emailRegex.test(email)) {
+                if (messageEl) {
+                    messageEl.className = 'error';
+                    messageEl.textContent = 'Please enter a valid email address.';
+                    messageEl.style.display = 'block';
+                }
+                return;
+            }
+
+            // Disable button
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+            }
+
+            try {
+                // Get CSRF token
+                const csrfToken = getCsrfToken();
+                
+                const response = await fetch('/api/profile/customer-info', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-XSRF-TOKEN': csrfToken
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        firstName,
+                        lastName,
+                        phone,
+                        address,
+                        city,
+                        state,
+                        zipCode,
+                        country
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    if (messageEl) {
+                        messageEl.className = 'success';
+                        messageEl.textContent = '✓ Personal information saved successfully!';
+                        messageEl.style.display = 'block';
+                        
+                        // Hide message after 3 seconds
+                        setTimeout(() => {
+                            messageEl.style.display = 'none';
+                        }, 3000);
+                    }
+                } else {
+                    throw new Error(data.error || 'Failed to save information');
+                }
+            } catch (error) {
+                console.error('Error saving customer info:', error);
+                if (messageEl) {
+                    messageEl.className = 'error';
+                    messageEl.textContent = 'Failed to save information. Please try again.';
+                    messageEl.style.display = 'block';
+                }
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = '💾 Save Personal Information';
+                }
+            }
+        }
+
+        // Get CSRF token helper
+        function getCsrfToken() {
+            const name = 'XSRF-TOKEN=';
+            const decodedCookie = decodeURIComponent(document.cookie);
+            const cookieArray = decodedCookie.split(';');
+            for (let i = 0; i < cookieArray.length; i++) {
+                let c = cookieArray[i];
+                while (c.charAt(0) === ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) === 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return '';
+        }
+
+        // Place order
+        placeOrderBtn.addEventListener('click', async function() {
+            if (!validateForm()) {
+                alert('Please fill in all required fields correctly.');
+                return;
+            }
+
+            const cart = getCart();
+            if (cart.length === 0) {
+                alert('Your cart is empty.');
+                return;
+            }
+
+            // Get form data
+            const discountCodeFromStorage = sessionStorage.getItem('cartDiscountCode');
+            const discountPercentageFromStorage = parseFloat(sessionStorage.getItem('cartDiscountPercentage') || '0');
+            const subtotal = getCartSubtotal();
+            let discountAmount = 0;
+            let total = subtotal;
+            
+            if (cartDiscountApplied && discountPercentageFromStorage > 0) {
+                discountAmount = (subtotal * discountPercentageFromStorage) / 100;
+                total = subtotal - discountAmount;
+                if (total < 0) total = 0;
+            }
+            
+            const formData = {
+                customer: {
+                    firstName: document.getElementById('firstName').value,
+                    lastName: document.getElementById('lastName').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    address: document.getElementById('address').value,
+                    city: document.getElementById('city').value,
+                    state: document.getElementById('state').value,
+                    zipCode: document.getElementById('zipCode').value,
+                    country: document.getElementById('country').value,
+                    notes: document.getElementById('notes').value
+                },
+                payment: null, // Will be set after Stripe payment method creation
+                order: {
+                    items: cart,
+                    subtotal: subtotal,
+                    discount: discountAmount,
+                    total: total
+                },
+                discountCode: cartDiscountApplied && discountCodeFromStorage ? discountCodeFromStorage : null
+            };
+
+            // Disable button
+            placeOrderBtn.disabled = true;
+            placeOrderBtn.textContent = 'Processing...';
+
+            // Process payment based on method
+            try {
+                const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'card';
+                
+                if (total > 0 && selectedPayment === 'card') {
+                    // Use Stripe Elements to create payment method
+                    if (!stripe || !stripeCardElement) {
+                        throw new Error('Payment system is not ready. Please refresh the page.');
+                    }
+
+                    // Create payment method from card element
+                    const {paymentMethod, error: stripeError} = await stripe.createPaymentMethod({
+                        type: 'card',
+                        card: stripeCardElement,
+                        billing_details: {
+                            name: document.getElementById('cardName').value,
+                            email: document.getElementById('email').value,
+                        }
+                    });
+
+                    if (stripeError) {
+                        const displayError = document.getElementById('stripe-card-errors');
+                        if (displayError) {
+                            displayError.textContent = stripeError.message;
+                            displayError.style.display = 'block';
+                        }
+                        throw new Error(stripeError.message);
+                    }
+
+                    // Add payment method ID to form data
+                    formData.payment = {
+                        method: 'card',
+                        paymentMethodId: paymentMethod.id,
+                        cardName: document.getElementById('cardName').value
+                    };
+                } else if (total > 0 && selectedPayment === 'paypal') {
+                    // PayPal payment is handled separately in PayPal button onApprove
+                    throw new Error('Please complete PayPal payment using the PayPal button.');
+                } else {
+                    // Free order, no payment needed
+                    formData.payment = null;
+                }
+
+                // Process order via API
+                const response = await fetch('/api/orders/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Store order data in sessionStorage for success page
+                    const orderData = {
+                        ...result.order,
+                        tokensAdded: result.tokensAdded
+                    };
+                    sessionStorage.setItem('orderConfirmation', JSON.stringify(orderData));
+                    
+                    // Clear cart
+                    clearCart();
+                    
+                    // Redirect to success page
+                    window.location.href = '/order-success';
+                } else {
+                    // Show specific error message if available
+                    const errorMsg = result.error || result.paymentError || 'Failed to process order';
+                    alert(errorMsg);
+                    throw new Error(errorMsg);
+                }
+            } catch (error) {
+                console.error('Error processing order:', error);
+                const errorMsg = error.message || 'There was an error processing your order. Please try again.';
+                alert(errorMsg);
+                placeOrderBtn.disabled = false;
+                placeOrderBtn.textContent = 'Place Order';
+            }
+        });
+
+        // Add event listener for save button
+        const saveInfoBtn = document.getElementById('saveInfoBtn');
+        if (saveInfoBtn) {
+            saveInfoBtn.addEventListener('click', saveCustomerInfo);
+        }
+
+        // Show test card info if in test mode (check if Stripe is configured)
+        async function checkTestMode() {
+            try {
+                // Try to fetch a test endpoint or check config
+                // For now, always show test info - user can hide it if using real Stripe
+                const testInfoEl = document.getElementById('testCardInfo');
+                if (testInfoEl) {
+                    testInfoEl.style.display = 'block';
+                }
+            } catch (error) {
+                // Silently fail
+            }
+        }
+
+        // Helper function to get total amount
+        function getTotalAmount() {
+            const subtotal = getCartSubtotal();
+            const discountPercentageFromStorage = parseFloat(sessionStorage.getItem('cartDiscountPercentage') || '0');
+            let discountAmount = 0;
+            let total = subtotal;
+            
+            if (cartDiscountApplied && discountPercentageFromStorage > 0) {
+                discountAmount = (subtotal * discountPercentageFromStorage) / 100;
+                total = subtotal - discountAmount;
+                if (total < 0) total = 0;
+            }
+            
+            return total;
+        }
+
+        // Initialize
+        loadOrderSummary();
+        loadCustomerInfo();
+        updateCartCount();
+        initializeStripe();
+        checkTestMode();
+        // PayPal disabled - uncomment to re-enable
+        // loadPayPalSDK();
+
+        // Listen for cart updates
+        window.addEventListener('cartUpdated', function() {
+            loadOrderSummary();
+        });
+    </script>
+</body>
+</html>
+

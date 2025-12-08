@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - AI Prompt Templates</title>
+    <link rel="icon" type="image/jpeg" href="/images/3rd-logo.jpeg">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .admin-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .admin-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-header p {
+            color: var(--text-secondary);
+        }
+
+        .users-table-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table thead {
+            background: var(--dark-bg);
+        }
+
+        .users-table th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .users-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .users-table tbody tr:hover {
+            background: var(--dark-bg);
+        }
+
+        .users-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .badge-verified {
+            background: #27ae60;
+            color: white;
+        }
+
+        .badge-unverified {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-delete-user {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: 1px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            transition: all 0.3s;
+        }
+
+        .btn-delete-user:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-delete-user:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card h3 {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .btn-action {
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: 1px solid;
+            background: transparent;
+            transition: all 0.3s;
+            margin-right: 0.3rem;
+            margin-bottom: 0.3rem;
+            display: inline-block;
+        }
+
+        .btn-add-tokens {
+            border-color: #27ae60;
+            color: #27ae60;
+        }
+
+        .btn-add-tokens:hover {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-admin {
+            border-color: #9b59b6;
+            color: #9b59b6;
+        }
+
+        .btn-admin:hover {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .btn-verify {
+            border-color: #3498db;
+            color: #3498db;
+        }
+
+        .btn-verify:hover {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-reset-pw {
+            border-color: #f39c12;
+            color: #f39c12;
+        }
+
+        .btn-reset-pw:hover {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-view-ips {
+            border-color: #16a085;
+            color: #16a085;
+        }
+
+        .btn-view-ips:hover {
+            background: #16a085;
+            color: white;
+        }
+
+        .token-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: #3498db;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 10% auto;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-close {
+            color: var(--text-secondary);
+            float: right;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            background: #c0392b;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .badge-admin {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .ip-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 1rem 0;
+        }
+
+        .ip-item {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            background: var(--dark-bg);
+        }
+
+        .ip-item strong {
+            color: var(--primary-color);
+        }
+
+        .ip-item small {
+            color: var(--text-secondary);
+            display: block;
+            margin-top: 0.25rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-circle">
+                    <img src="/images/3rd-logo.jpeg" alt="SBC Services Logo">
+                </div>
+            </a>
+            <ul class="nav-menu">
+                <!-- Navigation will be populated by auth.js -->
+            </ul>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>User Management</h1>
+            <p>View and manage user accounts</p>
+        </div>
+
+        <!-- Statistics Summary -->
+        <div class="stats-summary">
+            <div class="stat-card">
+                <h3>Total Users</h3>
+                <div class="stat-number" id="totalUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Verified Users</h3>
+                <div class="stat-number" id="verifiedUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Unverified Users</h3>
+                <div class="stat-number" id="unverifiedUsers">0</div>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="users-table-container">
+            <div id="loadingIndicator" class="loading">
+                Loading users...
+            </div>
+            <table class="users-table" id="usersTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Role</th>
+                        <th>Tokens</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                </tbody>
+            </table>
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <h3>No users found</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Tokens Modal -->
+    <div id="addTokensModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-close" id="closeModal">&times;</span>
+                <h2>Add Tokens</h2>
+            </div>
+            <form id="addTokensForm">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="modalUsername" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Current Token Balance</label>
+                    <input type="text" id="modalCurrentTokens" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tokens to Add</label>
+                    <input type="number" id="modalTokenAmount" class="form-input" min="1" step="1" placeholder="Enter amount" required>
+                </div>
+                <button type="submit" class="btn-submit" id="submitTokens">Add Tokens</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- IP History Modal -->
+    <div id="ipHistoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-close" id="closeIpModal">&times;</span>
+                <h2>Login History & IP Addresses</h2>
+            </div>
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="ipModalUsername" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">IP Address History</label>
+                    <div id="ipList" class="ip-list">
+                        <p style="text-align: center; color: var(--text-secondary);">Loading...</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-submit" id="downloadIpLog">Download IP Log (CSV)</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/csrf-helper.js"></script>
+    <script src="/js/session-manager.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/cart.js"></script>
+    <script>
+        let allUsers = [];
+
+        // Load users
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users');
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    throw new Error('Failed to load users');
+                }
+
+                const data = await response.json();
+                allUsers = data.users;
+
+                displayUsers(allUsers);
+                updateStats(allUsers);
+
+                document.getElementById('loadingIndicator').style.display = 'none';
+
+                if (allUsers.length === 0) {
+                    document.getElementById('emptyState').style.display = 'block';
+                } else {
+                    document.getElementById('usersTable').style.display = 'table';
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('loadingIndicator').innerHTML =
+                    '<p style="color: var(--primary-color);">Error loading users. Please try again.</p>';
+            }
+        }
+
+        // Display users in table
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td><strong>${user.username}</strong></td>
+                    <td>${user.email}</td>
+                    <td>
+                        <span class="badge ${user.email_verified ? 'badge-verified' : 'badge-unverified'}">
+                            ${user.email_verified ? 'Verified' : 'Unverified'}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge ${user.is_admin ? 'badge-admin' : 'badge-verified'}">
+                            ${user.is_admin ? 'Admin' : 'User'}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="token-badge">🪙 ${user.tokens || 0}</span>
+                    </td>
+                    <td>${new Date(user.created_at).toLocaleString()}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-add-tokens" data-user-id="${user.id}" data-username="${user.username}" data-tokens="${user.tokens || 0}" title="Add tokens">
+                                💰 Tokens
+                            </button>
+                            <button class="btn-action btn-admin" data-user-id="${user.id}" data-username="${user.username}" data-is-admin="${user.is_admin}" title="${user.is_admin ? 'Remove admin' : 'Make admin'}">
+                                ${user.is_admin ? '👤 Demote' : '⭐ Promote'}
+                            </button>
+                            ${!user.email_verified ? `
+                            <button class="btn-action btn-verify" data-user-id="${user.id}" data-username="${user.username}" title="Verify email">
+                                ✓ Verify
+                            </button>
+                            ` : ''}
+                            <button class="btn-action btn-reset-pw" data-user-id="${user.id}" data-username="${user.username}" data-verified="${user.email_verified}" title="Send password reset">
+                                🔑 Reset PW
+                            </button>
+                            <button class="btn-action btn-view-ips" data-user-id="${user.id}" data-username="${user.username}" title="View IP history">
+                                🌐 IPs
+                            </button>
+                            <button class="btn-delete-user btn-action" data-user-id="${user.id}" data-username="${user.username}" title="Delete user">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Attach event listeners
+            tbody.querySelectorAll('.btn-add-tokens').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    openAddTokensModal(
+                        this.getAttribute('data-user-id'),
+                        this.getAttribute('data-username'),
+                        this.getAttribute('data-tokens')
+                    );
+                });
+            });
+
+            tbody.querySelectorAll('.btn-admin').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    toggleAdminStatus(
+                        this.getAttribute('data-user-id'),
+                        this.getAttribute('data-username'),
+                        this.getAttribute('data-is-admin') === 'true'
+                    );
+                });
+            });
+
+            tbody.querySelectorAll('.btn-verify').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    verifyUserEmail(
+                        this.getAttribute('data-user-id'),
+                        this.getAttribute('data-username')
+                    );
+                });
+            });
+
+            tbody.querySelectorAll('.btn-reset-pw').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    sendPasswordReset(
+                        this.getAttribute('data-user-id'),
+                        this.getAttribute('data-username'),
+                        this.getAttribute('data-verified') === 'true'
+                    );
+                });
+            });
+
+            tbody.querySelectorAll('.btn-view-ips').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    viewIpHistory(
+                        this.getAttribute('data-user-id'),
+                        this.getAttribute('data-username')
+                    );
+                });
+            });
+
+            tbody.querySelectorAll('.btn-delete-user').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    deleteUser(this.getAttribute('data-user-id'), this.getAttribute('data-username'));
+                });
+            });
+        }
+
+        // Update statistics
+        function updateStats(users) {
+            document.getElementById('totalUsers').textContent = users.length;
+            document.getElementById('verifiedUsers').textContent =
+                users.filter(u => u.email_verified).length;
+            document.getElementById('unverifiedUsers').textContent =
+                users.filter(u => !u.email_verified).length;
+        }
+
+        // Delete user
+        async function deleteUser(userId, username) {
+            if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetchWithCsrf(`/api/admin/users/${userId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(`User "${username}" has been deleted successfully.`);
+                    loadUsers(); // Reload the users list
+                } else {
+                    alert(data.error || 'Failed to delete user');
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Failed to delete user. Please try again.');
+            }
+        }
+
+        // Get CSRF token from cookie
+        function getCsrfToken() {
+            const name = 'XSRF-TOKEN=';
+            const decodedCookie = decodeURIComponent(document.cookie);
+            const cookieArray = decodedCookie.split(';');
+
+            for (let i = 0; i < cookieArray.length; i++) {
+                let cookie = cookieArray[i].trim();
+                if (cookie.indexOf(name) === 0) {
+                    return cookie.substring(name.length, cookie.length);
+                }
+            }
+            return null;
+        }
+
+        // Logout
+        async function logout() {
+            try {
+                const csrfToken = getCsrfToken();
+                const response = await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    }
+                });
+
+                if (response.ok) {
+                    window.location.href = '/login';
+                } else {
+                    console.error('Logout failed:', response.status);
+                    // Redirect anyway
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+                // Redirect anyway on error
+                window.location.href = '/login';
+            }
+        }
+
+        // Modal management
+        let currentUserId = null;
+
+        function openAddTokensModal(userId, username, currentTokens) {
+            currentUserId = userId;
+            document.getElementById('modalUsername').value = username;
+            document.getElementById('modalCurrentTokens').value = `${currentTokens} tokens`;
+            document.getElementById('modalTokenAmount').value = '';
+            document.getElementById('addTokensModal').style.display = 'block';
+        }
+
+        function closeAddTokensModal() {
+            document.getElementById('addTokensModal').style.display = 'none';
+            currentUserId = null;
+        }
+
+        // Add tokens to user
+        async function addTokensToUser(event) {
+            event.preventDefault();
+
+            const amount = parseInt(document.getElementById('modalTokenAmount').value);
+
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitTokens');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Adding...';
+
+            try {
+                const response = await fetchWithCsrf(`/api/admin/users/${currentUserId}/tokens`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message + `\nNew balance: ${data.newBalance} tokens`);
+                    closeAddTokensModal();
+                    loadUsers(); // Reload users to show updated tokens
+                } else {
+                    alert(data.error || 'Failed to add tokens');
+                }
+            } catch (error) {
+                console.error('Error adding tokens:', error);
+                alert('Failed to add tokens. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Add Tokens';
+            }
+        }
+
+        // Toggle admin status
+        async function toggleAdminStatus(userId, username, isCurrentlyAdmin) {
+            const action = isCurrentlyAdmin ? 'remove admin privileges from' : 'promote to admin';
+            if (!confirm(`Are you sure you want to ${action} user "${username}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetchWithCsrf(`/api/admin/users/${userId}/admin`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isAdmin: !isCurrentlyAdmin })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    loadUsers();
+                } else {
+                    alert(data.error || 'Failed to update admin status');
+                }
+            } catch (error) {
+                console.error('Error updating admin status:', error);
+                alert('Failed to update admin status. Please try again.');
+            }
+        }
+
+        // Verify user email
+        async function verifyUserEmail(userId, username) {
+            if (!confirm(`Manually verify email for user "${username}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetchWithCsrf(`/api/admin/users/${userId}/verify-email`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    loadUsers();
+                } else {
+                    alert(data.error || 'Failed to verify email');
+                }
+            } catch (error) {
+                console.error('Error verifying email:', error);
+                alert('Failed to verify email. Please try again.');
+            }
+        }
+
+        // Send password reset
+        async function sendPasswordReset(userId, username, isVerified) {
+            if (!isVerified) {
+                alert('Cannot send password reset to unverified email address.');
+                return;
+            }
+
+            if (!confirm(`Send password reset email to user "${username}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetchWithCsrf(`/api/admin/users/${userId}/send-password-reset`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                } else {
+                    alert(data.error || 'Failed to send password reset');
+                }
+            } catch (error) {
+                console.error('Error sending password reset:', error);
+                alert('Failed to send password reset. Please try again.');
+            }
+        }
+
+        // View IP history
+        let currentIpHistory = [];
+        let currentIpUserId = null;
+
+        async function viewIpHistory(userId, username) {
+            currentIpUserId = userId;
+            document.getElementById('ipModalUsername').value = username;
+            document.getElementById('ipList').innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Loading...</p>';
+            document.getElementById('ipHistoryModal').style.display = 'block';
+
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/login-history`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentIpHistory = data.history;
+                    displayIpHistory(data.history);
+                } else {
+                    document.getElementById('ipList').innerHTML = '<p style="color: var(--primary-color);">Error loading IP history.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching IP history:', error);
+                document.getElementById('ipList').innerHTML = '<p style="color: var(--primary-color);">Error loading IP history.</p>';
+            }
+        }
+
+        function displayIpHistory(history) {
+            const ipList = document.getElementById('ipList');
+
+            if (history.length === 0) {
+                ipList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No login history found.</p>';
+                return;
+            }
+
+            ipList.innerHTML = history.map(item => `
+                <div class="ip-item">
+                    <strong>IP:</strong> ${item.ip_address || 'Unknown'}<br>
+                    <strong>Action:</strong> ${item.action}<br>
+                    <strong>Date:</strong> ${new Date(item.created_at).toLocaleString()}
+                    <small><strong>User Agent:</strong> ${item.user_agent || 'Unknown'}</small>
+                </div>
+            `).join('');
+        }
+
+        function closeIpHistoryModal() {
+            document.getElementById('ipHistoryModal').style.display = 'none';
+            currentIpHistory = [];
+            currentIpUserId = null;
+        }
+
+        // Download IP log as CSV
+        function downloadIpLog() {
+            if (currentIpHistory.length === 0) {
+                alert('No IP history to download');
+                return;
+            }
+
+            const username = document.getElementById('ipModalUsername').value;
+            const csv = [
+                ['Username', 'IP Address', 'Action', 'Date', 'User Agent'],
+                ...currentIpHistory.map(item => [
+                    username,
+                    item.ip_address || 'Unknown',
+                    item.action,
+                    new Date(item.created_at).toISOString(),
+                    item.user_agent || 'Unknown'
+                ])
+            ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ip-log-${username}-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Event listeners
+        // Note: logoutBtn is handled by auth.js, so we don't need to attach it here
+        
+        // Wait for auth.js to finish updating navigation before attaching other listeners
+        setTimeout(() => {
+            document.getElementById('closeModal').addEventListener('click', closeAddTokensModal);
+            document.getElementById('closeIpModal').addEventListener('click', closeIpHistoryModal);
+
+            document.getElementById('addTokensModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeAddTokensModal();
+                }
+            });
+
+            document.getElementById('ipHistoryModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeIpHistoryModal();
+                }
+            });
+
+            document.getElementById('addTokensForm').addEventListener('submit', addTokensToUser);
+            document.getElementById('downloadIpLog').addEventListener('click', downloadIpLog);
+        }, 100);
+
+        // Initialize
+        loadUsers();
+        
+        // Final safeguard: Ensure Product link exists in navigation
+        function ensureProductLinkInNav() {
+            const navMenu = document.querySelector('.nav-menu');
+            if (!navMenu) {
+                setTimeout(ensureProductLinkInNav, 100);
+                return;
+            }
+            
+            const productLink = navMenu.querySelector('a[href="/product"]');
+            if (!productLink) {
+                // Find Home link and insert Product after it
+                const homeLink = navMenu.querySelector('a[href="/"]');
+                if (homeLink && homeLink.parentElement) {
+                    const productLi = document.createElement('li');
+                    productLi.innerHTML = '<a href="/product">Product</a>';
+                    homeLink.parentElement.insertAdjacentElement('afterend', productLi);
+                }
+            }
+        }
+        
+        // Run after a delay to ensure auth.js has run
+        setTimeout(ensureProductLinkInNav, 600);
+        setTimeout(ensureProductLinkInNav, 1200);
+    </script>
+</body>
+</html>

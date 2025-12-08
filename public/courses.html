@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Courses - AI Prompt Templates</title>
+    <link rel="icon" type="image/jpeg" href="/images/3rd-logo.jpeg">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .courses-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .courses-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .courses-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #2c5aa0;
+        }
+
+        .courses-header p {
+            color: #666666;
+            font-size: 1.1rem;
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .course-card {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .course-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .course-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .course-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c5aa0;
+            margin-bottom: 0.5rem;
+        }
+
+        .course-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            margin-top: 0.5rem;
+        }
+
+        .course-details {
+            margin-top: 1rem;
+        }
+
+        .course-detail-item {
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3498db;
+        }
+
+        .course-detail-label {
+            font-weight: 600;
+            color: #666666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .course-detail-value {
+            color: #1a1a1a;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .course-detail-value a {
+            color: #3498db;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .course-detail-value a:hover {
+            text-decoration: underline;
+        }
+
+        .course-description {
+            color: #666666;
+            line-height: 1.6;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666666;
+            font-size: 1.1rem;
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .no-courses {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666666;
+        }
+
+        .no-courses-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .no-courses h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #1a1a1a;
+        }
+
+        .no-courses p {
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-primary {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            background: #2c5aa0;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #1e3f73;
+        }
+
+        @media (max-width: 768px) {
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .courses-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-circle">
+                    <img src="images/3rd-logo.jpeg" alt="3rd Rock Ads Logo">
+                </div>
+            </a>
+            <ul class="nav-menu">
+                <!-- Navigation will be populated by auth.js -->
+            </ul>
+        </div>
+    </nav>
+
+    <div class="courses-container">
+        <div class="courses-header">
+            <h1>📚 My Courses</h1>
+            <p>Access all your purchased courses, including dates, times, and Zoom links.</p>
+        </div>
+
+        <div id="coursesError" class="error-message"></div>
+
+        <div id="coursesLoading" class="loading">
+            Loading your courses...
+        </div>
+
+        <div id="coursesGrid" class="courses-grid" style="display: none;">
+            <!-- Courses will be loaded here -->
+        </div>
+
+        <div id="noCourses" class="no-courses" style="display: none;">
+            <div class="no-courses-icon">📖</div>
+            <h2>No Courses Yet</h2>
+            <p>You haven't purchased any courses yet. Browse our course offerings and enroll today!</p>
+            <a href="/product" class="btn-primary">Browse Products</a>
+        </div>
+    </div>
+
+    <script src="/js/session-manager.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/cart.js"></script>
+    <script>
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load courses
+        async function loadCourses() {
+            const loadingEl = document.getElementById('coursesLoading');
+            const errorEl = document.getElementById('coursesError');
+            const gridEl = document.getElementById('coursesGrid');
+            const noCoursesEl = document.getElementById('noCourses');
+
+            try {
+                loadingEl.style.display = 'block';
+                errorEl.classList.remove('show');
+                gridEl.style.display = 'none';
+                noCoursesEl.style.display = 'none';
+
+                const response = await fetch('/api/orders/purchased-products', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        loadingEl.style.display = 'none';
+                        noCoursesEl.style.display = 'block';
+                        return;
+                    }
+                    throw new Error('Failed to load courses');
+                }
+
+                const data = await response.json();
+                loadingEl.style.display = 'none';
+
+                if (!data.success || !data.products || data.products.length === 0) {
+                    noCoursesEl.style.display = 'block';
+                    return;
+                }
+
+                // Filter for courses only
+                const courses = data.products.filter(product => product.is_course === true || product.is_course === 1);
+
+                if (courses.length === 0) {
+                    noCoursesEl.style.display = 'block';
+                    return;
+                }
+
+                // Display courses
+                gridEl.innerHTML = courses.map(course => {
+                    const purchaseDate = course.purchasedDate ? new Date(course.purchasedDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }) : 'Unknown';
+
+                    let courseDateHtml = '';
+                    if (course.course_date) {
+                        const courseDate = new Date(course.course_date);
+                        const courseDateStr = courseDate.toLocaleString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            timeZoneName: 'short'
+                        });
+                        courseDateHtml = `
+                            <div class="course-detail-item">
+                                <div class="course-detail-label">
+                                    📅 Course Date & Time
+                                </div>
+                                <div class="course-detail-value">${courseDateStr}</div>
+                            </div>
+                        `;
+                    }
+
+                    let zoomLinkHtml = '';
+                    if (course.course_zoom_link) {
+                        zoomLinkHtml = `
+                            <div class="course-detail-item">
+                                <div class="course-detail-label">
+                                    🔗 Zoom Meeting Link
+                                </div>
+                                <div class="course-detail-value">
+                                    <a href="${course.course_zoom_link}" target="_blank" rel="noopener noreferrer">
+                                        Join Zoom Meeting
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    let descriptionHtml = '';
+                    if (course.description) {
+                        descriptionHtml = `
+                            <div class="course-description">
+                                ${escapeHtml(course.description)}
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="course-card">
+                            <div class="course-header">
+                                <div class="course-name">${escapeHtml(course.name)}</div>
+                                <span class="course-badge">📚 Course</span>
+                            </div>
+                            <div class="course-details">
+                                ${courseDateHtml}
+                                ${zoomLinkHtml}
+                                ${descriptionHtml}
+                            </div>
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; color: #666666; font-size: 0.9rem;">
+                                Purchased on ${purchaseDate}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                gridEl.style.display = 'grid';
+            } catch (error) {
+                console.error('Error loading courses:', error);
+                loadingEl.style.display = 'none';
+                errorEl.textContent = 'Failed to load courses. Please try again later.';
+                errorEl.classList.add('show');
+            }
+        }
+
+        // Initialize
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(loadCourses, 200);
+            });
+        } else {
+            setTimeout(loadCourses, 200);
+        }
+    </script>
+</body>
+</html>
+
