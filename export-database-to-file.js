@@ -92,7 +92,35 @@ async function exportDatabase() {
       ORDER BY table_name
     `);
     
-    const tables = tablesResult.rows.map(row => row.table_name);
+    // Define table order based on foreign key dependencies
+    const TABLE_ORDER = [
+      'users',
+      'products',
+      'discount_codes',
+      'companies',
+      'templates',
+      'projects',
+      'communities',
+      'service_packages',
+      'saved_prompts',
+      'user_saved_templates',
+      'usage_stats',
+      'shared_prompts',
+      'activity_logs',
+      'orders',
+      'user_sessions'
+    ];
+    
+    let tables = tablesResult.rows.map(row => row.table_name);
+    // Sort tables according to dependency order
+    tables.sort((a, b) => {
+      const indexA = TABLE_ORDER.indexOf(a);
+      const indexB = TABLE_ORDER.indexOf(b);
+      if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
+    });
     console.log(`✓ Found ${tables.length} table(s): ${tables.join(', ')}\n`);
     
     // Start building SQL export
@@ -100,8 +128,78 @@ async function exportDatabase() {
     sqlExport += `-- Generated: ${new Date().toISOString()}\n`;
     sqlExport += `-- Database: ${dbConfig.database}@${dbConfig.host}:${dbConfig.port}\n`;
     sqlExport += `-- User: ${dbConfig.user}\n\n`;
+    sqlExport += `-- Enable UUID extension\n`;
+    sqlExport += `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";\n\n`;
     
-    // Export each table
+    // First, export table schemas
+    console.log('\nExporting table schemas...');
+    for (const table of tables) {
+      console.log(`  Schema for: ${table}`);
+      const schemaResult = await pool.query(`
+        SELECT 
+          'CREATE TABLE IF NOT EXISTS "' || table_name || '" (' || string_agg(
+            '"' || column_name || '" ' || 
+            CASE 
+              WHEN data_type = 'character varying' THEN 'VARCHAR(' || character_maximum_length || ')'
+              WHEN data_type = 'character' THEN 'CHAR(' || character_maximum_length || ')'
+              WHEN data_type = 'numeric' THEN 'DECIMAL(' || numeric_precision || ',' || numeric_scale || ')'
+              WHEN data_type = 'integer' AND column_default LIKE 'nextval%' THEN 'SERIAL'
+              WHEN data_type = 'integer' THEN 'INTEGER'
+              WHEN data_type = 'bigint' AND column_default LIKE 'nextval%' THEN 'BIGSERIAL'
+              WHEN data_type = 'bigint' THEN 'BIGINT'
+              WHEN data_type = 'boolean' THEN 'BOOLEAN'
+              WHEN data_type = 'text' THEN 'TEXT'
+              WHEN data_type = 'timestamp without time zone' THEN 'TIMESTAMP'
+              WHEN data_type = 'timestamp with time zone' THEN 'TIMESTAMPTZ'
+              WHEN data_type = 'date' THEN 'DATE'
+              WHEN data_type = 'jsonb' THEN 'JSONB'
+              WHEN data_type = 'json' THEN 'JSON'
+              ELSE UPPER(data_type)
+            END ||
+            CASE WHEN is_nullable = 'NO' THEN ' NOT NULL' ELSE '' END ||
+            CASE WHEN column_default IS NOT NULL AND column_default NOT LIKE 'nextval%' 
+                 THEN ' DEFAULT ' || column_default ELSE '' END,
+            ', '
+            ORDER BY ordinal_position
+          ) || ');' as create_statement
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = $1
+        GROUP BY table_name
+      `, [table]);
+      
+      if (schemaResult.rows.length > 0) {
+        sqlExport += `-- Table: ${table}\n`;
+        sqlExport += schemaResult.rows[0].create_statement + '\n\n';
+      }
+      
+      // Get foreign keys
+      const fkResult = await pool.query(`
+        SELECT
+          'ALTER TABLE "' || tc.table_name || '" ADD CONSTRAINT "' || tc.constraint_name || 
+          '" FOREIGN KEY ("' || kcu.column_name || '") REFERENCES "' || 
+          ccu.table_name || '" ("' || ccu.column_name || '")' ||
+          CASE WHEN rc.delete_rule != 'NO ACTION' THEN ' ON DELETE ' || rc.delete_rule ELSE '' END || ';' as fk_statement
+        FROM information_schema.table_constraints AS tc
+        JOIN information_schema.key_column_usage AS kcu
+          ON tc.constraint_name = kcu.constraint_name
+          AND tc.table_schema = kcu.table_schema
+        JOIN information_schema.constraint_column_usage AS ccu
+          ON ccu.constraint_name = tc.constraint_name
+          AND ccu.table_schema = tc.table_schema
+        JOIN information_schema.referential_constraints AS rc
+          ON rc.constraint_name = tc.constraint_name
+        WHERE tc.constraint_type = 'FOREIGN KEY' 
+          AND tc.table_name = $1
+      `, [table]);
+      
+      // Don't add foreign keys here - they're already in CREATE TABLE
+      // Foreign keys will be created automatically when tables are created
+    }
+    
+    sqlExport += `-- Insert Data\n`;
+    sqlExport += `-- ============\n\n`;
+    
+    // Export each table data
     let totalRows = 0;
     
     for (const table of tables) {
@@ -127,8 +225,11 @@ async function exportDatabase() {
         ORDER BY ordinal_position
       `, [table]);
       
-      const columns = columnsResult.rows.map(row => row.column_name);
-      const columnList = columns.map(col => `"${col}"`).join(', ');
+      const columns = columnsResult.rows.map(row => ({
+        name: row.column_name,
+        type: row.data_type
+      }));
+      const columnList = columns.map(col => `"${col.name}"`).join(', ');
       
       // Get all data
       const dataResult = await pool.query(`SELECT * FROM "${table}"`);
@@ -144,23 +245,42 @@ async function exportDatabase() {
         const batch = rows.slice(i, i + batchSize);
         
         batch.forEach(row => {
-          const values = columns.map(col => {
-            const value = row[col];
+          const values = columns.map((col, idx) => {
+            const value = row[col.name];
+            const colType = col.type;
+            
             if (value === null || value === undefined) {
               return 'NULL';
+            } else if (colType === 'timestamp without time zone' || colType === 'timestamp with time zone' || colType === 'date') {
+              // Handle timestamp/date columns
+              if (value instanceof Date) {
+                return `'${value.toISOString()}'::timestamp`;
+              } else if (typeof value === 'string') {
+                return `'${value}'::timestamp`;
+              } else {
+                return `'${String(value)}'::timestamp`;
+              }
+            } else if (colType === 'jsonb' || colType === 'json') {
+              // JSONB/JSON data
+              if (typeof value === 'object') {
+                const jsonStr = JSON.stringify(value).replace(/\\/g, '\\\\').replace(/'/g, "''");
+                return `'${jsonStr}'::jsonb`;
+              } else {
+                const escaped = String(value).replace(/\\/g, '\\\\').replace(/'/g, "''");
+                return `'${escaped}'::jsonb`;
+              }
+            } else if (typeof value === 'boolean') {
+              return value ? 'TRUE' : 'FALSE';
+            } else if (typeof value === 'number') {
+              return String(value);
             } else if (typeof value === 'string') {
               // Escape single quotes and backslashes
               const escaped = value.replace(/\\/g, '\\\\').replace(/'/g, "''");
               return `'${escaped}'`;
-            } else if (typeof value === 'boolean') {
-              return value ? 'TRUE' : 'FALSE';
-            } else if (typeof value === 'object') {
-              // JSONB/JSON data
-              return `'${JSON.stringify(value).replace(/\\/g, '\\\\').replace(/'/g, "''")}'::jsonb`;
             } else if (value instanceof Date) {
               return `'${value.toISOString()}'::timestamp`;
             } else {
-              return String(value);
+              return `'${String(value).replace(/\\/g, '\\\\').replace(/'/g, "''")}'`;
             }
           });
           
