@@ -1,34 +1,92 @@
 /**
- * Email Service - Zapier Integration
- * Sends emails via Zapier webhook while maintaining existing email templates
+ * Email Service
+ * Handles all email sending functionality using SMTP
  */
 
-const axios = require('axios');
+const nodemailer = require('nodemailer');
 const logger = require('../utils/logger');
 
 class EmailService {
   constructor() {
-    this.zapierWebhookUrl = process.env.ZAPIER_WEBHOOK_URL;
-    this.zapierSecret = process.env.ZAPIER_SECRET; // Optional security
+    this.transporter = null;
     this.from = process.env.EMAIL_FROM || 'AI Prompt Templates <noreply@example.com>';
     this.baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    this.initializeTransporter();
+  }
 
-    if (!this.zapierWebhookUrl) {
-      logger.warn('Zapier webhook URL not configured. Emails will be logged instead of sent.');
-    } else {
-      logger.info('Zapier email service initialized', {
-        webhookConfigured: true
+  /**
+   * Initialize email transporter
+   */
+  initializeTransporter() {
+    // Check if SMTP is configured with custom server
+    if (process.env.SMTP_HOST && process.env.SMTP_PORT) {
+      try {
+        const config = {
+          host: process.env.SMTP_HOST,
+          port: parseInt(process.env.SMTP_PORT),
+          secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+          auth: {
+            user: process.env.SMTP_USER || process.env.EMAIL_USER,
+            pass: process.env.SMTP_PASSWORD || process.env.EMAIL_PASSWORD
+          }
+        };
+
+        // Add TLS options if specified
+        if (process.env.SMTP_TLS_REJECT_UNAUTHORIZED === 'false') {
+          config.tls = {
+            rejectUnauthorized: false
+          };
+        }
+
+        this.transporter = nodemailer.createTransport(config);
+
+        logger.info('Custom SMTP server initialized', {
+          host: process.env.SMTP_HOST,
+          port: process.env.SMTP_PORT,
+          secure: config.secure,
+          user: config.auth.user
+        });
+        return;
+      } catch (error) {
+        logger.error('Failed to initialize custom SMTP server', error);
+        this.transporter = null;
+        return;
+      }
+    }
+
+    // Check if email service is configured (Gmail, SendGrid, etc.)
+    if (!process.env.EMAIL_SERVICE || !process.env.EMAIL_USER) {
+      logger.warn('Email service not configured. Emails will be logged instead of sent.');
+      this.transporter = null;
+      return;
+    }
+
+    try {
+      this.transporter = nodemailer.createTransport({
+        service: process.env.EMAIL_SERVICE || 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD
+        }
       });
+
+      logger.info('Email service initialized', {
+        service: process.env.EMAIL_SERVICE,
+        user: process.env.EMAIL_USER
+      });
+    } catch (error) {
+      logger.error('Failed to initialize email service', error);
+      this.transporter = null;
     }
   }
 
   /**
-   * Send email via Zapier webhook
+   * Send email (or log if not configured)
    */
   async sendEmail(to, subject, html) {
-    if (!this.zapierWebhookUrl) {
+    if (!this.transporter) {
       // Log email instead of sending
-      logger.info('EMAIL (not sent - no webhook configured)', {
+      logger.info('EMAIL (not sent - no transporter configured)', {
         to,
         subject,
         html: html.substring(0, 200) + '...'
@@ -37,62 +95,33 @@ class EmailService {
     }
 
     try {
-      // Prepare payload for Zapier
-      const payload = {
-        to_email: to,
-        from_email: this.from,
-        subject: subject,
-        html_body: html,
-        timestamp: new Date().toISOString()
-      };
-
-      // Add secret if configured (for webhook security)
-      if (this.zapierSecret) {
-        payload.secret = this.zapierSecret;
-      }
-
-      // Send to Zapier webhook
-      const response = await axios.post(this.zapierWebhookUrl, payload, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        timeout: 10000 // 10 second timeout
-      });
-
-      logger.info('Email sent via Zapier successfully', {
+      const info = await this.transporter.sendMail({
+        from: this.from,
         to,
         subject,
-        status: response.status,
-        zapierResponse: response.data
+        html
       });
 
-      return {
-        success: true,
-        messageId: response.data?.id || `zapier-${Date.now()}`,
-        zapierStatus: response.data?.status
-      };
+      logger.info('Email sent successfully', {
+        to,
+        subject,
+        messageId: info.messageId
+      });
+
+      return { success: true, messageId: info.messageId };
     } catch (error) {
-      logger.error('Failed to send email via Zapier', {
+      logger.error('Failed to send email', {
         error: error.message,
         to,
         subject,
-        webhookUrl: this.zapierWebhookUrl,
-        statusCode: error.response?.status,
-        responseData: error.response?.data
+        stack: error.stack
       });
-
-      // Don't throw - log and continue so app doesn't break
-      // In production, you might want to queue failed emails for retry
-      return {
-        success: false,
-        error: error.message
-      };
+      throw error;
     }
   }
 
   /**
    * Send email verification email
-   * (Keeps exact same format as before)
    */
   async sendVerificationEmail(email, username, verificationToken) {
     const verificationUrl = `${this.baseUrl}/verify-email?token=${verificationToken}`;
@@ -214,7 +243,6 @@ class EmailService {
 
   /**
    * Send welcome email after verification
-   * (Keeps exact same format as before)
    */
   async sendWelcomeEmail(email, username) {
     const subject = 'Welcome to AI Prompt Templates! 🎉';
@@ -340,7 +368,6 @@ class EmailService {
 
   /**
    * Send password reset email
-   * (Keeps exact same format as before)
    */
   async sendPasswordResetEmail(email, username, resetToken) {
     const resetUrl = `${this.baseUrl}/reset-password?token=${resetToken}`;
