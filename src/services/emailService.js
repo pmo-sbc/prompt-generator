@@ -730,7 +730,9 @@ class EmailService {
    */
   async sendNewUserNotification(userData) {
     const adminEmail = 'txrba.2025.training@3rdrockads.com';
-    const subject = 'New User Registration - AI Prompt Templates';
+    const subject = userData.isPending 
+      ? '⚠️ New User Pending Approval - AI Prompt Templates'
+      : 'New User Registration - AI Prompt Templates';
 
     const html = `
       <!DOCTYPE html>
@@ -790,9 +792,10 @@ class EmailService {
             <h1>🔔 New User Registration</h1>
           </div>
 
-          <p>A new user has registered on the AI Prompt Templates platform.</p>
+          <p>${userData.isPending ? 'A new user registration is pending approval on the AI Prompt Templates platform.' : 'A new user has registered on the AI Prompt Templates platform.'}</p>
 
           <div class="info-box">
+            ${userData.isPending ? '<p style="background: #fff3cd; padding: 10px; border-radius: 4px; color: #856404; margin-bottom: 15px;"><strong>⚠️ Pending Approval:</strong> This user is pending approval and needs to be reviewed in the admin portal at <a href="' + this.baseUrl + '/admin/approve-users">' + this.baseUrl + '/admin/approve-users</a></p>' : ''}
             <div class="info-row">
               <span class="label">User ID:</span>
               <span class="value">${userData.id}</span>

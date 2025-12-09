@@ -55,6 +55,21 @@ function globalErrorHandler(err, req, res, next) {
     error = new AppError('Database constraint violation', 400);
   }
 
+  // Handle PostgreSQL unique constraint violations
+  if (err.code === '23505' || err.code === 23505) {
+    let message = 'A record with this information already exists.';
+    if (err.constraint === 'pending_users_email_key') {
+      message = 'A registration request with this email address already exists. Please wait for approval or contact support.';
+    } else if (err.constraint === 'pending_users_username_key') {
+      message = 'A registration request with this username already exists. Please wait for approval or contact support.';
+    } else if (err.constraint === 'users_email_key') {
+      message = 'A user with this email address already exists.';
+    } else if (err.constraint === 'users_username_key') {
+      message = 'A user with this username already exists.';
+    }
+    error = new AppError(message, 400);
+  }
+
   // Set default values
   error.statusCode = error.statusCode || 500;
   error.message = error.message || 'Internal Server Error';

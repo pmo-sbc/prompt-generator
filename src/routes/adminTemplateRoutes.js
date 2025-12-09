@@ -17,8 +17,17 @@ const router = express.Router();
 const csrfProtection = configureCsrf();
 
 // All routes require admin authentication
-router.use(requireAuth);
-router.use(requireAdmin);
+// Skip /approve-users as it's handled by approvalRoutes with requireManagerOrAdmin
+router.use((req, res, next) => {
+  // Skip approval routes - they're handled by approvalRoutes
+  // When mounted at /admin, req.path will be /approve-users (without /admin prefix)
+  if (req.path === '/approve-users') {
+    return next(); // Skip admin check - let approvalRoutes handle it
+  }
+  requireAuth(req, res, () => {
+    requireAdmin(req, res, next);
+  });
+});
 
 /**
  * GET /admin/templates

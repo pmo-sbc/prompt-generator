@@ -182,11 +182,110 @@ async function requireAdmin(req, res, next) {
   }
 }
 
+/**
+ * Middleware to require manager or admin privileges
+ * Checks if user is logged in and has manager or admin role
+ */
+async function requireManagerOrAdmin(req, res, next) {
+  if (!req.session || !req.session.userId) {
+    logger.warn(`Unauthorized access attempt to manager resource: ${req.originalUrl}`);
+    return res.status(401).json({
+      error: 'Authentication required',
+      message: 'You must be logged in to access this resource'
+    });
+  }
+
+  try {
+    const { getDatabaseWrapper } = require('../db');
+    const db = getDatabaseWrapper();
+    
+    logger.info('requireManagerOrAdmin middleware called', {
+      userId: req.session.userId,
+      username: req.session.username,
+      url: req.originalUrl
+    });
+    
+    const user = await db.prepare('SELECT is_admin, is_manager FROM users WHERE id = $1').get(req.session.userId);
+
+    if (!user) {
+      logger.warn(`User ${req.session.userId} not found in database`, {
+        requestedUserId: req.session.userId,
+        url: req.originalUrl
+      });
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'You do not have permission to access this resource'
+      });
+    }
+
+    // Handle PostgreSQL boolean values (can be boolean, string, or null)
+    // PostgreSQL returns booleans as actual booleans, but handle all cases defensively
+    const isAdmin = !!(user.is_admin === true || user.is_admin === 'true' || user.is_admin === 1 || user.is_admin === '1');
+    const isManager = !!(user.is_manager === true || user.is_manager === 'true' || user.is_manager === 1 || user.is_manager === '1');
+    
+    // Also handle NULL values explicitly
+    const hasAdmin = user.is_admin !== null && user.is_admin !== undefined && isAdmin;
+    const hasManager = user.is_manager !== null && user.is_manager !== undefined && isManager;
+
+    // Log for debugging (at info level for now to help diagnose)
+    logger.info('Manager/admin check', {
+      userId: req.session.userId,
+      username: req.session.username,
+      is_admin_raw: user.is_admin,
+      is_admin_type: typeof user.is_admin,
+      is_manager_raw: user.is_manager,
+      is_manager_type: typeof user.is_manager,
+      isAdmin,
+      isManager,
+      hasAdmin,
+      hasManager,
+      hasAccess: hasAdmin || hasManager,
+      url: req.originalUrl
+    });
+
+    if (!hasAdmin && !hasManager) {
+      logger.warn(`Non-manager/admin user ${req.session.userId} attempted to access manager resource: ${req.originalUrl}`, {
+        is_admin: user.is_admin,
+        is_admin_type: typeof user.is_admin,
+        is_manager: user.is_manager,
+        is_manager_type: typeof user.is_manager,
+        isAdmin,
+        isManager,
+        hasAdmin,
+        hasManager
+      });
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'You do not have permission to access this resource'
+      });
+    }
+
+    logger.info(`${hasAdmin ? 'Admin' : 'Manager'} access granted to user ${req.session.userId}`, {
+      userId: req.session.userId,
+      hasAdmin,
+      hasManager,
+      url: req.originalUrl
+    });
+    next();
+  } catch (error) {
+    logger.error('Error checking manager/admin status', {
+      error: error.message,
+      stack: error.stack,
+      userId: req.session.userId,
+      url: req.originalUrl
+    });
+    return res.status(500).json({
+      error: 'Internal server error'
+    });
+  }
+}
+
 module.exports = {
   requireAuth,
   redirectIfAuthenticated,
   attachUser,
   authenticateToken,
   requireAdmin,
+  requireManagerOrAdmin,
   validateDeviceFingerprint
 };

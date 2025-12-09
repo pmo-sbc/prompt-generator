@@ -55,6 +55,7 @@ function checkAuth() {
             <li><a href="/dashboard">My Vault</a></li>
             <li><a href="/profile">Profile</a></li>
             <li id="adminMenuLink" style="display: none;"><a href="/admin/users">User Management</a></li>
+            <li id="adminApproveUsersLink" style="display: none;"><a href="/admin/approve-users">Approve Users</a></li>
             <li id="adminProductsLink" style="display: none;"><a href="/admin/products">Product Management</a></li>
             <li id="cartLink"><a href="/cart">Cart (<span id="cartCount">${cartCount}</span>)</a></li>
             <li style="color: #a1a1aa; display: flex; align-items: center; padding: 0 1rem;">Welcome, ${user.name} | 🪙 ${tokens} tokens</li>
@@ -67,9 +68,21 @@ function checkAuth() {
             if (adminLink) {
                 adminLink.style.display = 'list-item';
             }
+            const adminApproveUsersLink = document.getElementById('adminApproveUsersLink');
+            if (adminApproveUsersLink) {
+                adminApproveUsersLink.style.display = 'list-item';
+            }
             const adminProductsLink = document.getElementById('adminProductsLink');
             if (adminProductsLink) {
                 adminProductsLink.style.display = 'list-item';
+            }
+        }
+        
+        // Show approve users menu if user is manager or admin
+        if (user.is_manager || user.is_admin) {
+            const adminApproveUsersLink = document.getElementById('adminApproveUsersLink');
+            if (adminApproveUsersLink) {
+                adminApproveUsersLink.style.display = 'list-item';
             }
         }
 

@@ -324,8 +324,16 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Check if email verification is required
-                    if (data.requiresVerification) {
+                    // Check if approval is required
+                    if (data.requiresApproval) {
+                        // Show approval pending message
+                        successMessage.innerHTML = `
+                            <h2>Registration Submitted</h2>
+                            <p>${data.message || 'Thank you for signing up, this is a service for Texas Rural Broadband Association members. You will be notified when your account has been approved.'}</p>
+                        `;
+                        successMessage.classList.add('show');
+                        form.style.display = 'none';
+                    } else if (data.requiresVerification) {
                         // Show success message with email verification instructions
                         registeredEmailValue = data.email || email;
                         document.getElementById('registeredEmail').textContent = registeredEmailValue;

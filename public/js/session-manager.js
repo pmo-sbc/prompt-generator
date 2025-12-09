@@ -67,6 +67,7 @@ class SessionManager {
         id: data.userId, // Store as 'id' for consistency
         userId: data.userId, // Also store as 'userId' for compatibility
         is_admin: data.is_admin || false,
+        is_manager: data.is_manager || false,
         tokens: data.tokens || 0
       };
       localStorage.setItem('user', JSON.stringify(user));

@@ -47,6 +47,7 @@ const communityRoutes = require('./src/routes/communityRoutes');
 const servicePackageRoutes = require('./src/routes/servicePackageRoutes');
 const promptGeneratorRoutes = require('./src/routes/promptGeneratorRoutes');
 const adminTemplateRoutes = require('./src/routes/adminTemplateRoutes');
+const approvalRoutes = require('./src/routes/approvalRoutes');
 const healthRoutes = require('./src/routes/healthRoutes');
 const activityLogRoutes = require('./src/routes/activityLogRoutes');
 const analyticsRoutes = require('./src/routes/analyticsRoutes');
@@ -207,6 +208,10 @@ app.use('/', companyRoutes);
 app.use('/', communityRoutes);
 app.use('/', servicePackageRoutes);
 app.use('/', promptGeneratorRoutes);
+
+// User approval routes (must be registered BEFORE adminTemplateRoutes)
+// adminTemplateRoutes has router.use(requireAdmin) which blocks all /admin/* routes
+app.use('/', approvalRoutes);
 
 // Admin template management routes
 app.use('/admin', adminTemplateRoutes);

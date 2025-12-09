@@ -36,7 +36,7 @@ class UserRepository {
    */
   async findById(userId) {
     const db = getDatabaseWrapper();
-    const query = 'SELECT id, username, email, email_verified, is_admin, tokens, created_at FROM users WHERE id = $1';
+    const query = 'SELECT id, username, email, email_verified, is_admin, is_manager, tokens, created_at FROM users WHERE id = $1';
 
     try {
       logger.db('SELECT', 'users', { userId });
@@ -63,6 +63,37 @@ class UserRepository {
         email
       };
     } catch (error) {
+      // Check if it's a duplicate key error (sequence out of sync)
+      if (error.code === '23505' && error.constraint === 'users_pkey') {
+        logger.warn('Users sequence out of sync, attempting to fix and retry', {
+          username,
+          error: error.message
+        });
+
+        try {
+          // Reset the sequence to MAX(id) + 1
+          const maxIdResult = await db.prepare('SELECT MAX(id) as max_id FROM users').get();
+          const maxId = maxIdResult ? (maxIdResult.max_id || 0) : 0;
+          const nextId = maxId + 1;
+
+          // Reset sequence (false = don't mark as called, so next value will be exactly this)
+          await db.prepare(`SELECT setval('users_id_seq', $1, false)`).get(nextId);
+
+          logger.info('Users sequence reset', { nextId });
+
+          // Retry the insert
+          const retryResult = await db.prepare(query).get(username, email, hashedPassword);
+          return {
+            id: retryResult.id,
+            username,
+            email
+          };
+        } catch (retryError) {
+          logger.error('Error retrying user creation after sequence reset', retryError);
+          throw retryError;
+        }
+      }
+
       logger.error('Error creating user', error);
       throw error;
     }

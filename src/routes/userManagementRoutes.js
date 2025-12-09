@@ -33,7 +33,7 @@ router.get('/api/admin/users', requireAdmin, asyncHandler(async (req, res) => {
   try {
     logger.db('SELECT', 'users', { action: 'list_all_users' });
     const users = await db.prepare(`
-      SELECT id, username, email, email_verified, is_admin, tokens, created_at
+      SELECT id, username, email, email_verified, is_admin, is_manager, tokens, created_at
       FROM users
       ORDER BY created_at DESC
     `).all();
@@ -137,11 +137,11 @@ router.patch('/api/admin/users/:id/admin', requireAdmin, csrfProtection, asyncHa
     });
   }
 
-  const { getDatabase } = require('../db');
-  const db = getDatabase();
+  const { getDatabaseWrapper } = require('../db');
+  const db = getDatabaseWrapper();
 
   try {
-    const result = db.prepare('UPDATE users SET is_admin = ? WHERE id = ?').run(isAdmin ? 1 : 0, userId);
+    const result = await db.prepare('UPDATE users SET is_admin = $1 WHERE id = $2').run(isAdmin ? true : false, userId);
 
     if (result.changes === 0) {
       return res.status(404).json({
@@ -161,6 +161,49 @@ router.patch('/api/admin/users/:id/admin', requireAdmin, csrfProtection, asyncHa
     });
   } catch (error) {
     logger.error('Error updating admin status', { error, userId });
+    throw error;
+  }
+}));
+
+/**
+ * PATCH /api/admin/users/:id/manager
+ * Toggle manager status for a user
+ */
+router.patch('/api/admin/users/:id/manager', requireAdmin, csrfProtection, asyncHandler(async (req, res) => {
+  const userId = parseInt(req.params.id);
+  const { isManager } = req.body;
+
+  // Prevent user from removing their own manager status
+  if (userId === req.session.userId && !isManager) {
+    return res.status(400).json({
+      error: 'Cannot remove your own manager privileges'
+    });
+  }
+
+  const { getDatabaseWrapper } = require('../db');
+  const db = getDatabaseWrapper();
+
+  try {
+    const result = await db.prepare('UPDATE users SET is_manager = $1 WHERE id = $2').run(isManager ? true : false, userId);
+
+    if (result.changes === 0) {
+      return res.status(404).json({
+        error: 'User not found'
+      });
+    }
+
+    logger.info('User manager status changed', {
+      userId,
+      isManager,
+      changedBy: req.session.userId
+    });
+
+    res.json({
+      success: true,
+      message: `User ${isManager ? 'promoted to' : 'removed from'} manager successfully`
+    });
+  } catch (error) {
+    logger.error('Error updating manager status', { error, userId });
     throw error;
   }
 }));

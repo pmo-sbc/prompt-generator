@@ -69,6 +69,7 @@ async function createTables() {
       password_reset_token TEXT,
       password_reset_token_expires TIMESTAMP,
       is_admin BOOLEAN DEFAULT FALSE,
+      is_manager BOOLEAN DEFAULT FALSE,
       tokens INTEGER DEFAULT 100,
       first_name VARCHAR(255),
       last_name VARCHAR(255),
@@ -80,6 +81,17 @@ async function createTables() {
       country VARCHAR(100),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+    
+    -- Add is_manager column if it doesn't exist (for existing databases)
+    DO $$ 
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'is_manager'
+      ) THEN
+        ALTER TABLE users ADD COLUMN is_manager BOOLEAN DEFAULT FALSE;
+      END IF;
+    END $$;
 
     CREATE TABLE IF NOT EXISTS projects (
       id SERIAL PRIMARY KEY,
@@ -252,6 +264,34 @@ async function createTables() {
       FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
     );
 
+    CREATE TABLE IF NOT EXISTS pending_users (
+      id SERIAL PRIMARY KEY,
+      username VARCHAR(255) UNIQUE NOT NULL,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      status VARCHAR(50) DEFAULT 'pending',
+      reviewed_at TIMESTAMP,
+      reviewed_by INTEGER,
+      review_notes TEXT,
+      FOREIGN KEY (reviewed_by) REFERENCES users (id) ON DELETE SET NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS settings (
+      id SERIAL PRIMARY KEY,
+      key VARCHAR(255) UNIQUE NOT NULL,
+      value TEXT NOT NULL,
+      description TEXT,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_by INTEGER,
+      FOREIGN KEY (updated_by) REFERENCES users (id) ON DELETE SET NULL
+    );
+
+    -- Insert default settings if not exists
+    INSERT INTO settings (key, value, description) 
+    VALUES ('user_approval_enabled', 'false', 'Enable/disable user approval mode for new signups')
+    ON CONFLICT (key) DO NOTHING;
+
     -- Create indexes
     CREATE INDEX IF NOT EXISTS idx_saved_prompts_user_id ON saved_prompts(user_id);
     CREATE INDEX IF NOT EXISTS idx_saved_prompts_project_id ON saved_prompts(project_id);
@@ -276,6 +316,10 @@ async function createTables() {
     CREATE INDEX IF NOT EXISTS idx_companies_user_id ON companies(user_id);
     CREATE INDEX IF NOT EXISTS idx_communities_company_id ON communities(company_id);
     CREATE INDEX IF NOT EXISTS idx_service_packages_user_id ON service_packages(user_id);
+    CREATE INDEX IF NOT EXISTS idx_pending_users_status ON pending_users(status);
+    CREATE INDEX IF NOT EXISTS idx_pending_users_created_at ON pending_users(created_at);
+    CREATE INDEX IF NOT EXISTS idx_pending_users_email ON pending_users(email);
+    CREATE INDEX IF NOT EXISTS idx_settings_key ON settings(key);
   `;
 
   try {

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approve Users - AI Prompt Templates</title>
+    <link rel="icon" type="image/jpeg" href="/images/3rd-logo.jpeg">
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/csrf-helper.js"></script>
+    <script src="/js/session-manager.js"></script>
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .admin-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-header p {
+            color: var(--text-secondary);
+        }
+
+        .pending-users-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+
+        .pending-users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .pending-users-table thead {
+            background: var(--dark-bg);
+        }
+
+        .pending-users-table th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .pending-users-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .pending-users-table tbody tr:hover {
+            background: var(--dark-bg);
+        }
+
+        .pending-users-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge-pending {
+            background: #f39c12;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-approve {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            background: #27ae60;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .btn-approve:hover {
+            background: #229954;
+        }
+
+        .btn-reject {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            background: #e74c3c;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .btn-reject:hover {
+            background: #c0392b;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+        .modal-close {
+            color: var(--text-secondary);
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn-modal {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-cancel:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        .btn-confirm {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background: #c0392b;
+        }
+
+        .btn-confirm.approve {
+            background: #27ae60;
+        }
+
+        .btn-confirm.approve:hover {
+            background: #229954;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-circle">
+                    <img src="/images/3rd-logo.jpeg" alt="SBC Services Logo">
+                </div>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/dashboard">My Vault</a></li>
+                <li><a href="/admin/users">User Management</a></li>
+                <li><a href="/admin/approve-users" class="active">Approve Users</a></li>
+                <li><a href="/admin/products">Product Management</a></li>
+                <li><a href="#" id="logoutBtn" class="btn-primary">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Approve Users</h1>
+            <p>Review and approve new user registrations</p>
+        </div>
+
+        <div class="pending-users-container">
+            <div id="loadingIndicator" class="loading">
+                Loading pending users...
+            </div>
+            <table class="pending-users-table" id="pendingUsersTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="pendingUsersTableBody">
+                </tbody>
+            </table>
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <h3>No pending users</h3>
+                <p>All user registrations have been reviewed</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div id="reviewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="reviewModalTitle">Review User</h2>
+                <span class="modal-close" id="closeReviewModal">&times;</span>
+            </div>
+            <form id="reviewForm">
+                <div class="form-group">
+                    <label class="form-label">Review Notes (Optional)</label>
+                    <textarea 
+                        id="reviewNotes" 
+                        class="form-textarea" 
+                        placeholder="Add notes about this review..."
+                        maxlength="500"
+                    ></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal btn-cancel" id="cancelReviewBtn">Cancel</button>
+                    <button type="submit" class="btn-modal btn-confirm" id="confirmReviewBtn">Confirm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentPendingUserId = null;
+        let currentAction = null; // 'approve' or 'reject'
+
+        // Load pending users
+        async function loadPendingUsers() {
+            try {
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('pendingUsersTable').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'none';
+
+                const response = await fetch('/api/admin/pending-users', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayPendingUsers(data.pendingUsers);
+                } else {
+                    console.error('Failed to load pending users');
+                }
+            } catch (error) {
+                console.error('Error loading pending users:', error);
+            } finally {
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+        }
+
+        // Display pending users
+        function displayPendingUsers(pendingUsers) {
+            const tbody = document.getElementById('pendingUsersTableBody');
+            tbody.innerHTML = '';
+
+            if (pendingUsers.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('pendingUsersTable').style.display = 'table';
+
+            pendingUsers.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td><span class="badge-pending">Pending</span></td>
+                    <td>${new Date(user.created_at).toLocaleString()}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-approve" onclick="openReviewModal(${user.id}, 'approve')">
+                                Approve
+                            </button>
+                            <button class="btn-reject" onclick="openReviewModal(${user.id}, 'reject')">
+                                Reject
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Open review modal
+        function openReviewModal(pendingUserId, action) {
+            currentPendingUserId = pendingUserId;
+            currentAction = action;
+
+            const modal = document.getElementById('reviewModal');
+            const title = document.getElementById('reviewModalTitle');
+            const confirmBtn = document.getElementById('confirmReviewBtn');
+
+            title.textContent = action === 'approve' ? 'Approve User' : 'Reject User';
+            confirmBtn.textContent = action === 'approve' ? 'Approve' : 'Reject';
+            confirmBtn.className = `btn-modal btn-confirm ${action === 'approve' ? 'approve' : ''}`;
+            document.getElementById('reviewNotes').value = '';
+
+            modal.classList.add('active');
+        }
+
+        // Close review modal
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.remove('active');
+            currentPendingUserId = null;
+            currentAction = null;
+            document.getElementById('reviewForm').reset();
+        }
+
+        // Handle review form submission
+        document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!currentPendingUserId || !currentAction) {
+                return;
+            }
+
+            const reviewNotes = document.getElementById('reviewNotes').value.trim();
+            const endpoint = currentAction === 'approve' ? 'approve' : 'reject';
+
+            try {
+                const response = await fetchWithCsrf(`/api/admin/pending-users/${currentPendingUserId}/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reviewNotes })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(data.message || `User ${currentAction === 'approve' ? 'approved' : 'rejected'} successfully`);
+                    closeReviewModal();
+                    await loadPendingUsers();
+                } else {
+                    const error = await response.json();
+                    alert(error.error || `Failed to ${currentAction} user`);
+                }
+            } catch (error) {
+                console.error(`Error ${currentAction}ing user:`, error);
+                alert(`Failed to ${currentAction} user`);
+            }
+        });
+
+        // Close modal handlers
+        document.getElementById('closeReviewModal').addEventListener('click', closeReviewModal);
+        document.getElementById('cancelReviewBtn').addEventListener('click', closeReviewModal);
+        document.getElementById('reviewModal').addEventListener('click', (e) => {
+            if (e.target.id === 'reviewModal') {
+                closeReviewModal();
+            }
+        });
+
+        // Make functions global
+        window.openReviewModal = openReviewModal;
+
+        // Initialize
+        loadPendingUsers();
+
+        // Handle logout
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await fetch('/api/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/login';
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -6,6 +6,8 @@ const express = require('express');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const userRepository = require('../db/userRepository');
+const pendingUserRepository = require('../db/pendingUserRepository');
+const settingsRepository = require('../db/settingsRepository');
 const emailService = require('../services/emailService');
 const validators = require('../validators');
 const { handleValidationErrors } = require('../middleware/validation');
@@ -53,9 +55,8 @@ router.post(
   asyncHandler(async (req, res) => {
     const { username, email, password } = req.body;
 
-    // Check if user already exists
+    // Check if user already exists in users table
     const existingUser = await userRepository.findByUsernameOrEmail(username, email);
-
     if (existingUser) {
       logger.warn('Registration attempt with existing credentials', { username, email });
       return res.status(400).json({
@@ -66,6 +67,122 @@ router.post(
     // Hash password
     const hashedPassword = await bcrypt.hash(password, config.security.bcryptRounds);
 
+    // Check if approval mode is enabled
+    let approvalEnabled = false;
+    try {
+      approvalEnabled = await settingsRepository.get('user_approval_enabled', false);
+      logger.info('Approval mode check', { approvalEnabled, type: typeof approvalEnabled });
+    } catch (error) {
+      logger.error('Error checking approval mode setting', error);
+      // Default to false if error checking setting
+      approvalEnabled = false;
+    }
+
+    if (approvalEnabled === true || approvalEnabled === 'true') {
+      // Initialize pendingUser variable
+      let pendingUser = null;
+      
+      // Check if pending user already exists (any status - pending, approved, or rejected)
+      const existingPendingUser = await pendingUserRepository.findByUsernameOrEmail(username, email);
+      if (existingPendingUser) {
+        if (existingPendingUser.status === 'pending') {
+          return res.status(400).json({
+            error: 'A registration request is already pending for this username or email. Please wait for approval or contact support.'
+          });
+        } else if (existingPendingUser.status === 'approved') {
+          // If user was approved but doesn't exist in users table (deleted), allow re-registration
+          // This handles edge cases where user was approved but account creation failed or user was deleted
+          logger.info('Approved pending user found but not in users table - allowing re-registration', {
+            pendingUserId: existingPendingUser.id,
+            username,
+            email
+          });
+          // Reset to pending to allow re-registration
+          await pendingUserRepository.resetToPending(existingPendingUser.id, hashedPassword);
+          pendingUser = await pendingUserRepository.findById(existingPendingUser.id);
+        } else if (existingPendingUser.status === 'rejected') {
+          // Previously rejected - allow re-registration by resetting to pending
+          logger.info('Re-registration attempt for previously rejected user', { 
+            pendingUserId: existingPendingUser.id,
+            username,
+            email 
+          });
+          // Update the rejected user back to pending with new password
+          await pendingUserRepository.resetToPending(existingPendingUser.id, hashedPassword);
+          // Use the updated record
+          pendingUser = await pendingUserRepository.findById(existingPendingUser.id);
+        }
+      }
+
+      // Create pending user if it doesn't exist yet
+      if (!pendingUser) {
+        try {
+          pendingUser = await pendingUserRepository.create(username, email, hashedPassword);
+        } catch (error) {
+          // Handle duplicate key errors gracefully (race condition or other edge case)
+          // PostgreSQL error code 23505 = unique_violation
+          if (error.code === '23505' || error.code === 23505) {
+            logger.warn('Duplicate pending user registration attempt', { 
+              username, 
+              email, 
+              errorCode: error.code,
+              constraint: error.constraint,
+              errorMessage: error.message 
+            });
+            
+            // Check which constraint was violated for a more specific message
+            let errorMessage = 'A registration request for this username or email already exists. Please wait for approval or contact support.';
+            if (error.constraint === 'pending_users_email_key') {
+              errorMessage = 'A registration request with this email address already exists. Please wait for approval or contact support.';
+            } else if (error.constraint === 'pending_users_username_key') {
+              errorMessage = 'A registration request with this username already exists. Please wait for approval or contact support.';
+            }
+            
+            return res.status(400).json({
+              error: errorMessage
+            });
+          }
+          // Re-throw other errors to be handled by global error handler
+          throw error;
+        }
+      }
+
+      logger.info('Pending user created (approval mode)', {
+        pendingUserId: pendingUser.id,
+        username: pendingUser.username
+      });
+
+      // Log registration activity
+      logManualActivity(req, ActivityTypes.USER_REGISTER, 'pending_user', pendingUser.id, { username, email });
+
+      // Send admin notification for new pending user (non-blocking)
+      try {
+        await emailService.sendNewUserNotification({
+          id: pendingUser.id,
+          username: pendingUser.username,
+          email: email,
+          isPending: true
+        });
+        logger.info('Admin notification sent for new pending user', {
+          pendingUserId: pendingUser.id
+        });
+      } catch (error) {
+        logger.warn('Failed to send admin notification for pending user', {
+          error: error.message,
+          pendingUserId: pendingUser.id
+        });
+      }
+
+      // Return approval message
+      return res.json({
+        success: true,
+        message: 'Thank you for signing up, this is a service for Texas Rural Broadband Association members. You will be notified when your account has been approved.',
+        requiresApproval: true,
+        email: email
+      });
+    }
+
+    // Normal registration flow (approval disabled)
     // Create user
     const newUser = await userRepository.create(username, email, hashedPassword);
 
@@ -300,7 +417,7 @@ router.get('/api/session/status', asyncHandler(async (req, res) => {
     });
   }
 
-  // Get user details to include is_admin
+  // Get user details to include is_admin and is_manager
   const user = await userRepository.findById(req.session.userId);
 
   // Calculate time until session expires
@@ -313,8 +430,55 @@ router.get('/api/session/status', asyncHandler(async (req, res) => {
     expiresAt: expiresAt.toISOString(),
     username: req.session.username,
     userId: req.session.userId,
-    is_admin: user ? user.is_admin : false,
+    is_admin: user ? (user.is_admin || false) : false,
+    is_manager: user ? (user.is_manager || false) : false,
     tokens: user ? user.tokens : 0
+  });
+}));
+
+/**
+ * GET /api/debug/my-permissions
+ * Debug endpoint to check current user's permissions
+ */
+router.get('/api/debug/my-permissions', asyncHandler(async (req, res) => {
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({
+      error: 'Not authenticated'
+    });
+  }
+
+  const user = await userRepository.findById(req.session.userId);
+  
+  if (!user) {
+    return res.status(404).json({
+      error: 'User not found'
+    });
+  }
+
+  // Test the middleware logic
+  const isAdmin = !!(user.is_admin === true || user.is_admin === 'true' || user.is_admin === 1 || user.is_admin === '1');
+  const isManager = !!(user.is_manager === true || user.is_manager === 'true' || user.is_manager === 1 || user.is_manager === '1');
+  const hasAdmin = user.is_admin !== null && user.is_admin !== undefined && isAdmin;
+  const hasManager = user.is_manager !== null && user.is_manager !== undefined && isManager;
+
+  res.json({
+    userId: user.id,
+    username: user.username,
+    email: user.email,
+    raw_values: {
+      is_admin: user.is_admin,
+      is_admin_type: typeof user.is_admin,
+      is_manager: user.is_manager,
+      is_manager_type: typeof user.is_manager
+    },
+    computed: {
+      isAdmin,
+      isManager,
+      hasAdmin,
+      hasManager,
+      hasManagerOrAdminAccess: hasAdmin || hasManager
+    },
+    canAccessApproveUsers: hasAdmin || hasManager
   });
 }));
 
