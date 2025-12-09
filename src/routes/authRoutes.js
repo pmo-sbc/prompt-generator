@@ -155,7 +155,48 @@ router.post(
       // Log registration activity
       logManualActivity(req, ActivityTypes.USER_REGISTER, 'pending_user', pendingUser.id, { username, email });
 
-      // Send admin notification for new pending user (non-blocking)
+      // Generate approval tokens for email-based approval/rejection
+      const approvalToken = crypto.randomBytes(32).toString('hex');
+      const rejectToken = crypto.randomBytes(32).toString('hex');
+      const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+      // Store tokens in pending_users table
+      await pendingUserRepository.setApprovalTokens(pendingUser.id, approvalToken, rejectToken, tokenExpiresAt.toISOString());
+
+      // Get notification email from settings
+      let notificationEmail = 'txrba.2025.training@3rdrockads.com'; // Default fallback
+      try {
+        const configuredEmail = await settingsRepository.get('approval_notification_email', null);
+        if (configuredEmail && configuredEmail.trim()) {
+          notificationEmail = configuredEmail.trim();
+        }
+      } catch (error) {
+        logger.warn('Error getting approval notification email setting, using default', error);
+      }
+
+      // Send approval notification email with approve/reject buttons (non-blocking)
+      try {
+        await emailService.sendApprovalNotificationEmail(
+          notificationEmail,
+          {
+            id: pendingUser.id,
+            username: pendingUser.username,
+            email: email,
+            created_at: pendingUser.created_at
+          },
+          approvalToken,
+          rejectToken
+        );
+        logger.info('Approval notification email sent', {
+          pendingUserId: pendingUser.id,
+          notificationEmail
+        });
+      } catch (error) {
+        logger.error('Failed to send approval notification email', error);
+        // Continue anyway - registration is successful
+      }
+
+      // Also send the regular admin notification (non-blocking)
       try {
         await emailService.sendNewUserNotification({
           id: pendingUser.id,

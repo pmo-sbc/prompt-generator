@@ -274,8 +274,34 @@ async function createTables() {
       reviewed_at TIMESTAMP,
       reviewed_by INTEGER,
       review_notes TEXT,
+      approval_token TEXT,
+      approval_token_expires TIMESTAMP,
+      reject_token TEXT,
       FOREIGN KEY (reviewed_by) REFERENCES users (id) ON DELETE SET NULL
     );
+
+    -- Add approval_token columns if they don't exist (for existing databases)
+    DO $$ 
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'pending_users' AND column_name = 'approval_token'
+      ) THEN
+        ALTER TABLE pending_users ADD COLUMN approval_token TEXT;
+      END IF;
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'pending_users' AND column_name = 'approval_token_expires'
+      ) THEN
+        ALTER TABLE pending_users ADD COLUMN approval_token_expires TIMESTAMP;
+      END IF;
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'pending_users' AND column_name = 'reject_token'
+      ) THEN
+        ALTER TABLE pending_users ADD COLUMN reject_token TEXT;
+      END IF;
+    END $$;
 
     CREATE TABLE IF NOT EXISTS settings (
       id SERIAL PRIMARY KEY,

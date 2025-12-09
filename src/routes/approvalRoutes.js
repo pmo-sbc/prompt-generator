@@ -166,8 +166,36 @@ router.post(
     // Mark as rejected
     await pendingUserRepository.reject(pendingUserId, reviewedBy, reviewNotes);
 
-    // Optionally send rejection email (you may want to add this to emailService)
-    // For now, we'll just log it
+    // Send rejection email to the user
+    try {
+      logger.info('Attempting to send rejection email', {
+        pendingUserId,
+        email: pendingUser.email,
+        username: pendingUser.username
+      });
+      
+      const emailResult = await emailService.sendRejectionEmail(
+        pendingUser.email,
+        pendingUser.username
+      );
+      
+      logger.info('Rejection email sent to user', {
+        pendingUserId,
+        email: pendingUser.email,
+        username: pendingUser.username,
+        emailResult: emailResult
+      });
+    } catch (error) {
+      logger.error('Failed to send rejection email', {
+        error: error.message,
+        stack: error.stack,
+        pendingUserId,
+        email: pendingUser.email,
+        username: pendingUser.username
+      });
+      // Continue anyway - rejection is complete
+    }
+
     logger.info('Pending user rejected', {
       pendingUserId,
       reviewedBy,
@@ -229,6 +257,356 @@ router.post(
     });
   })
 );
+
+/**
+ * GET /api/admin/settings/approval-notification-email
+ * Get approval notification email setting
+ */
+router.get('/api/admin/settings/approval-notification-email', requireManagerOrAdmin, asyncHandler(async (req, res) => {
+  const email = await settingsRepository.get('approval_notification_email', null);
+  
+  res.json({
+    success: true,
+    email: email || null
+  });
+}));
+
+/**
+ * POST /api/admin/settings/approval-notification-email
+ * Update approval notification email setting
+ */
+router.post(
+  '/api/admin/settings/approval-notification-email',
+  requireManagerOrAdmin,
+  csrfProtection,
+  [
+    body('email')
+      .optional()
+      .trim()
+      .isEmail()
+      .withMessage('Must be a valid email address')
+  ],
+  handleValidationErrors,
+  asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    const updatedBy = req.session.userId;
+
+    await settingsRepository.set(
+      'approval_notification_email',
+      email ? email.trim() : null,
+      'Email address that receives notifications when users need approval (with approve/reject buttons)',
+      updatedBy
+    );
+
+    logger.info('Approval notification email setting updated', {
+      email,
+      updatedBy
+    });
+
+    res.json({
+      success: true,
+      message: 'Notification email updated successfully',
+      email: email ? email.trim() : null
+    });
+  })
+);
+
+/**
+ * GET /api/approve-user-by-email
+ * Approve a pending user via email token
+ */
+router.get('/api/approve-user-by-email', asyncHandler(async (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Invalid Request</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+          .error { color: #e74c3c; }
+        </style>
+      </head>
+      <body>
+        <h1 class="error">Invalid Request</h1>
+        <p>No token provided.</p>
+      </body>
+      </html>
+    `);
+  }
+
+  try {
+    // Find pending user by approval token
+    const pendingUser = await pendingUserRepository.findByApprovalToken(token);
+
+    if (!pendingUser) {
+      return res.status(404).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Token Not Found</title>
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+            .error { color: #e74c3c; }
+          </style>
+        </head>
+        <body>
+          <h1 class="error">Invalid or Expired Token</h1>
+          <p>This approval link is invalid or has expired. Please use the admin portal to approve users.</p>
+          <p><a href="${emailService.baseUrl}/admin/approve-users">Go to Admin Portal</a></p>
+        </body>
+        </html>
+      `);
+    }
+
+    // Check if user already exists
+    const existingUser = await userRepository.findByUsernameOrEmail(pendingUser.username, pendingUser.email);
+    if (existingUser) {
+      return res.status(400).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>User Already Exists</title>
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+            .error { color: #e74c3c; }
+          </style>
+        </head>
+        <body>
+          <h1 class="error">User Already Exists</h1>
+          <p>A user with this username or email already exists.</p>
+        </body>
+        </html>
+      `);
+    }
+
+    // Approve the user (system user ID for email approvals)
+    await pendingUserRepository.approve(pendingUser.id, null, 'Approved via email');
+
+    // Create actual user account
+    const newUser = await userRepository.create(
+      pendingUser.username,
+      pendingUser.email,
+      pendingUser.password
+    );
+
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Save verification token
+    await userRepository.setVerificationToken(newUser.id, verificationToken, expiresAt.toISOString());
+
+    // Send approval email to user
+    try {
+      await emailService.sendVerificationEmail(
+        pendingUser.email,
+        pendingUser.username,
+        verificationToken
+      );
+      logger.info('User approved via email, verification email sent', {
+        userId: newUser.id,
+        email: pendingUser.email
+      });
+    } catch (error) {
+      logger.error('Failed to send verification email after email approval', error);
+    }
+
+    logger.info('Pending user approved via email', {
+      pendingUserId: pendingUser.id,
+      userId: newUser.id
+    });
+
+    return res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>User Approved</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+          .success { color: #27ae60; }
+          .info-box {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 500px;
+            text-align: left;
+          }
+        </style>
+      </head>
+      <body>
+        <h1 class="success">✓ User Approved Successfully</h1>
+        <p>The user <strong>${pendingUser.username}</strong> has been approved and their account has been created.</p>
+        <p>They will receive an email with instructions to verify their email address.</p>
+        <div class="info-box">
+          <p><strong>Username:</strong> ${pendingUser.username}</p>
+          <p><strong>Email:</strong> ${pendingUser.email}</p>
+        </div>
+      </body>
+      </html>
+    `);
+  } catch (error) {
+    logger.error('Error approving user via email', error);
+    return res.status(500).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Error</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+          .error { color: #e74c3c; }
+        </style>
+      </head>
+      <body>
+        <h1 class="error">Error</h1>
+        <p>An error occurred while approving the user. Please try using the admin portal.</p>
+        <p><a href="${emailService.baseUrl}/admin/approve-users">Go to Admin Portal</a></p>
+      </body>
+      </html>
+    `);
+  }
+}));
+
+/**
+ * GET /api/reject-user-by-email
+ * Reject a pending user via email token
+ */
+router.get('/api/reject-user-by-email', asyncHandler(async (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Invalid Request</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+          .error { color: #e74c3c; }
+        </style>
+      </head>
+      <body>
+        <h1 class="error">Invalid Request</h1>
+        <p>No token provided.</p>
+      </body>
+      </html>
+    `);
+  }
+
+  try {
+    // Find pending user by reject token
+    const pendingUser = await pendingUserRepository.findByRejectToken(token);
+
+    if (!pendingUser) {
+      return res.status(404).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Token Not Found</title>
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+            .error { color: #e74c3c; }
+          </style>
+        </head>
+        <body>
+          <h1 class="error">Invalid or Expired Token</h1>
+          <p>This rejection link is invalid or has expired. Please use the admin portal to reject users.</p>
+          <p><a href="${emailService.baseUrl}/admin/approve-users">Go to Admin Portal</a></p>
+        </body>
+        </html>
+      `);
+    }
+
+    // Reject the user (system user ID for email rejections)
+    await pendingUserRepository.reject(pendingUser.id, null, 'Rejected via email');
+
+    // Send rejection email to the user
+    try {
+      logger.info('Attempting to send rejection email (email-based rejection)', {
+        pendingUserId: pendingUser.id,
+        email: pendingUser.email,
+        username: pendingUser.username
+      });
+      
+      const emailResult = await emailService.sendRejectionEmail(
+        pendingUser.email,
+        pendingUser.username
+      );
+      
+      logger.info('User rejected via email, rejection email sent', {
+        pendingUserId: pendingUser.id,
+        email: pendingUser.email,
+        username: pendingUser.username,
+        emailResult: emailResult
+      });
+    } catch (error) {
+      logger.error('Failed to send rejection email after email-based rejection', {
+        error: error.message,
+        stack: error.stack,
+        pendingUserId: pendingUser.id,
+        email: pendingUser.email,
+        username: pendingUser.username
+      });
+      // Continue anyway - rejection is complete
+    }
+
+    logger.info('Pending user rejected via email', {
+      pendingUserId: pendingUser.id
+    });
+
+    return res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>User Rejected</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+          .warning { color: #f39c12; }
+          .info-box {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 500px;
+            text-align: left;
+          }
+        </style>
+      </head>
+      <body>
+        <h1 class="warning">✗ User Rejected</h1>
+        <p>The user registration for <strong>${pendingUser.username}</strong> has been rejected.</p>
+        <div class="info-box">
+          <p><strong>Username:</strong> ${pendingUser.username}</p>
+          <p><strong>Email:</strong> ${pendingUser.email}</p>
+        </div>
+        <p>This user will not be able to access the platform.</p>
+      </body>
+      </html>
+    `);
+  } catch (error) {
+    logger.error('Error rejecting user via email', error);
+    return res.status(500).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Error</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+          .error { color: #e74c3c; }
+        </style>
+      </head>
+      <body>
+        <h1 class="error">Error</h1>
+        <p>An error occurred while rejecting the user. Please try using the admin portal.</p>
+        <p><a href="${emailService.baseUrl}/admin/approve-users">Go to Admin Portal</a></p>
+      </body>
+      </html>
+    `);
+  }
+}));
 
 module.exports = router;
 

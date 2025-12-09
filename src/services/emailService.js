@@ -726,6 +726,172 @@ class EmailService {
   }
 
   /**
+   * Send approval notification email with approve/reject buttons
+   */
+  async sendApprovalNotificationEmail(notificationEmail, pendingUserData, approveToken, rejectToken) {
+    const approveUrl = `${this.baseUrl}/api/approve-user-by-email?token=${approveToken}`;
+    const rejectUrl = `${this.baseUrl}/api/reject-user-by-email?token=${rejectToken}`;
+    const adminUrl = `${this.baseUrl}/admin/approve-users`;
+
+    const subject = '⚠️ New User Pending Approval - Action Required';
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          .container {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 20px;
+          }
+          .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f39c12;
+          }
+          h1 {
+            color: #f39c12;
+            margin: 10px 0;
+          }
+          .info-box {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+          }
+          .info-row:last-child {
+            border-bottom: none;
+          }
+          .label {
+            font-weight: 600;
+            color: #666;
+          }
+          .value {
+            color: #1a1a1a;
+          }
+          .action-buttons {
+            text-align: center;
+            margin: 30px 0;
+          }
+          .button {
+            display: inline-block;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 10px;
+            font-size: 1em;
+          }
+          .button-approve {
+            margin-right: 25px;
+          }
+          .button-reject {
+            margin-left: 25px;
+          }
+          .button-approve {
+            background: #27ae60;
+            color: white;
+          }
+          .button-reject {
+            background: #e74c3c;
+            color: white;
+          }
+          .button-approve:hover {
+            background: #229954;
+          }
+          .button-reject:hover {
+            background: #c0392b;
+          }
+          .warning {
+            background: #fff3cd;
+            border: 1px solid #ffecb5;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+          }
+          .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>⚠️ New User Pending Approval</h1>
+          </div>
+
+          <p>A new user has registered and is waiting for approval:</p>
+
+          <div class="info-box">
+            <div class="info-row">
+              <span class="label">Username:</span>
+              <span class="value">${pendingUserData.username}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Email:</span>
+              <span class="value">${pendingUserData.email}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Registration Date:</span>
+              <span class="value">${new Date(pendingUserData.created_at).toLocaleString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              })}</span>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <a href="${approveUrl}" class="button button-approve">✓ Approve User</a>
+            <a href="${rejectUrl}" class="button button-reject">✗ Reject User</a>
+          </div>
+
+          <div class="warning">
+            <strong>Quick Actions:</strong> Click the buttons above to approve or reject this user directly from this email. 
+            Or visit the <a href="${adminUrl}" style="color: #856404; text-decoration: underline;">admin portal</a> to review additional details.
+          </div>
+
+          <p style="margin-top: 20px; color: #666; font-size: 0.9em;">
+            <strong>Note:</strong> These links will expire in 7 days for security reasons.
+          </p>
+
+          <div class="footer">
+            <p>This is an automated notification from the AI Prompt Templates system.</p>
+            <p>AI Prompt Templates - Professional AI Prompt Generation</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await this.sendEmail(notificationEmail, subject, html);
+  }
+
+  /**
    * Send admin notification for new user registration
    */
   async sendNewUserNotification(userData) {
@@ -829,6 +995,149 @@ class EmailService {
     `;
 
     return await this.sendEmail(adminEmail, subject, html);
+  }
+
+  /**
+   * Send rejection email to user when their registration is rejected
+   */
+  async sendRejectionEmail(email, username) {
+    if (!email || !username) {
+      logger.error('sendRejectionEmail called with invalid parameters', {
+        email,
+        username
+      });
+      throw new Error('Email and username are required');
+    }
+
+    const subject = 'Account Registration - Action Required';
+
+    logger.info('Preparing rejection email', {
+      email,
+      username,
+      subject
+    });
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          .container {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 20px;
+          }
+          .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+          }
+          .logo {
+            width: 60px;
+            height: 60px;
+            background: #3498db;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+          }
+          h1 {
+            color: #3498db;
+            margin: 10px 0;
+            font-size: 1.8em;
+          }
+          .content {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+            line-height: 1.8;
+          }
+          .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #3498db;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+          }
+          .info-box p {
+            margin: 5px 0;
+          }
+          .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+          }
+          .signature {
+            margin-top: 25px;
+            font-weight: 600;
+            color: #2c3e50;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">TXRBA</div>
+            <h1>Account Registration Update</h1>
+          </div>
+
+          <div class="content">
+            <p>Dear ${username},</p>
+
+            <p>Thank you for your interest in registering for the AI Prompt Templates service provided through the Texas Rural Broadband Association (TXRBA).</p>
+
+            <p>We have reviewed your registration request and unfortunately, we are unable to approve your account at this time. This decision was made because we were unable to validate your information through TXRBA's verification process.</p>
+
+            <div class="info-box">
+              <p><strong>Next Steps:</strong></p>
+              <p>To proceed with your registration, we kindly ask that you reach out to your TXRBA representative. They will be able to assist you with:</p>
+              <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Verifying your eligibility for the service</li>
+                <li>Confirming your information with TXRBA records</li>
+                <li>Assisting with the registration process</li>
+              </ul>
+            </div>
+
+            <p>Your TXRBA representative can help ensure that all necessary information is properly validated, which will allow us to complete your registration promptly.</p>
+
+            <p>We appreciate your understanding and look forward to assisting you once your information has been validated through your TXRBA representative.</p>
+
+            <p>If you have any questions or need further assistance, please don't hesitate to contact your TXRBA representative directly.</p>
+
+            <div class="signature">
+              <p>Best regards,</p>
+              <p>The TXRBA Team</p>
+              <p>Texas Rural Broadband Association</p>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>This is an automated email. Please do not reply to this message.</p>
+            <p>For assistance, please contact your TXRBA representative.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await this.sendEmail(email, subject, html);
   }
 
   /**

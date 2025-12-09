@@ -221,6 +221,77 @@ class PendingUserRepository {
       throw error;
     }
   }
+
+  /**
+   * Set approval and reject tokens for email-based approval/rejection
+   */
+  async setApprovalTokens(pendingUserId, approveToken, rejectToken, expiresAt) {
+    const db = getDatabaseWrapper();
+
+    try {
+      logger.db('UPDATE', 'pending_users', { pendingUserId, action: 'set_approval_tokens' });
+
+      const result = await db.prepare(`
+        UPDATE pending_users
+        SET approval_token = $1,
+            reject_token = $2,
+            approval_token_expires = $3
+        WHERE id = $4
+        RETURNING id
+      `).get(approveToken, rejectToken, expiresAt, pendingUserId);
+
+      return result;
+    } catch (error) {
+      logger.error('Error setting approval tokens', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find pending user by approval token
+   */
+  async findByApprovalToken(token) {
+    const db = getDatabaseWrapper();
+
+    try {
+      logger.db('SELECT', 'pending_users', { action: 'find_by_approval_token' });
+
+      const result = await db.prepare(`
+        SELECT * FROM pending_users
+        WHERE approval_token = $1
+          AND approval_token_expires > CURRENT_TIMESTAMP
+          AND status = 'pending'
+      `).get(token);
+
+      return result;
+    } catch (error) {
+      logger.error('Error finding pending user by approval token', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find pending user by reject token
+   */
+  async findByRejectToken(token) {
+    const db = getDatabaseWrapper();
+
+    try {
+      logger.db('SELECT', 'pending_users', { action: 'find_by_reject_token' });
+
+      const result = await db.prepare(`
+        SELECT * FROM pending_users
+        WHERE reject_token = $1
+          AND approval_token_expires > CURRENT_TIMESTAMP
+          AND status = 'pending'
+      `).get(token);
+
+      return result;
+    } catch (error) {
+      logger.error('Error finding pending user by reject token', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = new PendingUserRepository();

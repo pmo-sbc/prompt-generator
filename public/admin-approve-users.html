@@ -274,8 +274,18 @@
 
     <div class="admin-container">
         <div class="admin-header">
-            <h1>Approve Users</h1>
-            <p>Review and approve new user registrations</p>
+            <div>
+                <h1>Approve Users</h1>
+                <p>Review and approve new user registrations</p>
+            </div>
+            <div class="notification-email-config">
+                <label for="notificationEmailInput" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Notification Email:</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="email" id="notificationEmailInput" placeholder="email@example.com" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; background: var(--card-bg); color: var(--text-primary); min-width: 250px;">
+                    <button id="saveNotificationEmailBtn" class="btn-primary" style="padding: 0.5rem 1rem; white-space: nowrap;">Save</button>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; margin-bottom: 0;">Email address that receives approval notifications with approve/reject buttons</p>
+            </div>
         </div>
 
         <div class="pending-users-container">
@@ -460,11 +470,78 @@
             }
         });
 
+        // Load notification email setting
+        async function loadNotificationEmail() {
+            try {
+                const response = await fetch('/api/admin/settings/approval-notification-email', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.email) {
+                        document.getElementById('notificationEmailInput').value = data.email;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading notification email:', error);
+            }
+        }
+
+        // Save notification email setting
+        async function saveNotificationEmail() {
+            const email = document.getElementById('notificationEmailInput').value.trim();
+
+            if (!email) {
+                alert('Please enter an email address');
+                return;
+            }
+
+            // Basic email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address');
+                return;
+            }
+
+            try {
+                const response = await fetchWithCsrf('/api/admin/settings/approval-notification-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(data.message || 'Notification email saved successfully');
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Failed to save notification email');
+                }
+            } catch (error) {
+                console.error('Error saving notification email:', error);
+                alert('Failed to save notification email');
+            }
+        }
+
+        // Event listener for save button
+        document.getElementById('saveNotificationEmailBtn').addEventListener('click', saveNotificationEmail);
+
+        // Allow Enter key to save
+        document.getElementById('notificationEmailInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveNotificationEmail();
+            }
+        });
+
         // Make functions global
         window.openReviewModal = openReviewModal;
 
         // Initialize
         loadPendingUsers();
+        loadNotificationEmail();
 
         // Handle logout
         document.getElementById('logoutBtn').addEventListener('click', async (e) => {
