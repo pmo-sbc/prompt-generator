@@ -85,6 +85,16 @@ router.get('/courses', requireAuth, (req, res) => {
 });
 
 /**
+ * GET /projects
+ * Projects management page (requires authentication)
+ */
+const { configureCsrf, sendCsrfToken } = require('../middleware/security');
+const csrfProtection = configureCsrf();
+router.get('/projects', requireAuth, csrfProtection, sendCsrfToken, (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public', 'projects.html'));
+});
+
+/**
  * GET /checkout
  * Checkout page (requires authentication)
  */

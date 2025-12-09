@@ -197,9 +197,6 @@ app.use('/', pageRoutes);
 // User management routes
 app.use('/', userManagementRoutes);
 
-// Project routes
-app.use('/', projectRoutes);
-
 // Profile routes
 app.use('/', profileRoutes);
 

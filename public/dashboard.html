@@ -718,18 +718,56 @@
         // Load projects and their prompts
         async function loadProjects() {
             try {
+                console.log('Loading projects from /api/projects...');
                 const [projectsRes, promptsRes] = await Promise.all([
-                    fetch('/api/projects'),
-                    fetch('/api/prompts')
+                    fetch('/api/projects', {
+                        credentials: 'include',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    }),
+                    fetch('/api/prompts', {
+                        credentials: 'include',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    })
                 ]);
 
-                if (projectsRes.ok && promptsRes.ok) {
-                    const projectsData = await projectsRes.json();
-                    allProjects = projectsData.projects;
-                    allPrompts = await promptsRes.json();
+                console.log('Projects response status:', projectsRes.status, projectsRes.statusText);
+                console.log('Prompts response status:', promptsRes.status, promptsRes.statusText);
 
+                if (projectsRes.ok && promptsRes.ok) {
+                    const projectsText = await projectsRes.text();
+                    const promptsText = await promptsRes.text();
+                    
+                    console.log('Projects response (first 200 chars):', projectsText.substring(0, 200));
+                    console.log('Prompts response (first 200 chars):', promptsText.substring(0, 200));
+                    
+                    // Check if response is actually JSON
+                    if (!projectsText.trim().startsWith('{') && !projectsText.trim().startsWith('[')) {
+                        console.error('Invalid JSON response for projects. Full response:', projectsText);
+                        throw new Error('Invalid response format - received HTML instead of JSON');
+                    }
+                    
+                    const projectsData = JSON.parse(projectsText);
+                    allProjects = projectsData.projects || [];
+                    allPrompts = JSON.parse(promptsText);
+
+                    console.log('Successfully loaded projects:', allProjects.length);
                     renderProjects();
                     renderUnassignedPrompts();
+                } else {
+                    // Log the actual response for debugging
+                    const projectsText = await projectsRes.text();
+                    const promptsText = await promptsRes.text();
+                    console.error('Projects response status:', projectsRes.status, projectsRes.statusText);
+                    console.error('Projects response headers:', Object.fromEntries(projectsRes.headers.entries()));
+                    console.error('Projects response body:', projectsText.substring(0, 500));
+                    console.error('Prompts response status:', promptsRes.status, promptsRes.statusText);
+                    console.error('Prompts response body:', promptsText.substring(0, 500));
                 }
             } catch (error) {
                 console.error('Error loading projects:', error);

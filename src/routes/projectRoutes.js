@@ -17,33 +17,34 @@ const router = express.Router();
 const csrfProtection = configureCsrf();
 
 /**
- * GET /projects
- * Serve projects management page
- */
-router.get('/projects', requireAuth, csrfProtection, sendCsrfToken, (req, res) => {
-  res.sendFile(path.join(__dirname, '../../public', 'projects.html'));
-});
-
-/**
  * GET /api/projects
  * Get all projects for the authenticated user
  */
-router.get('/api/projects', requireAuth, asyncHandler(async (req, res) => {
+router.get('/projects', requireAuth, asyncHandler(async (req, res) => {
   const userId = req.session.userId;
 
-  const projects = await projectRepository.getAllByUserId(userId);
+  logger.info('GET /api/projects called', { userId });
 
-  res.json({
-    success: true,
-    projects
-  });
+  try {
+    const projects = await projectRepository.getAllByUserId(userId);
+
+    logger.info('Projects fetched successfully', { userId, count: projects?.length || 0 });
+
+    res.json({
+      success: true,
+      projects: projects || []
+    });
+  } catch (error) {
+    logger.error('Error in GET /api/projects', { userId, error: error.message, stack: error.stack });
+    throw error;
+  }
 }));
 
 /**
  * GET /api/projects/:id
  * Get a specific project with its prompts
  */
-router.get('/api/projects/:id', requireAuth, asyncHandler(async (req, res) => {
+router.get('/projects/:id', requireAuth, asyncHandler(async (req, res) => {
   const userId = req.session.userId;
   const projectId = parseInt(req.params.id);
 
@@ -68,7 +69,7 @@ router.get('/api/projects/:id', requireAuth, asyncHandler(async (req, res) => {
  * POST /api/projects
  * Create a new project
  */
-router.post('/api/projects', requireAuth, csrfProtection,
+router.post('/projects', requireAuth, csrfProtection,
   [
     body('name').trim().notEmpty().withMessage('Project name is required')
       .isLength({ max: 100 }).withMessage('Project name must be 100 characters or less'),
@@ -104,14 +105,12 @@ router.post('/api/projects', requireAuth, csrfProtection,
  * PUT /api/projects/:id
  * Update a project
  */
-router.put('/api/projects/:id', requireAuth, csrfProtection,
-  [
-    body('name').trim().notEmpty().withMessage('Project name is required')
-      .isLength({ max: 100 }).withMessage('Project name must be 100 characters or less'),
-    body('description').optional().trim()
-      .isLength({ max: 500 }).withMessage('Description must be 500 characters or less'),
-    body('color').optional().matches(/^#[0-9A-Fa-f]{6}$/).withMessage('Color must be a valid hex color')
-  ],
+const updateProjectHandler = [
+  body('name').trim().notEmpty().withMessage('Project name is required')
+    .isLength({ max: 100 }).withMessage('Project name must be 100 characters or less'),
+  body('description').optional().trim()
+    .isLength({ max: 500 }).withMessage('Description must be 500 characters or less'),
+  body('color').optional().matches(/^#[0-9A-Fa-f]{6}$/).withMessage('Color must be a valid hex color'),
   handleValidationErrors,
   asyncHandler(async (req, res) => {
     const userId = req.session.userId;
@@ -140,13 +139,16 @@ router.put('/api/projects/:id', requireAuth, csrfProtection,
       project
     });
   })
-);
+];
+
+router.put('/projects/:id', requireAuth, csrfProtection, updateProjectHandler);
+router.patch('/projects/:id', requireAuth, csrfProtection, updateProjectHandler);
 
 /**
  * DELETE /api/projects/:id
  * Delete a project
  */
-router.delete('/api/projects/:id', requireAuth, csrfProtection, asyncHandler(async (req, res) => {
+router.delete('/projects/:id', requireAuth, csrfProtection, asyncHandler(async (req, res) => {
   const userId = req.session.userId;
   const projectId = parseInt(req.params.id);
 
@@ -170,7 +172,7 @@ router.delete('/api/projects/:id', requireAuth, csrfProtection, asyncHandler(asy
  * POST /api/projects/:id/prompts/:promptId
  * Assign a prompt to a project
  */
-router.post('/api/projects/:id/prompts/:promptId', requireAuth, csrfProtection, asyncHandler(async (req, res) => {
+router.post('/projects/:id/prompts/:promptId', requireAuth, csrfProtection, asyncHandler(async (req, res) => {
   const userId = req.session.userId;
   const projectId = parseInt(req.params.id);
   const promptId = parseInt(req.params.promptId);
@@ -204,7 +206,7 @@ router.post('/api/projects/:id/prompts/:promptId', requireAuth, csrfProtection, 
  * DELETE /api/prompts/:promptId/project
  * Unassign a prompt from its project
  */
-router.delete('/api/prompts/:promptId/project', requireAuth, csrfProtection, asyncHandler(async (req, res) => {
+router.delete('/prompts/:promptId/project', requireAuth, csrfProtection, asyncHandler(async (req, res) => {
   const userId = req.session.userId;
   const promptId = parseInt(req.params.promptId);
 
