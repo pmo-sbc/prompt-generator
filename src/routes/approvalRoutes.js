@@ -44,6 +44,104 @@ router.get('/api/admin/pending-users', requireManagerOrAdmin, asyncHandler(async
 }));
 
 /**
+ * POST /api/admin/pending-users/:id/resend-email
+ * Resend approval notification email for a pending user
+ */
+router.post(
+  '/api/admin/pending-users/:id/resend-email',
+  requireManagerOrAdmin,
+  csrfProtection,
+  asyncHandler(async (req, res) => {
+    const pendingUserId = parseInt(req.params.id);
+
+    // Get pending user
+    const pendingUser = await pendingUserRepository.findById(pendingUserId);
+    if (!pendingUser) {
+      return res.status(404).json({
+        error: 'Pending user not found'
+      });
+    }
+
+    if (pendingUser.status !== 'pending') {
+      return res.status(400).json({
+        error: 'Can only resend emails for pending users'
+      });
+    }
+
+    // Get notification email from settings
+    const notificationEmail = await settingsRepository.get('approval_notification_email', null);
+    if (!notificationEmail) {
+      return res.status(400).json({
+        error: 'Notification email is not configured. Please set it in the settings above.'
+      });
+    }
+
+    try {
+      // Check if tokens exist and are still valid, otherwise generate new ones
+      let approvalToken = pendingUser.approval_token;
+      let rejectToken = pendingUser.reject_token;
+      const expiresAt = pendingUser.approval_token_expires;
+
+      // Generate new tokens if they don't exist or are expired
+      if (!approvalToken || !rejectToken || !expiresAt || new Date(expiresAt) < new Date()) {
+        approvalToken = crypto.randomBytes(32).toString('hex');
+        rejectToken = crypto.randomBytes(32).toString('hex');
+        const newExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+        // Save new tokens
+        await pendingUserRepository.setApprovalTokens(
+          pendingUserId,
+          approvalToken,
+          rejectToken,
+          newExpiresAt.toISOString()
+        );
+
+        logger.info('Generated new approval tokens for resend', {
+          pendingUserId,
+          expiresAt: newExpiresAt
+        });
+      }
+
+      // Send approval notification email
+      const emailResult = await emailService.sendApprovalNotificationEmail(
+        notificationEmail,
+        {
+          id: pendingUser.id,
+          username: pendingUser.username,
+          email: pendingUser.email,
+          created_at: pendingUser.created_at
+        },
+        approvalToken,
+        rejectToken
+      );
+
+      logger.info('Approval notification email resent successfully', {
+        pendingUserId,
+        notificationEmail,
+        emailResult
+      });
+
+      res.json({
+        success: true,
+        message: 'Approval notification email sent successfully'
+      });
+    } catch (error) {
+      logger.error('Failed to resend approval notification email', {
+        error: error.message,
+        stack: error.stack,
+        pendingUserId,
+        notificationEmail
+      });
+
+      res.status(500).json({
+        error: 'Failed to resend approval notification email',
+        details: error.message
+      });
+    }
+  })
+);
+
+/**
  * POST /api/admin/pending-users/:id/approve
  * Approve a pending user
  */

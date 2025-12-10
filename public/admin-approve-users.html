@@ -115,6 +115,21 @@
             background: #c0392b;
         }
 
+        .btn-resend {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            background: #3498db;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .btn-resend:hover {
+            background: #2980b9;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -394,6 +409,9 @@
                             <button class="btn-reject" onclick="openReviewModal(${user.id}, 'reject')">
                                 Reject
                             </button>
+                            <button class="btn-resend" onclick="resendApprovalEmail(${user.id})" title="Resend approval notification email">
+                                Resend Email
+                            </button>
                         </div>
                     </td>
                 `;
@@ -536,8 +554,36 @@
             }
         });
 
+        // Resend approval email
+        async function resendApprovalEmail(pendingUserId) {
+            if (!confirm('Resend approval notification email for this user?')) {
+                return;
+            }
+
+            try {
+                const response = await fetchWithCsrf(`/api/admin/pending-users/${pendingUserId}/resend-email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(data.message || 'Approval notification email sent successfully');
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Failed to resend approval notification email');
+                }
+            } catch (error) {
+                console.error('Error resending approval email:', error);
+                alert('Failed to resend approval notification email');
+            }
+        }
+
         // Make functions global
         window.openReviewModal = openReviewModal;
+        window.resendApprovalEmail = resendApprovalEmail;
 
         // Initialize
         loadPendingUsers();
