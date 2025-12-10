@@ -68,9 +68,29 @@ router.post(
       });
     }
 
-    // Get notification email from settings
-    const notificationEmail = await settingsRepository.get('approval_notification_email', null);
-    if (!notificationEmail) {
+    // Get notification emails from settings
+    const emailValue = await settingsRepository.get('approval_notification_email', null);
+    if (!emailValue) {
+      return res.status(400).json({
+        error: 'Notification email is not configured. Please set it in the settings above.'
+      });
+    }
+
+    // Parse emails (support both JSON array and single email string)
+    let notificationEmails = [];
+    try {
+      const parsed = JSON.parse(emailValue);
+      if (Array.isArray(parsed)) {
+        notificationEmails = parsed.filter(e => e && e.trim());
+      } else {
+        notificationEmails = [parsed];
+      }
+    } catch (e) {
+      // Not JSON, treat as single email string
+      notificationEmails = [emailValue];
+    }
+
+    if (notificationEmails.length === 0) {
       return res.status(400).json({
         error: 'Notification email is not configured. Please set it in the settings above.'
       });
@@ -102,23 +122,37 @@ router.post(
         });
       }
 
-      // Send approval notification email
-      const emailResult = await emailService.sendApprovalNotificationEmail(
-        notificationEmail,
-        {
-          id: pendingUser.id,
-          username: pendingUser.username,
-          email: pendingUser.email,
-          created_at: pendingUser.created_at
-        },
-        approvalToken,
-        rejectToken
-      );
+      // Send approval notification email to all recipients
+      const emailResults = [];
+      for (const notificationEmail of notificationEmails) {
+        try {
+          const emailResult = await emailService.sendApprovalNotificationEmail(
+            notificationEmail,
+            {
+              id: pendingUser.id,
+              username: pendingUser.username,
+              email: pendingUser.email,
+              created_at: pendingUser.created_at
+            },
+            approvalToken,
+            rejectToken
+          );
+          emailResults.push({ email: notificationEmail, result: emailResult });
+        } catch (error) {
+          logger.error('Failed to send approval notification email to one recipient', {
+            email: notificationEmail,
+            error: error.message
+          });
+          emailResults.push({ email: notificationEmail, result: { success: false, error: error.message } });
+        }
+      }
 
-      logger.info('Approval notification email resent successfully', {
+      const successCount = emailResults.filter(r => r.result.success).length;
+      logger.info('Approval notification email resent', {
         pendingUserId,
-        notificationEmail,
-        emailResult
+        totalRecipients: notificationEmails.length,
+        successCount,
+        emailResults
       });
 
       res.json({
@@ -375,20 +409,38 @@ router.post(
 
 /**
  * GET /api/admin/settings/approval-notification-email
- * Get approval notification email setting
+ * Get approval notification email setting (supports both single email and array)
  */
 router.get('/api/admin/settings/approval-notification-email', requireManagerOrAdmin, asyncHandler(async (req, res) => {
-  const email = await settingsRepository.get('approval_notification_email', null);
+  const emailValue = await settingsRepository.get('approval_notification_email', null);
+  
+  // Try to parse as JSON array, fallback to single email string
+  let emails = [];
+  if (emailValue) {
+    try {
+      const parsed = JSON.parse(emailValue);
+      if (Array.isArray(parsed)) {
+        emails = parsed;
+      } else {
+        // Legacy single email format
+        emails = [parsed];
+      }
+    } catch (e) {
+      // Not JSON, treat as single email string
+      emails = [emailValue];
+    }
+  }
   
   res.json({
     success: true,
-    email: email || null
+    emails: emails,
+    email: emails.length > 0 ? emails[0] : null // Legacy support
   });
 }));
 
 /**
  * POST /api/admin/settings/approval-notification-email
- * Update approval notification email setting
+ * Update approval notification email setting (supports both single email and array)
  */
 router.post(
   '/api/admin/settings/approval-notification-email',
@@ -399,29 +451,65 @@ router.post(
       .optional()
       .trim()
       .isEmail()
-      .withMessage('Must be a valid email address')
+      .withMessage('Must be a valid email address'),
+    body('emails')
+      .optional()
+      .isArray()
+      .withMessage('emails must be an array'),
+    body('emails.*')
+      .optional()
+      .trim()
+      .isEmail()
+      .withMessage('Each email must be valid')
   ],
   handleValidationErrors,
   asyncHandler(async (req, res) => {
-    const { email } = req.body;
+    const { email, emails } = req.body;
     const updatedBy = req.session.userId;
+
+    // Support both legacy single email and new array format
+    let emailArray = [];
+    if (emails && Array.isArray(emails)) {
+      // New format: array of emails
+      emailArray = emails.filter(e => e && e.trim()).map(e => e.trim());
+    } else if (email) {
+      // Legacy format: single email
+      emailArray = [email.trim()];
+    }
+
+    // Remove duplicates
+    emailArray = [...new Set(emailArray)];
+
+    // Validate all emails
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const invalidEmails = emailArray.filter(e => !emailRegex.test(e));
+    if (invalidEmails.length > 0) {
+      return res.status(400).json({
+        error: `Invalid email addresses: ${invalidEmails.join(', ')}`
+      });
+    }
+
+    // Store as JSON array
+    const valueToStore = emailArray.length > 0 ? JSON.stringify(emailArray) : null;
 
     await settingsRepository.set(
       'approval_notification_email',
-      email ? email.trim() : null,
-      'Email address that receives notifications when users need approval (with approve/reject buttons)',
+      valueToStore,
+      'Email addresses that receive notifications when users need approval (with approve/reject buttons). Can be a single email or multiple emails.',
       updatedBy
     );
 
     logger.info('Approval notification email setting updated', {
-      email,
+      emails: emailArray,
+      count: emailArray.length,
       updatedBy
     });
 
     res.json({
       success: true,
-      message: 'Notification email updated successfully',
-      email: email ? email.trim() : null
+      message: `Notification email${emailArray.length !== 1 ? 's' : ''} updated successfully (${emailArray.length} recipient${emailArray.length !== 1 ? 's' : ''})`,
+      emails: emailArray,
+      email: emailArray.length > 0 ? emailArray[0] : null // Legacy support
     });
   })
 );

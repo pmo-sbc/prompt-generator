@@ -165,45 +165,71 @@ router.post(
       // Store tokens in pending_users table
       await pendingUserRepository.setApprovalTokens(pendingUser.id, approvalToken, rejectToken, tokenExpiresAt.toISOString());
 
-      // Get notification email from settings
-      let notificationEmail = 'txrba.2025.training@3rdrockads.com'; // Default fallback
+      // Get notification emails from settings
+      let notificationEmails = ['txrba.2025.training@3rdrockads.com']; // Default fallback
       try {
-        const configuredEmail = await settingsRepository.get('approval_notification_email', null);
-        if (configuredEmail && configuredEmail.trim()) {
-          notificationEmail = configuredEmail.trim();
+        const emailValue = await settingsRepository.get('approval_notification_email', null);
+        if (emailValue) {
+          // Try to parse as JSON array, fallback to single email string
+          try {
+            const parsed = JSON.parse(emailValue);
+            if (Array.isArray(parsed)) {
+              notificationEmails = parsed.filter(e => e && e.trim()).map(e => e.trim());
+            } else {
+              notificationEmails = [parsed.trim()];
+            }
+          } catch (e) {
+            // Not JSON, treat as single email string
+            notificationEmails = [emailValue.trim()];
+          }
         }
       } catch (error) {
         logger.warn('Error getting approval notification email setting, using default', error);
       }
 
-      // Send approval notification email with approve/reject buttons (non-blocking)
+      // Send approval notification email to all recipients (non-blocking)
       try {
         logger.info('Attempting to send approval notification email', {
           service: 'ai-prompt-templates',
           pendingUserId: pendingUser.id,
-          notificationEmail,
+          notificationEmails,
+          recipientCount: notificationEmails.length,
           username: pendingUser.username,
           email: email,
           timestamp: new Date().toISOString()
         });
 
-        const emailResult = await emailService.sendApprovalNotificationEmail(
-          notificationEmail,
-          {
-            id: pendingUser.id,
-            username: pendingUser.username,
-            email: email,
-            created_at: pendingUser.created_at
-          },
-          approvalToken,
-          rejectToken
-        );
+        const emailResults = [];
+        for (const notificationEmail of notificationEmails) {
+          try {
+            const emailResult = await emailService.sendApprovalNotificationEmail(
+              notificationEmail,
+              {
+                id: pendingUser.id,
+                username: pendingUser.username,
+                email: email,
+                created_at: pendingUser.created_at
+              },
+              approvalToken,
+              rejectToken
+            );
+            emailResults.push({ email: notificationEmail, result: emailResult });
+          } catch (error) {
+            logger.error('Failed to send approval notification email to one recipient', {
+              email: notificationEmail,
+              error: error.message
+            });
+            emailResults.push({ email: notificationEmail, result: { success: false, error: error.message } });
+          }
+        }
         
-        logger.info('Approval notification email sent successfully', {
+        const successCount = emailResults.filter(r => r.result.success).length;
+        logger.info('Approval notification email sent', {
           service: 'ai-prompt-templates',
           pendingUserId: pendingUser.id,
-          notificationEmail,
-          emailResult: emailResult,
+          totalRecipients: notificationEmails.length,
+          successCount,
+          emailResults,
           timestamp: new Date().toISOString()
         });
       } catch (error) {
@@ -212,7 +238,7 @@ router.post(
           errorCode: error.code,
           stack: error.stack,
           pendingUserId: pendingUser.id,
-          notificationEmail,
+          notificationEmails,
           timestamp: new Date().toISOString()
         });
         // Continue anyway - registration is successful

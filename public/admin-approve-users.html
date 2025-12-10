@@ -130,6 +130,42 @@
             background: #2980b9;
         }
 
+        .email-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background: var(--dark-bg);
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .email-item input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        .btn-remove-email {
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            background: #e74c3c;
+            color: white;
+            transition: all 0.3s;
+            min-width: 80px;
+        }
+
+        .btn-remove-email:hover {
+            background: #c0392b;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -294,12 +330,16 @@
                 <p>Review and approve new user registrations</p>
             </div>
             <div class="notification-email-config">
-                <label for="notificationEmailInput" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Notification Email:</label>
-                <div style="display: flex; gap: 0.5rem;">
-                    <input type="email" id="notificationEmailInput" placeholder="email@example.com" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; background: var(--card-bg); color: var(--text-primary); min-width: 250px;">
-                    <button id="saveNotificationEmailBtn" class="btn-primary" style="padding: 0.5rem 1rem; white-space: nowrap;">Save</button>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Notification Emails:</label>
+                <div id="emailListContainer" style="margin-bottom: 0.5rem;">
+                    <!-- Email inputs will be dynamically added here -->
                 </div>
-                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; margin-bottom: 0;">Email address that receives approval notifications with approve/reject buttons</p>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <input type="email" id="newEmailInput" placeholder="email@example.com" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; background: var(--card-bg); color: var(--text-primary); min-width: 250px;">
+                    <button id="addEmailBtn" class="btn-primary" style="padding: 0.5rem 1rem; white-space: nowrap;">Add Email</button>
+                    <button id="saveNotificationEmailsBtn" class="btn-primary" style="padding: 0.5rem 1rem; white-space: nowrap; background: #27ae60;">Save All</button>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; margin-bottom: 0;">Email addresses that receive approval notifications with approve/reject buttons. You can add multiple recipients.</p>
             </div>
         </div>
 
@@ -488,8 +528,10 @@
             }
         });
 
-        // Load notification email setting
-        async function loadNotificationEmail() {
+        let emailList = [];
+
+        // Load notification emails setting
+        async function loadNotificationEmails() {
             try {
                 const response = await fetch('/api/admin/settings/approval-notification-email', {
                     credentials: 'include'
@@ -497,18 +539,55 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.email) {
-                        document.getElementById('notificationEmailInput').value = data.email;
+                    if (data.emails && Array.isArray(data.emails) && data.emails.length > 0) {
+                        emailList = data.emails;
+                    } else if (data.email) {
+                        // Support legacy single email format
+                        emailList = [data.email];
                     }
+                    renderEmailList();
                 }
             } catch (error) {
-                console.error('Error loading notification email:', error);
+                console.error('Error loading notification emails:', error);
             }
         }
 
-        // Save notification email setting
-        async function saveNotificationEmail() {
-            const email = document.getElementById('notificationEmailInput').value.trim();
+        // Render the email list
+        function renderEmailList() {
+            const container = document.getElementById('emailListContainer');
+            container.innerHTML = '';
+
+            if (emailList.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.9rem; font-style: italic;">No email addresses configured. Add one below.</p>';
+                return;
+            }
+
+            emailList.forEach((email, index) => {
+                const emailItem = document.createElement('div');
+                emailItem.className = 'email-item';
+                emailItem.innerHTML = `
+                    <input type="email" class="email-input" value="${email}" data-index="${index}" placeholder="email@example.com">
+                    <button type="button" class="btn-remove-email" onclick="removeEmail(${index})">Remove</button>
+                `;
+                container.appendChild(emailItem);
+            });
+
+            // Add event listeners for email input changes
+            container.querySelectorAll('.email-input').forEach(input => {
+                input.addEventListener('change', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    const newValue = this.value.trim();
+                    if (newValue) {
+                        emailList[index] = newValue;
+                    }
+                });
+            });
+        }
+
+        // Add new email
+        function addEmail() {
+            const input = document.getElementById('newEmailInput');
+            const email = input.value.trim();
 
             if (!email) {
                 alert('Please enter an email address');
@@ -522,37 +601,78 @@
                 return;
             }
 
+            // Check for duplicates
+            if (emailList.includes(email)) {
+                alert('This email address is already in the list');
+                return;
+            }
+
+            emailList.push(email);
+            input.value = '';
+            renderEmailList();
+        }
+
+        // Remove email
+        function removeEmail(index) {
+            if (confirm('Remove this email address from the notification list?')) {
+                emailList.splice(index, 1);
+                renderEmailList();
+            }
+        }
+
+        // Save notification emails setting
+        async function saveNotificationEmails() {
+            // Validate all emails before saving
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const invalidEmails = emailList.filter(email => !emailRegex.test(email));
+
+            if (invalidEmails.length > 0) {
+                alert(`Please fix invalid email addresses:\n${invalidEmails.join('\n')}`);
+                return;
+            }
+
+            if (emailList.length === 0) {
+                if (!confirm('No email addresses configured. Approval notifications will not be sent. Continue?')) {
+                    return;
+                }
+            }
+
             try {
                 const response = await fetchWithCsrf('/api/admin/settings/approval-notification-email', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ email })
+                    body: JSON.stringify({ emails: emailList })
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    alert(data.message || 'Notification email saved successfully');
+                    alert(data.message || `Notification emails saved successfully (${emailList.length} recipient${emailList.length !== 1 ? 's' : ''})`);
                 } else {
                     const error = await response.json();
-                    alert(error.error || 'Failed to save notification email');
+                    alert(error.error || 'Failed to save notification emails');
                 }
             } catch (error) {
-                console.error('Error saving notification email:', error);
-                alert('Failed to save notification email');
+                console.error('Error saving notification emails:', error);
+                alert('Failed to save notification emails');
             }
         }
 
-        // Event listener for save button
-        document.getElementById('saveNotificationEmailBtn').addEventListener('click', saveNotificationEmail);
+        // Event listeners
+        document.getElementById('addEmailBtn').addEventListener('click', addEmail);
+        document.getElementById('saveNotificationEmailsBtn').addEventListener('click', saveNotificationEmails);
 
-        // Allow Enter key to save
-        document.getElementById('notificationEmailInput').addEventListener('keypress', (e) => {
+        // Allow Enter key to add email
+        document.getElementById('newEmailInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                saveNotificationEmail();
+                e.preventDefault();
+                addEmail();
             }
         });
+
+        // Make removeEmail global
+        window.removeEmail = removeEmail;
 
         // Resend approval email
         async function resendApprovalEmail(pendingUserId) {
