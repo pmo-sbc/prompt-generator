@@ -1,61 +1,18 @@
 /**
  * Email Service
- * Handles all email sending functionality
- * Supports both Zapier webhook and SMTP based on environment configuration
+ * Handles all email sending functionality using SMTP
  */
 
-const axios = require('axios');
 const nodemailer = require('nodemailer');
 const logger = require('../utils/logger');
 
 class EmailService {
   constructor() {
-    this.zapierWebhookUrl = process.env.ZAPIER_WEBHOOK_URL;
-    this.zapierSecret = process.env.ZAPIER_SECRET;
     this.transporter = null;
     this.from = process.env.EMAIL_FROM || 'AI Prompt Templates <noreply@example.com>';
     this.baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    this.emailMode = null;
     
-    this.initializeEmailService();
-  }
-
-  /**
-   * Initialize email service - checks for SMTP first, then Zapier
-   * This prioritizes SMTP for production environments
-   */
-  initializeEmailService() {
-    // Priority 1: Check for SMTP configuration first (for production)
     this.initializeTransporter();
-    
-    if (this.transporter) {
-      this.emailMode = 'smtp';
-      logger.info('Email service initialized with SMTP', {
-        mode: 'smtp',
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT
-      });
-      return;
-    }
-
-    // Priority 2: Check for Zapier webhook (for local/development)
-    if (this.zapierWebhookUrl) {
-      this.emailMode = 'zapier';
-      logger.info('Email service initialized with Zapier', {
-        webhookConfigured: true,
-        mode: 'zapier'
-      });
-      return;
-    }
-
-    // No email service configured
-    this.emailMode = 'none';
-    logger.warn('No email service configured. Emails will be logged instead of sent.', {
-      mode: 'none',
-      hasZapier: !!this.zapierWebhookUrl,
-      hasSMTP: !!(process.env.SMTP_HOST && process.env.SMTP_PORT),
-      hasEmailService: !!(process.env.EMAIL_SERVICE && process.env.EMAIL_USER)
-    });
   }
 
   /**
@@ -125,96 +82,17 @@ class EmailService {
   }
 
   /**
-   * Send email - routes to Zapier or SMTP based on configuration
-   */
-  async sendEmail(to, subject, html) {
-    // Route to appropriate service
-    if (this.emailMode === 'zapier') {
-      return await this.sendEmailViaZapier(to, subject, html);
-    } else if (this.emailMode === 'smtp') {
-      return await this.sendEmailViaSMTP(to, subject, html);
-    } else {
-      // No email service configured - just log
-      logger.info('EMAIL (not sent - no email service configured)', {
-        to,
-        subject,
-        html: html.substring(0, 200) + '...',
-        mode: this.emailMode
-      });
-      return { success: true, message: 'Email logged (no service configured)' };
-    }
-  }
-
-  /**
-   * Send email via Zapier webhook
-   */
-  async sendEmailViaZapier(to, subject, html) {
-    if (!this.zapierWebhookUrl) {
-      logger.warn('Zapier webhook URL not configured', {
-        to,
-        subject
-      });
-      return { success: false, message: 'Zapier webhook not configured' };
-    }
-
-    try {
-      // Prepare payload for Zapier
-      const payload = {
-        to_email: to,
-        from_email: this.from,
-        subject: subject,
-        html_body: html,
-        timestamp: new Date().toISOString()
-      };
-
-      // Add secret if configured (for webhook security)
-      if (this.zapierSecret) {
-        payload.secret = this.zapierSecret;
-      }
-
-      // Send to Zapier webhook
-      const response = await axios.post(this.zapierWebhookUrl, payload, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        timeout: 10000 // 10 second timeout
-      });
-
-      logger.info('Email sent via Zapier successfully', {
-        to,
-        subject,
-        status: response.status,
-        zapierResponse: response.data
-      });
-
-      return {
-        success: true,
-        messageId: response.data?.id || `zapier-${Date.now()}`,
-        zapierStatus: response.data?.status
-      };
-    } catch (error) {
-      logger.error('Failed to send email via Zapier', {
-        error: error.message,
-        to,
-        subject,
-        webhookUrl: this.zapierWebhookUrl,
-        statusCode: error.response?.status,
-        responseData: error.response?.data
-      });
-      throw error;
-    }
-  }
-
-  /**
    * Send email via SMTP
    */
-  async sendEmailViaSMTP(to, subject, html) {
+  async sendEmail(to, subject, html) {
     if (!this.transporter) {
-      logger.warn('SMTP transporter not configured', {
+      // No email service configured - just log
+      logger.info('EMAIL (not sent - no SMTP transporter configured)', {
         to,
-        subject
+        subject,
+        html: html.substring(0, 200) + '...'
       });
-      return { success: false, message: 'SMTP transporter not configured' };
+      return { success: true, message: 'Email logged (no SMTP service configured)' };
     }
 
     try {
@@ -938,8 +816,7 @@ class EmailService {
       pendingUserId: pendingUserData.id,
       username: pendingUserData.username,
       emailType: 'approval_notification',
-      fromAddress: this.from,
-      emailMode: this.emailMode
+      fromAddress: this.from
     });
 
     const approveUrl = `${this.baseUrl}/api/approve-user-by-email?token=${approveToken}`;
@@ -1106,8 +983,7 @@ class EmailService {
       pendingUserId: pendingUserData.id,
       subject,
       from: this.from,
-      emailLength: html.length,
-      emailMode: this.emailMode
+      emailLength: html.length
     });
 
     const result = await this.sendEmail(notificationEmail, subject, html);
@@ -1115,8 +991,7 @@ class EmailService {
     logger.info('Approval notification email sendEmail completed', {
       notificationEmail,
       pendingUserId: pendingUserData.id,
-      result,
-      emailMode: this.emailMode
+      result
     });
     
     return result;
@@ -1248,8 +1123,7 @@ class EmailService {
       username,
       subject,
       emailType: 'rejection',
-      fromAddress: this.from,
-      emailMode: this.emailMode
+      fromAddress: this.from
     });
 
     const html = `
@@ -1377,8 +1251,7 @@ class EmailService {
       username,
       subject,
       from: this.from,
-      emailLength: html.length,
-      emailMode: this.emailMode
+      emailLength: html.length
     });
 
     const result = await this.sendEmail(email, subject, html);
@@ -1386,8 +1259,7 @@ class EmailService {
     logger.info('Rejection email sendEmail completed', {
       email,
       username,
-      result,
-      emailMode: this.emailMode
+      result
     });
     
     return result;
