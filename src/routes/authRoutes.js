@@ -176,7 +176,16 @@ router.post(
 
       // Send approval notification email with approve/reject buttons (non-blocking)
       try {
-        await emailService.sendApprovalNotificationEmail(
+        logger.info('Attempting to send approval notification email', {
+          service: 'ai-prompt-templates',
+          pendingUserId: pendingUser.id,
+          notificationEmail,
+          username: pendingUser.username,
+          email: email,
+          timestamp: new Date().toISOString()
+        });
+
+        const emailResult = await emailService.sendApprovalNotificationEmail(
           notificationEmail,
           {
             id: pendingUser.id,
@@ -187,12 +196,23 @@ router.post(
           approvalToken,
           rejectToken
         );
-        logger.info('Approval notification email sent', {
+        
+        logger.info('Approval notification email sent successfully', {
+          service: 'ai-prompt-templates',
           pendingUserId: pendingUser.id,
-          notificationEmail
+          notificationEmail,
+          emailResult: emailResult,
+          timestamp: new Date().toISOString()
         });
       } catch (error) {
-        logger.error('Failed to send approval notification email', error);
+        logger.error('Failed to send approval notification email', {
+          error: error.message,
+          errorCode: error.code,
+          stack: error.stack,
+          pendingUserId: pendingUser.id,
+          notificationEmail,
+          timestamp: new Date().toISOString()
+        });
         // Continue anyway - registration is successful
       }
 

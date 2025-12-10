@@ -168,30 +168,47 @@ router.post(
 
     // Send rejection email to the user
     try {
-      logger.info('Attempting to send rejection email', {
-        pendingUserId,
-        email: pendingUser.email,
-        username: pendingUser.username
-      });
-      
-      const emailResult = await emailService.sendRejectionEmail(
-        pendingUser.email,
-        pendingUser.username
-      );
-      
-      logger.info('Rejection email sent to user', {
+      logger.info('Attempting to send rejection email (admin portal rejection)', {
+        service: 'ai-prompt-templates',
         pendingUserId,
         email: pendingUser.email,
         username: pendingUser.username,
-        emailResult: emailResult
+        emailType: 'rejection',
+        timestamp: new Date().toISOString()
+      });
+      
+      // Verify email address is valid
+      if (!pendingUser.email || !pendingUser.email.includes('@')) {
+        logger.error('Invalid email address for rejection email', {
+          pendingUserId,
+          email: pendingUser.email,
+          username: pendingUser.username
+        });
+        throw new Error('Invalid email address');
+      }
+      
+      const emailResult = await emailService.sendRejectionEmail(
+        pendingUser.email.trim(),
+        pendingUser.username
+      );
+      
+      logger.info('Rejection email sent to user successfully (admin portal)', {
+        service: 'ai-prompt-templates',
+        pendingUserId,
+        email: pendingUser.email.trim(),
+        username: pendingUser.username,
+        emailResult: emailResult,
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
-      logger.error('Failed to send rejection email', {
+      logger.error('Failed to send rejection email (admin portal)', {
         error: error.message,
+        errorCode: error.code,
         stack: error.stack,
         pendingUserId,
         email: pendingUser.email,
-        username: pendingUser.username
+        username: pendingUser.username,
+        timestamp: new Date().toISOString()
       });
       // Continue anyway - rejection is complete
     }
@@ -526,29 +543,46 @@ router.get('/api/reject-user-by-email', asyncHandler(async (req, res) => {
     // Send rejection email to the user
     try {
       logger.info('Attempting to send rejection email (email-based rejection)', {
-        pendingUserId: pendingUser.id,
-        email: pendingUser.email,
-        username: pendingUser.username
-      });
-      
-      const emailResult = await emailService.sendRejectionEmail(
-        pendingUser.email,
-        pendingUser.username
-      );
-      
-      logger.info('User rejected via email, rejection email sent', {
+        service: 'ai-prompt-templates',
         pendingUserId: pendingUser.id,
         email: pendingUser.email,
         username: pendingUser.username,
-        emailResult: emailResult
+        emailType: 'rejection',
+        timestamp: new Date().toISOString()
+      });
+      
+      // Verify email address is valid
+      if (!pendingUser.email || !pendingUser.email.includes('@')) {
+        logger.error('Invalid email address for rejection email', {
+          pendingUserId: pendingUser.id,
+          email: pendingUser.email,
+          username: pendingUser.username
+        });
+        throw new Error('Invalid email address');
+      }
+      
+      const emailResult = await emailService.sendRejectionEmail(
+        pendingUser.email.trim(),
+        pendingUser.username
+      );
+      
+      logger.info('User rejected via email, rejection email sent successfully', {
+        service: 'ai-prompt-templates',
+        pendingUserId: pendingUser.id,
+        email: pendingUser.email.trim(),
+        username: pendingUser.username,
+        emailResult: emailResult,
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
       logger.error('Failed to send rejection email after email-based rejection', {
         error: error.message,
+        errorCode: error.code,
         stack: error.stack,
         pendingUserId: pendingUser.id,
         email: pendingUser.email,
-        username: pendingUser.username
+        username: pendingUser.username,
+        timestamp: new Date().toISOString()
       });
       // Continue anyway - rejection is complete
     }

@@ -1,21 +1,61 @@
 /**
  * Email Service
- * Handles all email sending functionality using SMTP
+ * Handles all email sending functionality
+ * Supports both Zapier webhook and SMTP based on environment configuration
  */
 
+const axios = require('axios');
 const nodemailer = require('nodemailer');
 const logger = require('../utils/logger');
 
 class EmailService {
   constructor() {
+    this.zapierWebhookUrl = process.env.ZAPIER_WEBHOOK_URL;
+    this.zapierSecret = process.env.ZAPIER_SECRET;
     this.transporter = null;
     this.from = process.env.EMAIL_FROM || 'AI Prompt Templates <noreply@example.com>';
     this.baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    this.initializeTransporter();
+    this.emailMode = null;
+    
+    this.initializeEmailService();
   }
 
   /**
-   * Initialize email transporter
+   * Initialize email service - checks for Zapier first, then SMTP
+   */
+  initializeEmailService() {
+    // Priority 1: Check for Zapier webhook
+    if (this.zapierWebhookUrl) {
+      this.emailMode = 'zapier';
+      logger.info('Email service initialized with Zapier', {
+        webhookConfigured: true,
+        mode: 'zapier'
+      });
+      return;
+    }
+
+    // Priority 2: Check for SMTP configuration
+    this.initializeTransporter();
+    
+    if (this.transporter) {
+      this.emailMode = 'smtp';
+      logger.info('Email service initialized with SMTP', {
+        mode: 'smtp'
+      });
+      return;
+    }
+
+    // No email service configured
+    this.emailMode = 'none';
+    logger.warn('No email service configured. Emails will be logged instead of sent.', {
+      mode: 'none',
+      hasZapier: !!this.zapierWebhookUrl,
+      hasSMTP: !!(process.env.SMTP_HOST && process.env.SMTP_PORT)
+    });
+  }
+
+  /**
+   * Initialize SMTP transporter
    */
   initializeTransporter() {
     // Check if SMTP is configured with custom server
@@ -55,46 +95,133 @@ class EmailService {
     }
 
     // Check if email service is configured (Gmail, SendGrid, etc.)
-    if (!process.env.EMAIL_SERVICE || !process.env.EMAIL_USER) {
-      logger.warn('Email service not configured. Emails will be logged instead of sent.');
-      this.transporter = null;
-      return;
+    if (process.env.EMAIL_SERVICE && process.env.EMAIL_USER) {
+      try {
+        this.transporter = nodemailer.createTransport({
+          service: process.env.EMAIL_SERVICE,
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD
+          }
+        });
+
+        logger.info('Email service initialized', {
+          service: process.env.EMAIL_SERVICE,
+          user: process.env.EMAIL_USER
+        });
+        return;
+      } catch (error) {
+        logger.error('Failed to initialize email service', error);
+        this.transporter = null;
+        return;
+      }
     }
 
-    try {
-      this.transporter = nodemailer.createTransport({
-        service: process.env.EMAIL_SERVICE || 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD
-        }
-      });
+    this.transporter = null;
+  }
 
-      logger.info('Email service initialized', {
-        service: process.env.EMAIL_SERVICE,
-        user: process.env.EMAIL_USER
+  /**
+   * Send email - routes to Zapier or SMTP based on configuration
+   */
+  async sendEmail(to, subject, html) {
+    // Route to appropriate service
+    if (this.emailMode === 'zapier') {
+      return await this.sendEmailViaZapier(to, subject, html);
+    } else if (this.emailMode === 'smtp') {
+      return await this.sendEmailViaSMTP(to, subject, html);
+    } else {
+      // No email service configured - just log
+      logger.info('EMAIL (not sent - no email service configured)', {
+        to,
+        subject,
+        html: html.substring(0, 200) + '...',
+        mode: this.emailMode
       });
-    } catch (error) {
-      logger.error('Failed to initialize email service', error);
-      this.transporter = null;
+      return { success: true, message: 'Email logged (no service configured)' };
     }
   }
 
   /**
-   * Send email (or log if not configured)
+   * Send email via Zapier webhook
    */
-  async sendEmail(to, subject, html) {
-    if (!this.transporter) {
-      // Log email instead of sending
-      logger.info('EMAIL (not sent - no transporter configured)', {
+  async sendEmailViaZapier(to, subject, html) {
+    if (!this.zapierWebhookUrl) {
+      logger.warn('Zapier webhook URL not configured', {
         to,
-        subject,
-        html: html.substring(0, 200) + '...'
+        subject
       });
-      return { success: true, message: 'Email logged (development mode)' };
+      return { success: false, message: 'Zapier webhook not configured' };
     }
 
     try {
+      // Prepare payload for Zapier
+      const payload = {
+        to_email: to,
+        from_email: this.from,
+        subject: subject,
+        html_body: html,
+        timestamp: new Date().toISOString()
+      };
+
+      // Add secret if configured (for webhook security)
+      if (this.zapierSecret) {
+        payload.secret = this.zapierSecret;
+      }
+
+      // Send to Zapier webhook
+      const response = await axios.post(this.zapierWebhookUrl, payload, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 10000 // 10 second timeout
+      });
+
+      logger.info('Email sent via Zapier successfully', {
+        to,
+        subject,
+        status: response.status,
+        zapierResponse: response.data
+      });
+
+      return {
+        success: true,
+        messageId: response.data?.id || `zapier-${Date.now()}`,
+        zapierStatus: response.data?.status
+      };
+    } catch (error) {
+      logger.error('Failed to send email via Zapier', {
+        error: error.message,
+        to,
+        subject,
+        webhookUrl: this.zapierWebhookUrl,
+        statusCode: error.response?.status,
+        responseData: error.response?.data
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Send email via SMTP
+   */
+  async sendEmailViaSMTP(to, subject, html) {
+    if (!this.transporter) {
+      logger.warn('SMTP transporter not configured', {
+        to,
+        subject
+      });
+      return { success: false, message: 'SMTP transporter not configured' };
+    }
+
+    try {
+      // Log email details before sending
+      logger.info('Sending email via SMTP', {
+        from: this.from,
+        to,
+        subject,
+        transporterConfigured: !!this.transporter
+      });
+
       const info = await this.transporter.sendMail({
         from: this.from,
         to,
@@ -102,18 +229,27 @@ class EmailService {
         html
       });
 
-      logger.info('Email sent successfully', {
+      logger.info('Email sent successfully via SMTP', {
         to,
+        from: this.from,
         subject,
-        messageId: info.messageId
+        messageId: info.messageId,
+        accepted: info.accepted,
+        rejected: info.rejected,
+        response: info.response
       });
 
       return { success: true, messageId: info.messageId };
     } catch (error) {
-      logger.error('Failed to send email', {
+      logger.error('Failed to send email via SMTP', {
         error: error.message,
+        errorCode: error.code,
         to,
+        from: this.from,
         subject,
+        command: error.command,
+        response: error.response,
+        responseCode: error.responseCode,
         stack: error.stack
       });
       throw error;
@@ -756,6 +892,24 @@ class EmailService {
    * Send approval notification email with approve/reject buttons
    */
   async sendApprovalNotificationEmail(notificationEmail, pendingUserData, approveToken, rejectToken) {
+    if (!notificationEmail || !pendingUserData) {
+      logger.error('sendApprovalNotificationEmail called with invalid parameters', {
+        notificationEmail,
+        pendingUserData
+      });
+      throw new Error('Notification email and pending user data are required');
+    }
+
+    logger.info('Preparing approval notification email', {
+      service: 'ai-prompt-templates',
+      notificationEmail,
+      pendingUserId: pendingUserData.id,
+      username: pendingUserData.username,
+      emailType: 'approval_notification',
+      fromAddress: this.from,
+      emailMode: this.emailMode
+    });
+
     const approveUrl = `${this.baseUrl}/api/approve-user-by-email?token=${approveToken}`;
     const rejectUrl = `${this.baseUrl}/api/reject-user-by-email?token=${rejectToken}`;
     const adminUrl = `${this.baseUrl}/admin/approve-users`;
@@ -915,7 +1069,25 @@ class EmailService {
       </html>
     `;
 
-    return await this.sendEmail(notificationEmail, subject, html);
+    logger.info('Approval notification email template prepared, calling sendEmail', {
+      notificationEmail,
+      pendingUserId: pendingUserData.id,
+      subject,
+      from: this.from,
+      emailLength: html.length,
+      emailMode: this.emailMode
+    });
+
+    const result = await this.sendEmail(notificationEmail, subject, html);
+    
+    logger.info('Approval notification email sendEmail completed', {
+      notificationEmail,
+      pendingUserId: pendingUserData.id,
+      result,
+      emailMode: this.emailMode
+    });
+    
+    return result;
   }
 
   /**
@@ -1039,9 +1211,13 @@ class EmailService {
     const subject = 'Account Registration - Action Required';
 
     logger.info('Preparing rejection email', {
+      service: 'ai-prompt-templates',
       email,
       username,
-      subject
+      subject,
+      emailType: 'rejection',
+      fromAddress: this.from,
+      emailMode: this.emailMode
     });
 
     const html = `
@@ -1164,7 +1340,25 @@ class EmailService {
       </html>
     `;
 
-    return await this.sendEmail(email, subject, html);
+    logger.info('Rejection email template prepared, calling sendEmail', {
+      email,
+      username,
+      subject,
+      from: this.from,
+      emailLength: html.length,
+      emailMode: this.emailMode
+    });
+
+    const result = await this.sendEmail(email, subject, html);
+    
+    logger.info('Rejection email sendEmail completed', {
+      email,
+      username,
+      result,
+      emailMode: this.emailMode
+    });
+    
+    return result;
   }
 
   /**
