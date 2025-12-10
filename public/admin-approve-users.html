@@ -539,13 +539,23 @@
 
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('Loaded notification email data:', data); // Debug log
+                    
+                    // Prioritize emails array, fallback to single email
                     if (data.emails && Array.isArray(data.emails) && data.emails.length > 0) {
-                        emailList = data.emails;
-                    } else if (data.email) {
+                        emailList = data.emails.filter(e => e && e.trim());
+                    } else if (data.email && data.email.trim()) {
                         // Support legacy single email format
-                        emailList = [data.email];
+                        emailList = [data.email.trim()];
+                    } else {
+                        // No emails configured
+                        emailList = [];
                     }
+                    
+                    console.log('Email list after processing:', emailList); // Debug log
                     renderEmailList();
+                } else {
+                    console.error('Failed to load notification emails:', response.status, response.statusText);
                 }
             } catch (error) {
                 console.error('Error loading notification emails:', error);

@@ -414,22 +414,39 @@ router.post(
 router.get('/api/admin/settings/approval-notification-email', requireManagerOrAdmin, asyncHandler(async (req, res) => {
   const emailValue = await settingsRepository.get('approval_notification_email', null);
   
+  logger.info('Getting approval notification email setting', {
+    rawValue: emailValue,
+    valueType: typeof emailValue
+  });
+  
   // Try to parse as JSON array, fallback to single email string
   let emails = [];
   if (emailValue) {
     try {
+      // Try parsing as JSON first
       const parsed = JSON.parse(emailValue);
       if (Array.isArray(parsed)) {
-        emails = parsed;
-      } else {
-        // Legacy single email format
-        emails = [parsed];
+        // New format: JSON array
+        emails = parsed.filter(e => e && typeof e === 'string' && e.trim()).map(e => e.trim());
+        logger.info('Parsed as JSON array', { emails });
+      } else if (typeof parsed === 'string' && parsed.trim()) {
+        // Single email in JSON string
+        emails = [parsed.trim()];
+        logger.info('Parsed as single email in JSON', { emails });
       }
     } catch (e) {
-      // Not JSON, treat as single email string
-      emails = [emailValue];
+      // Not JSON, treat as single email string (legacy format)
+      if (typeof emailValue === 'string' && emailValue.trim()) {
+        emails = [emailValue.trim()];
+        logger.info('Treated as legacy single email string', { emails });
+      }
     }
   }
+  
+  logger.info('Returning approval notification emails', {
+    emailCount: emails.length,
+    emails
+  });
   
   res.json({
     success: true,
