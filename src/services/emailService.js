@@ -21,10 +21,24 @@ class EmailService {
   }
 
   /**
-   * Initialize email service - checks for Zapier first, then SMTP
+   * Initialize email service - checks for SMTP first, then Zapier
+   * This prioritizes SMTP for production environments
    */
   initializeEmailService() {
-    // Priority 1: Check for Zapier webhook
+    // Priority 1: Check for SMTP configuration first (for production)
+    this.initializeTransporter();
+    
+    if (this.transporter) {
+      this.emailMode = 'smtp';
+      logger.info('Email service initialized with SMTP', {
+        mode: 'smtp',
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT
+      });
+      return;
+    }
+
+    // Priority 2: Check for Zapier webhook (for local/development)
     if (this.zapierWebhookUrl) {
       this.emailMode = 'zapier';
       logger.info('Email service initialized with Zapier', {
@@ -34,23 +48,13 @@ class EmailService {
       return;
     }
 
-    // Priority 2: Check for SMTP configuration
-    this.initializeTransporter();
-    
-    if (this.transporter) {
-      this.emailMode = 'smtp';
-      logger.info('Email service initialized with SMTP', {
-        mode: 'smtp'
-      });
-      return;
-    }
-
     // No email service configured
     this.emailMode = 'none';
     logger.warn('No email service configured. Emails will be logged instead of sent.', {
       mode: 'none',
       hasZapier: !!this.zapierWebhookUrl,
-      hasSMTP: !!(process.env.SMTP_HOST && process.env.SMTP_PORT)
+      hasSMTP: !!(process.env.SMTP_HOST && process.env.SMTP_PORT),
+      hasEmailService: !!(process.env.EMAIL_SERVICE && process.env.EMAIL_USER)
     });
   }
 
@@ -236,8 +240,31 @@ class EmailService {
         messageId: info.messageId,
         accepted: info.accepted,
         rejected: info.rejected,
-        response: info.response
+        response: info.response,
+        responseCode: info.responseCode,
+        envelope: info.envelope
       });
+
+      // Check if email was actually accepted
+      if (info.rejected && info.rejected.length > 0) {
+        logger.warn('Email was rejected by SMTP server', {
+          to,
+          subject,
+          rejected: info.rejected,
+          accepted: info.accepted
+        });
+        throw new Error(`Email rejected by SMTP server: ${info.rejected.join(', ')}`);
+      }
+
+      if (!info.accepted || info.accepted.length === 0) {
+        logger.warn('Email was not accepted by SMTP server', {
+          to,
+          subject,
+          accepted: info.accepted,
+          rejected: info.rejected
+        });
+        throw new Error('Email was not accepted by SMTP server');
+      }
 
       return { success: true, messageId: info.messageId };
     } catch (error) {
@@ -250,6 +277,11 @@ class EmailService {
         command: error.command,
         response: error.response,
         responseCode: error.responseCode,
+        errno: error.errno,
+        syscall: error.syscall,
+        hostname: error.hostname,
+        port: error.port,
+        address: error.address,
         stack: error.stack
       });
       throw error;
