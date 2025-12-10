@@ -183,33 +183,29 @@ class PendingUserRepository {
     try {
       logger.db('UPDATE', 'pending_users', { id, action: 'reset_to_pending', newUsername, newEmail });
 
-      // Build dynamic UPDATE query based on what fields need updating
-      const updateFields = ['status = \'pending\'', 'password = $1', 'reviewed_at = NULL', 'reviewed_by = NULL', 'review_notes = NULL', 'created_at = CURRENT_TIMESTAMP'];
-      const params = [newHashedPassword];
-      let paramIndex = 2;
-
-      if (newUsername) {
-        updateFields.push(`username = $${paramIndex}`);
-        params.push(newUsername);
-        paramIndex++;
-      }
-
-      if (newEmail) {
-        updateFields.push(`email = $${paramIndex}`);
-        params.push(newEmail);
-        paramIndex++;
-      }
-
-      params.push(id); // WHERE id = $N
-
+      // Always update username and email when provided (which they always are when called from authRoutes)
+      // This ensures the record reflects the current registration attempt
       const query = `
         UPDATE pending_users
-        SET ${updateFields.join(', ')}
-        WHERE id = $${paramIndex}
+        SET status = $1,
+            password = $2,
+            username = COALESCE($3, username),
+            email = COALESCE($4, email),
+            reviewed_at = NULL,
+            reviewed_by = NULL,
+            review_notes = NULL,
+            created_at = CURRENT_TIMESTAMP
+        WHERE id = $5
         RETURNING id, username, email, created_at, status
       `;
 
-      const result = await db.prepare(query).get(...params);
+      const result = await db.prepare(query).get(
+        'pending',
+        newHashedPassword,
+        newUsername,
+        newEmail,
+        id
+      );
 
       return result;
     } catch (error) {
