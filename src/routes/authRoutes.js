@@ -95,20 +95,22 @@ router.post(
           logger.info('Approved pending user found but not in users table - allowing re-registration', {
             pendingUserId: existingPendingUser.id,
             username,
-            email
+            email,
+            oldUsername: existingPendingUser.username
           });
-          // Reset to pending to allow re-registration
-          await pendingUserRepository.resetToPending(existingPendingUser.id, hashedPassword);
+          // Reset to pending with new username and email to ensure correct data
+          await pendingUserRepository.resetToPending(existingPendingUser.id, hashedPassword, username, email);
           pendingUser = await pendingUserRepository.findById(existingPendingUser.id);
         } else if (existingPendingUser.status === 'rejected') {
           // Previously rejected - allow re-registration by resetting to pending
           logger.info('Re-registration attempt for previously rejected user', { 
             pendingUserId: existingPendingUser.id,
             username,
-            email 
+            email,
+            oldUsername: existingPendingUser.username
           });
-          // Update the rejected user back to pending with new password
-          await pendingUserRepository.resetToPending(existingPendingUser.id, hashedPassword);
+          // Update the rejected user back to pending with new password, username, and email
+          await pendingUserRepository.resetToPending(existingPendingUser.id, hashedPassword, username, email);
           // Use the updated record
           pendingUser = await pendingUserRepository.findById(existingPendingUser.id);
         }

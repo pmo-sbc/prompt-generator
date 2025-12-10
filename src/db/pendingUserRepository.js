@@ -175,24 +175,41 @@ class PendingUserRepository {
 
   /**
    * Reset a rejected user back to pending status (for re-registration)
+   * Also updates username and email to ensure the record reflects the new registration
    */
-  async resetToPending(id, newHashedPassword) {
+  async resetToPending(id, newHashedPassword, newUsername = null, newEmail = null) {
     const db = getDatabaseWrapper();
 
     try {
-      logger.db('UPDATE', 'pending_users', { id, action: 'reset_to_pending' });
+      logger.db('UPDATE', 'pending_users', { id, action: 'reset_to_pending', newUsername, newEmail });
 
-      const result = await db.prepare(`
+      // Build dynamic UPDATE query based on what fields need updating
+      const updateFields = ['status = \'pending\'', 'password = $1', 'reviewed_at = NULL', 'reviewed_by = NULL', 'review_notes = NULL', 'created_at = CURRENT_TIMESTAMP'];
+      const params = [newHashedPassword];
+      let paramIndex = 2;
+
+      if (newUsername) {
+        updateFields.push(`username = $${paramIndex}`);
+        params.push(newUsername);
+        paramIndex++;
+      }
+
+      if (newEmail) {
+        updateFields.push(`email = $${paramIndex}`);
+        params.push(newEmail);
+        paramIndex++;
+      }
+
+      params.push(id); // WHERE id = $N
+
+      const query = `
         UPDATE pending_users
-        SET status = 'pending',
-            password = $1,
-            reviewed_at = NULL,
-            reviewed_by = NULL,
-            review_notes = NULL,
-            created_at = CURRENT_TIMESTAMP
-        WHERE id = $2
+        SET ${updateFields.join(', ')}
+        WHERE id = $${paramIndex}
         RETURNING id, username, email, created_at, status
-      `).get(newHashedPassword, id);
+      `;
+
+      const result = await db.prepare(query).get(...params);
 
       return result;
     } catch (error) {
